@@ -42,10 +42,11 @@ else
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"
+  mkdir -p "$target/$bracket/docs"
+  cp "$bracket/docs/"*.md "$bracket/docs/documentation.scad" "$target/$bracket/docs/"
   for page in mounting-options hull-guide polygon-guide; do
-    cat site/model-header.html "$bracket/$page.html" > "$target/$bracket/$page.html"
-    printf '\n</main></body></html>\n' >> "$target/$bracket/$page.html"
-    cp "$bracket/$page.md" "$target/$bracket/$page.md"
+    cat site/guide-header.html "$bracket/docs/$page.html" > "$target/$bracket/docs/$page.html"
+    printf '\n</main></body></html>\n' >> "$target/$bracket/docs/$page.html"
   done
   cp site/index.html site/site.css "$target/"
   touch "$worktree/.nojekyll"

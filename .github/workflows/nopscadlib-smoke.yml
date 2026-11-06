@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 -m pip install --user vcs2l
           export PATH="$HOME/.local/bin:$PATH"
+          mkdir -p ext
           vcs import ext < dependencies.repos
           test -f ext/NopSCADlib/core.scad
           test -f ext/NopSCADlib/scripts/make_all.py

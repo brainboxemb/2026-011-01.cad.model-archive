@@ -195,6 +195,21 @@ one outline smaller, `hull()` to connect the two sizes, and
 having to cut every side edge individually. In contrast to the simple
 bar, the bracket's construction keeps the plywood contact faces flat.
 
+## Is hull() the simplest way to round an L corner?
+
+Not for a **concave** (inside) corner. Here two ordinary shape-based
+alternatives are easier to understand:
+
+- **2D first:** `difference()` of a `square()` and a `circle()`,
+  `union()` that small corner piece with the L, then `linear_extrude()`.
+- **3D first:** `difference()` of a `cube()` and a `cylinder()`,
+  then `union()` it with the extruded L.
+
+The complete example—including **nine illustrated steps**, both complete
+OpenSCAD constructions, and a comparison with point-based `polygon()`—
+is on the separate [Polygon and rounded-corner guide](polygon-guide.html).
+Those alternatives show the same target shape without using `hull()`.
+
 ## Applying this to the actual bracket
 
 The bracket's **inside radius** is produced by calculating 19 points on a quarter-circle with `sin()` and `cos()`, then including them in its 2D `polygon()`. This preserves the open inside corner.

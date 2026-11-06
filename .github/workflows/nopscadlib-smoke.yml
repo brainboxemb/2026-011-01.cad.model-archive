@@ -1,0 +1,64 @@
+name: NopSCADlib smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dedicated model-archive runtime
+        run: docker build -f docker/Dockerfile -t model-archive-nopscadlib:ci .
+
+      - name: Fetch pinned NopSCADlib with vcs2l inside Docker
+        run: |
+          mkdir -p ext
+          docker run --rm --init \
+            -v "$PWD:/work" \
+            -w /work \
+            model-archive-nopscadlib:ci \
+            vcs import --input dependencies.repos ext
+          test -f ext/NopSCADlib/core.scad
+          test -f ext/NopSCADlib/scripts/make_all.py
+
+      - name: Generate complete documentation for spacer example
+        run: |
+          docker run --rm --init \
+            -v "$PWD:/work" \
+            -w /work/examples/spacer/v0.1 \
+            model-archive-nopscadlib:ci \
+            xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
+
+      - name: Check generated deliverables
+        run: |
+          version=examples/spacer/v0.1
+          test -s "$version/stls/spacer.stl"
+          test -s "$version/stls/spacer.png"
+          test -s "$version/assemblies/main_assembled.png"
+          test -s "$version/assemblies/main_assembly.png"
+          test -s "$version/bom/bom.json"
+          test -s "$version/readme.md"
+          test -s "$version/readme.html"
+          test -s "$version/printme.html"
+          grep -q 'Example spacer' "$version/readme.md"
+
+      - name: Upload generated documentation preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: spacer-nopscadlib-docs
+          path: |
+            examples/spacer/v0.1/readme.md
+            examples/spacer/v0.1/readme.html
+            examples/spacer/v0.1/printme.html
+            examples/spacer/v0.1/stls/
+            examples/spacer/v0.1/assemblies/
+            examples/spacer/v0.1/bom/
+          retention-days: 14

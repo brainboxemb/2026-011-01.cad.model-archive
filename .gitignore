@@ -1,0 +1,31 @@
+# Fetched dependencies (vcstool / vcs2l), never commit vendor copies.
+/ext/
+
+# Python and local temporary files
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.DS_Store
+
+# Generated NopSCADlib outputs from model/version working directories.
+# Keep generated artifacts in CI initially; future publication uses gh-pages.
+**/bom/
+**/stls/
+**/dxfs/
+**/svgs/
+**/assemblies/
+**/printed/
+**/routed/
+**/readme.html
+**/printme.html
+**/openscad.log
+**/openscad.echo
+**/cmd_times.txt
+**/magick.log
+**/*_diff.png
+**/tmp/
+
+# NopSCADlib produces lowercase readme.md within the version directory.
+# Authored model indices use uppercase README.md.
+**/v*/readme.md
+**/source/readme.md

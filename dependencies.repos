@@ -1,0 +1,7 @@
+# vcs2l: pin external source to an immutable upstream commit.
+# To change versions, review the upstream changelog and update the SHA deliberately.
+repositories:
+  NopSCADlib:
+    type: git
+    url: https://github.com/nophead/NopSCADlib.git
+    version: 00ec2898c0a2cdebd446f0175671b633d5ae7d5f

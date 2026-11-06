@@ -1,8 +1,10 @@
 # Corner bracket — v0.1
 
-This is the **unmodified geometric construction** from the uploaded model,
-with English comments/Customizer labels and a local section-inspection helper.
-The bracket is a prototype and its dimensions have not been physically verified.
+The original bracket geometry has been **refactored without changing its
+intended shape**: the inside radius now uses ordinary 2D `square()` and
+`circle()` shapes, rather than a calculated list of arc points.
+The rest of the model and its inspection helper remain unchanged.
+The bracket is a prototype; print tolerances and strength have not been physically verified.
 
 ## Source layout
 
@@ -14,7 +16,7 @@ design/
   design.scad               Six-step model walkthrough
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
-  inside_corner_methods.scad  2D/3D inside-corner alternatives
+  inside_corner_methods.scad  2D/3D inside-corner demonstration
   *.png                     CI-generated tutorial images (not committed)
 docs/
   documentation.scad        NopSCADlib documentation build source
@@ -22,6 +24,7 @@ docs/
   polygon-guide.md          2D vs 3D rounding article
   mounting-options.md       Illustrated fastener alternatives
 figures/                    Editable vector diagrams
+tests/                      Geometry equivalence fixture (legacy vs new profile)
 ```
 
 Only the **two files in `scad/`** belong to the actual bracket design;
@@ -60,16 +63,20 @@ circles. The original `hull_explained.scad` and
 
 The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
-and the bracket's concave **inside** corner drawn from sampled points along
-a quarter-circle.
+and a **historical** point-based method for the concave inside corner.
 
-The new [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
+The [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
 straightforward constructions of the same **inside** radius:
 `square() - circle()` with `union()` **before** `linear_extrude()`
 (2D first), and `cube() - cylinder()` with `union()` in **3D**.
 Its [standalone OpenSCAD demo](design/inside_corner_methods.scad) has
-nine Customizer stages and CI-generated illustrations. These examples do
-not change the printable v0.1 bracket geometry.
+nine Customizer stages and CI-generated illustrations. The real
+`corner_bracket.scad` uses the **2D approach** with `$fn=72` on the
+corner circle to preserve the old 5-degree curve segmentation.
+An isolated [equivalence fixture](tests/inside-corner-equivalence.scad)
+compares the old polygon against the new 2D profile across several radius
+and print-relief values during CI. Whole-part STL renders were also compared
+locally and yielded matching geometry for the tested configurations.
 
 The [documentation entry point](docs/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design

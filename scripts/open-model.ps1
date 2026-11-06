@@ -1,6 +1,6 @@
 # Open a local .scad model in the Windows OpenSCAD GUI with this repository's
 # pinned NopSCADlib available as a project-local library.
-# Requires OpenSCAD installed and "vcs import" performed once.
+# Requires OpenSCAD installed and .\bootstrap.ps1 run once.
 [CmdletBinding()]
 param(
     [string]$Model = "examples/spacer/v0.1/scad/spacer.scad",
@@ -13,7 +13,7 @@ $extPath = Join-Path $root "ext"
 $library = Join-Path $extPath "NopSCADlib\core.scad"
 
 if (-not (Test-Path -LiteralPath $library -PathType Leaf)) {
-    throw "NopSCADlib ontbreekt. Voer in de repo-root uit: New-Item -ItemType Directory ext -Force; vcs import --input dependencies.repos ext"
+    throw "NopSCADlib ontbreekt. Voer vanuit de repository uit: .\bootstrap.ps1"
 }
 
 $modelPath = if ([System.IO.Path]::IsPathRooted($Model)) {

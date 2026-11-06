@@ -41,14 +41,15 @@ dependencies.repos               Pin NopSCADlib commit
 ext/NopSCADlib/                  Local fetched checkout; ignored by Git
 scripts/open-model.ps1           Launch the Windows OpenSCAD GUI
 models/<model>/                  Model description and versions
-models/<model>/vX.Y/scad/        OpenSCAD source for one version
+models/<model>/vX.Y/scad/        Source for a versioned model
+models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
 docker/                          CI-only NopSCADlib runtime
 docs/                            Usage and future publication decisions
 ```
 
-When no separate versions are needed, a model may put `scad/` directly under
-its model directory.
+Unversioned models use `source/scad/` to keep NopSCADlib's generated lowercase
+`readme.md` separate from the human-written model `README.md` on Windows.
 
 ## Model catalog
 

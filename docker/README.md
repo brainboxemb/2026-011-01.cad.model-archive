@@ -18,7 +18,8 @@ unverified `magick` compatibility wrapper.
 
 ```powershell
 py -m pip install vcs2l
-vcs import ext < dependencies.repos
+New-Item -ItemType Directory -Path ext -Force | Out-Null
+vcs import --input dependencies.repos ext
 docker build -f docker/Dockerfile -t model-archive-nopscadlib:local .
 ```
 

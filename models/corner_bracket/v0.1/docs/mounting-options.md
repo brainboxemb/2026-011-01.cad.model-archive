@@ -6,7 +6,7 @@ A second, optional bracket on the inside could clamp the plywood between
 two parts.
 
 These are **design alternatives**, not all features of the current printable
-model. The [v0.1 OpenSCAD model](scad/corner_bracket.scad) currently implements
+model. The [v0.1 OpenSCAD model](../scad/corner_bracket.scad) currently implements
 an **inside-to-outside bolt** and a **captured nut inside the outer bracket**.
 Do not assume that another arrangement is already printable.
 
@@ -18,7 +18,7 @@ the bracket thicknesses, head geometry and clearances are schematic.
 Blue is the outside bracket, orange is an optional inside counter-bracket,
 beige is plywood and grey is M4 hardware.
 
-![Overall L-joint with two perpendicular bolts and optional inner counter-bracket](figures/mounting-corner-overview.svg)
+![Overall L-joint with two perpendicular bolts and optional inner counter-bracket](../figures/mounting-corner-overview.svg)
 
 The overview is an **unfolded section** of the two perpendicular
 mounting points in the L bracket. Both are shown from outside (top) to
@@ -33,7 +33,7 @@ The same principle applies to the other arm, which is at right angles.
 
 **A — Bolt from inside, captured nut in the outer bracket (current design)**
 
-![A — Bolt from inside, captured nut in the outer bracket (current design)](figures/mounting-a-inside-out.svg)
+![A — Bolt from inside, captured nut in the outer bracket (current design)](../figures/mounting-a-inside-out.svg)
 
 The bolt passes through the plywood from the inside and screws into a nut
 held inside the outer bracket. The nut is inserted through the bracket's
@@ -47,7 +47,7 @@ the nut pocket, access window, bolt hole and plug.
 
 **B — Bolt from outside, loose or locking nut on the inside (alternative)**
 
-![B — Bolt from outside, loose or locking nut on the inside (alternative)](figures/mounting-b-outside-in.svg)
+![B — Bolt from outside, loose or locking nut on the inside (alternative)](../figures/mounting-b-outside-in.svg)
 
 This is the **bolt-from-outside, nut-on-inside** option: the bolt enters
 through a **90° countersink** in the outer bracket (a DIN 7991 socket
@@ -63,7 +63,7 @@ enough printed material around the head.
 
 **E — Bolt from outside into an M4 inslagmoer in the plywood (alternative)**
 
-![Outside-in countersunk M4 bolt with an inslagmoer fitted from the inside of plywood](figures/mounting-e-pronged-t-nut.svg)
+![Outside-in countersunk M4 bolt with an inslagmoer fitted from the inside of plywood](../figures/mounting-e-pronged-t-nut.svg)
 
 A **pronged T-nut** (Dutch: *inslagmoer*) is another way to avoid a loose
 hex or flange nut on the inside. Drill a suitable hole through the plywood
@@ -92,7 +92,7 @@ plywood hole. It does **not** use the existing captive nut pocket.
 
 **C — Two brackets: outside corner bracket plus inside counter-bracket**
 
-![C — Two brackets: outside corner bracket plus inside counter-bracket](figures/mounting-c-counter-outside-in.svg)
+![C — Two brackets: outside corner bracket plus inside counter-bracket](../figures/mounting-c-counter-outside-in.svg)
 
 This option also has the **bolt head outside and nut inside**,
 but now the M4 locking flange nut bears on a **second printed L bracket**
@@ -115,7 +115,7 @@ the outside closed while offering a larger inside bearing surface.
 
 **D — Inside bolt with an inside counter-bracket and outer captive nut**
 
-![Inside head with counter-bracket and hidden captured nut](figures/mounting-d-counter-inside-out.svg)
+![Inside head with counter-bracket and hidden captured nut](../figures/mounting-d-counter-inside-out.svg)
 
 This option retains a closed exterior but requires additional room for
 the inside bracket and a matching bolt hole. It has **not been modeled**.
@@ -146,7 +146,7 @@ and how much threaded height is available.
 | Rotation prevention | Needs correctly oriented hexagonal pocket | Flat faces make a rectangular capture slot straightforward |
 | Main trade-off | More thread engagement height | Lower-profile pocket, **less thread engagement** |
 
-![Regular M4 hex nut compared with thin M4 square nut](figures/m4-nuts-hex-square.svg)
+![Regular M4 hex nut compared with thin M4 square nut](../figures/m4-nuts-hex-square.svg)
 
 The drawing shows the **head-on shape** and typical thickness difference.
 A square nut can sit in a simpler straight-sided slot, but the thinner
@@ -171,7 +171,7 @@ It makes most sense as an **accessible nut on the inside**.
 
 ## Bolt heads: countersunk or projecting?
 
-![Two M4 bolt head styles in cross-section: flush DIN 7991 and projecting socket/button head](figures/m4-bolt-head-types.svg)
+![Two M4 bolt head styles in cross-section: flush DIN 7991 and projecting socket/button head](../figures/m4-bolt-head-types.svg)
 
 **Two different head styles** are relevant, and their seats are not
 interchangeable:

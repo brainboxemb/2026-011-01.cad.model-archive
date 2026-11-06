@@ -1,46 +1,69 @@
 #!/usr/bin/env bash
-# Assemble the public GitHub Pages site using templates in site/.
-# Runs only on pushes to main, after generation and validation succeeded.
+# Publish the generated site either at the site root (main) or under a
+# self-contained PR preview prefix. Runs after successful doc generation.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
 git fetch origin gh-pages
-site="$(mktemp -d)"
+worktree="$(mktemp -d)"
 cleanup() {
-  git worktree remove --force "$site" 2>/dev/null || true
-  rmdir "$site" 2>/dev/null || true
+  git worktree remove --force "$worktree" 2>/dev/null || true
+  rmdir "$worktree" 2>/dev/null || true
 }
 trap cleanup EXIT
-git worktree add --detach "$site" origin/gh-pages
+git worktree add --detach "$worktree" origin/gh-pages
 
-for version in examples/spacer/v0.1 models/corner_bracket/v0.1; do
-  mkdir -p "$site/$version"
-  cat site/model-header.html "$version/readme.html" > "$site/$version/index.html"
-  printf '\n</main></body></html>\n' >> "$site/$version/index.html"
-  cp "$version/readme.md" "$site/$version/readme.md"
-  cp "$version/printme.html" "$site/$version/printme.html"
-  cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$site/$version/"
-done
+# Use only CI-controlled paths; never accept arbitrary destination paths.
+preview="${PAGES_PREVIEW_ROOT:-}"
+if [[ -n "$preview" && ! "$preview" =~ ^previews/pr-[0-9]+$ ]]; then
+  echo "Invalid preview destination: $preview" >&2
+  exit 1
+fi
+target="$worktree"
+if [[ -n "$preview" ]]; then
+  target="$worktree/$preview"
+fi
 
-cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
+# Closing a PR removes only its preview. Do not touch published main pages.
+if [[ "${PAGES_PREVIEW_REMOVE:-0}" == "1" ]]; then
+  [[ -n "$preview" ]] || { echo "Refusing to remove the site root" >&2; exit 1; }
+  rm -rf "$target"
+else
+  mkdir -p "$target"
+  for version in examples/spacer/v0.1 models/corner_bracket/v0.1; do
+    mkdir -p "$target/$version"
+    cat site/model-header.html "$version/readme.html" > "$target/$version/index.html"
+    printf '\n</main></body></html>\n' >> "$target/$version/index.html"
+    cp "$version/readme.md" "$target/$version/readme.md"
+    cp "$version/printme.html" "$target/$version/printme.html"
+    cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$target/$version/"
+  done
 
-# Keep both in-depth guides separate from the main model design manual.
-bracket="models/corner_bracket/v0.1"
-for page in mounting-options hull-guide polygon-guide; do
-  cat site/model-header.html "$bracket/$page.html" > "$site/$bracket/$page.html"
-  printf '\n</main></body></html>\n' >> "$site/$bracket/$page.html"
-  cp "$bracket/$page.md" "$site/$bracket/$page.md"
-done
-cp -a "$bracket/figures" "$site/$bracket/"
-cp site/index.html site/site.css "$site/"
-touch "$site/.nojekyll"
+  bracket="models/corner_bracket/v0.1"
+  cp -a "$bracket/design" "$target/$bracket/"
+  cp -a "$bracket/figures" "$target/$bracket/"
+  for page in mounting-options hull-guide polygon-guide; do
+    cat site/model-header.html "$bracket/$page.html" > "$target/$bracket/$page.html"
+    printf '\n</main></body></html>\n' >> "$target/$bracket/$page.html"
+    cp "$bracket/$page.md" "$target/$bracket/$page.md"
+  done
+  cp site/index.html site/site.css "$target/"
+  touch "$worktree/.nojekyll"
+fi
 
-git -C "$site" config user.name "github-actions[bot]"
-git -C "$site" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git -C "$site" add -A
-if git -C "$site" diff --cached --quiet; then
+git -C "$worktree" config user.name "github-actions[bot]"
+git -C "$worktree" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+git -C "$worktree" add -A
+if git -C "$worktree" diff --cached --quiet; then
   echo "Pages content unchanged"
 else
-  git -C "$site" commit -m "Publish generated model documentation from ${GITHUB_SHA:0:12}"
-  git -C "$site" push origin HEAD:gh-pages
+  message="Publish model documentation"
+  if [[ -n "$preview" ]]; then
+    message="Update $preview documentation preview"
+    if [[ "${PAGES_PREVIEW_REMOVE:-0}" == "1" ]]; then
+      message="Remove closed $preview documentation preview"
+    fi
+  fi
+  git -C "$worktree" commit -m "$message from ${GITHUB_SHA:-manual}"
+  git -C "$worktree" push origin HEAD:gh-pages
 fi

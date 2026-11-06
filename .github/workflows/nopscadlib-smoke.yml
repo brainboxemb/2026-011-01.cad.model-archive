@@ -80,6 +80,12 @@ jobs:
           test -s "$bracket/readme.html"
           test -s "$bracket/printme.html"
           grep -q 'Corner bracket' "$bracket/readme.md"
+          # A design page must explain the implementation, not only show images.
+          for source_module in 'module profile()' 'module side_chamfer_env()' 'module nut_top()' 'module ef_cuts()' 'module plug_local()' 'module plugs_in_place()'; do
+            grep -Fq "$source_module" "$bracket/readme.md"
+            grep -Fq "$source_module" "$bracket/readme.html"
+          done
+          grep -Fq '<pre><code>' "$bracket/readme.html"
           for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
             test -s "$bracket/design/$stage.png"
             grep -q "design/$stage.png" "$bracket/readme.md"
@@ -150,6 +156,10 @@ jobs:
           table{border-collapse:collapse;display:block;overflow-x:auto}
           th,td{border:1px solid #e2e8f0;padding:.3rem .65rem;text-align:left}
           code{font-family:ui-monospace,Consolas,monospace}
+          pre{background:#f1f5f9;border:1px solid #dae3ec;border-radius:8px;
+              padding:1rem;max-width:100%;overflow-x:auto;font-size:.88rem;
+              line-height:1.5;tab-size:4}
+          pre code{white-space:pre;word-break:normal}
           @media(max-width:640px){body{padding:.5rem}main{padding:1rem}}
           CSS
           cat > "$site/index.html" <<'HTML'

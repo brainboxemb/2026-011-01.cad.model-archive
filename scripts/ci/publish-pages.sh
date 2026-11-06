@@ -23,6 +23,12 @@ for version in examples/spacer/v0.1 models/corner_bracket/v0.1; do
 done
 
 cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
+
+# Keep the long fastener comparison separate from the generated design manual.
+bracket="models/corner_bracket/v0.1"
+cat site/model-header.html "$bracket/mounting-options.html" > "$site/$bracket/mounting-options.html"
+printf '\n</main></body></html>\n' >> "$site/$bracket/mounting-options.html"
+cp "$bracket/mounting-options.md" "$site/$bracket/mounting-options.md"
 cp site/index.html site/site.css "$site/"
 touch "$site/.nojekyll"
 

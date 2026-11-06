@@ -25,7 +25,7 @@ through `vcs2l`. It can use `vcs` from an activated environment or invoke it
 through the shared Conda environment. No global `pip install` or manual
 directory creation is necessary; rerunning the script is supported.
 
-The last command opens the example spacer in the **installed OpenSCAD GUI**.
+The last command opens the example spacer in the **installed OpenSCAD GUI**.\nThe launcher prefers OpenSCAD Nightly on Windows.
 It temporarily sets `OPENSCADPATH` for that launch, so
 `include <NopSCADlib/core.scad>;` works without installing a global library.
 
@@ -49,7 +49,7 @@ models/<model>/                  Model description and versions
 models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
-docker/                          CI-only NopSCADlib runtime
+models/corner_bracket/v0.1/scad/  Corner bracket and interactive design walkthrough
 docs/                            Usage and future publication decisions
 ```
 
@@ -58,18 +58,25 @@ Unversioned models use `source/scad/` to keep NopSCADlib's generated lowercase
 
 ## Model catalog
 
-No finished models have been archived yet. Try the
+Current model:
+[**Corner bracket — v0.1**](models/corner_bracket/README.md), a configurable
+plywood outside-corner bracket with captive M4 nuts and two removable plugs.
+Its [design walkthrough](models/corner_bracket/v0.1/scad/design.scad) shows six
+construction stages and is used to generate documentation images in CI.
+
+For a minimal NopSCADlib demonstration, try the
 [example spacer](examples/spacer/v0.1/scad/spacer.scad).
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
-- [CI-only Docker image](docker/README.md)
+- [Shared CAD toolchain](https://github.com/brainboxemb/docker.scad-toolchain) (CI only)
 - [GitHub Pages holding page](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
 - [Generated documentation publication plan](docs/PUBLISHING.md)
 
-Documentation generation is **not required on Windows** at this stage.
-CI currently exercises NopSCADlib's upstream document generator as a
-qualification test, but does not yet publish model documentation. Windows
-OpenSCAD launcher behavior is checked independently in CI without Docker.
+Documentation generation is **not required on Windows**. GitHub Actions
+uses the centrally built `scad-toolchain-drawing` image to generate a spacer
+example plus the corner bracket's STL, BOM, HTML and six design images.
+Generated results are retained as CI artifacts; GitHub Pages publishing is
+a separate step. The local OpenSCAD launcher is tested independently on Windows.
 
 ## Licensing
 

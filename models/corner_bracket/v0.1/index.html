@@ -49,159 +49,21 @@ module profile_extrusion() {
             profile();
 }
 </code></pre>
-<h4>Why not use hull() to round this inside corner?</h4>
-<p><code>hull()</code> can produce rounded corners, but only <strong>when the input shapes
-already have rounded outside edges</strong>. To see the difference, compare
-the circle example with the actual inside corner of the bracket.</p>
-<p><strong>Example A — rounded outside corners using circles</strong></p>
-<p>First place four separate circles at the corners of an imaginary
-rectangle. Each circle has a radius of 5 mm.</p>
-<p><img alt="Four separate circles before hull" src="design/rounding_01_four_circles.png" /></p>
-<pre><code>module four_circles() {
-    for (x = [-22, 22], y = [-13, 13])
-        translate([x, y]) circle(r = 5);
-}
-</code></pre>
-<p>Next apply <code>hull()</code>. Picture a tight rubber band around all four
-circles. It connects the outside of the circles with straight lines,
-but <strong>keeps the curved parts at the corners</strong>. So <code>hull()</code> does not
-calculate a corner radius: <code>circle(r = 5)</code> supplies that radius.</p>
-<p><img alt="Rounded rectangle formed by hull around four circles" src="design/rounding_02_hull_of_circles.png" /></p>
-<pre><code>module hull_of_circles() {
-    hull() four_circles();
-}
-</code></pre>
-<p><strong>Example B — the inside corner of our L bracket</strong></p>
-<p>Now look at the L-shaped profile before rounding. Its inside corner
-is the point <code>(0, 0)</code>. Unlike the rectangle above, this is a
-<strong>concave corner</strong>: material is missing between the two arms.</p>
-<p><img alt="L profile with a sharp inside corner" src="design/rounding_03_sharp_L.png" /></p>
-<pre><code>module sharp_L() {
-    polygon([
-        [0, 0], [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
-    ]);
-}
-</code></pre>
-<p>To round <em>only that corner</em>, we calculate points along a quarter
-of a circle. Start by placing a circle with radius <code>r</code> and its
-centre at <code>(r, -r)</code>. In the <strong>actual bracket</strong> <code>r = r_in = 2</code> mm;
-the teaching illustration uses <code>r = 10</code> mm so the construction
-is easier to see.</p>
-<p><img alt="Construction circle centred next to the inside corner" src="design/rounding_04_circle_guide.png" /></p>
-<p>The full circle is <strong>just a visual guide</strong>. The real model does not
-use <code>circle()</code> here. Instead, for each angle <code>a</code> it calculates
-a point on the circle using sine and cosine:</p>
-<pre><code>x = r + r * cos(a);
-z = -r + r * sin(a);
-</code></pre>
-<p>For example, when <code>r = 2</code> mm:</p>
-<ul>
-<li>at 180 degrees, the point is <code>(0, -2)</code>: the start of the arc;</li>
-<li>at 135 degrees, it is about <code>(0.586, -0.586)</code>;</li>
-<li>at 90 degrees, it is <code>(2, 0)</code>: the end of the arc.</li>
-</ul>
-<p>The <code>for</code> expression repeats the calculation every 5 degrees
-from 180 to 90, producing <strong>19 points</strong>. In this picture, red dots
-mark those points. The yellow region shows the small amount of
-material added inside the previously sharp corner.</p>
-<p><img alt="Sampled quarter-circle points and corner fill" src="design/rounding_05_arc_points.png" /></p>
-<pre><code>corner_arc = (r_in &gt; 0)
-    ? [for (a = [180 : -5 : 90])
-        [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-    : [[0, 0]];
-</code></pre>
-<p><code>polygon()</code> then connects these points with short straight segments.
-The full L outline and the quarter-circle points become <strong>one
-polygon</strong>, rather than two shapes that must be combined later.</p>
-<p><img alt="L profile with a rounded concave inside corner" src="design/rounding_06_rounded_L.png" /></p>
-<p>Finally, why not apply <code>hull()</code> to the whole L? <strong>Because hull
-always makes a convex shape.</strong> It would bridge the space between
-the arms and fill most of the L's open inside corner. The red
-region below is the unwanted extra material.</p>
-<p><img alt="Hull of an L profile fills the open inside corner" src="design/rounding_07_hull_fills_corner.png" /></p>
-<pre><code>// This is deliberately NOT used for the bracket:
-hull() rounded_L();
-</code></pre>
-<p><strong>In short:</strong> <code>hull()</code> is useful for rounded <em>outside</em> corners when
-the inputs are circles, but the bracket's <em>inside</em> corner is rounded
-with points calculated on a circle. This preserves the open L shape.
-You can change the tutorial steps in
-<a href="scad/rounding_explained.scad">rounding_explained.scad</a>.</p>
+<p><strong>Why is there no <code>hull()</code> for the inside corner?</strong> <code>hull()</code> would
+fill the open space between the two arms. Instead, the code calculates
+19 points along a quarter-circle with <code>sin()</code> and <code>cos()</code>, then includes
+those points in the L-shaped <code>polygon()</code>. See the separate
+<a href="hull-guide.html">illustrated guide to hull and rounded corners</a>.</p>
 <h3>2. Outer side-edge chamfers</h3>
-<p><strong>First, a simpler example.</strong> The bracket is L-shaped, which makes the
-chamfer operation harder to see. Let's try the same idea on an ordinary
-rectangular bar. The following pictures are generated from the small,
-editable <a href="scad/hull_explained.scad">hull_explained.scad</a> example.</p>
-<h4>A. Start with a plain bar</h4>
-<p>This rectangular block has straight, sharp edges. It is what we want
-to change. In OpenSCAD, <code>cube()</code> makes a rectangular solid.</p>
-<p><img alt="A plain rectangular bar" src="design/hull_01_original_bar.png" /></p>
-<pre><code>module original_bar() {
-    translate([0, 0, height / 2])
-        cube([length, width, height], center = true);
-}
-</code></pre>
-<h4>B. Make a thin, wide layer at the bottom</h4>
-<p>Imagine taking a very thin horizontal slice through the bottom of the
-bar. It is <strong>as wide and as long as the original bar</strong>, but only 0.5 mm
-thick. This is the first shape that we will give to <code>hull()</code>.</p>
-<p><img alt="The wide bottom layer" src="design/hull_02_wide_layer.png" /></p>
-<pre><code>module wide_layer() {
-    translate([0, 0, slice_thickness / 2])
-        cube([length, width, slice_thickness], center = true);
-}
-</code></pre>
-<h4>C. Put a smaller layer above it</h4>
-<p>Now add a second thin layer at the <strong>top</strong> of the bar (orange). It is
-smaller than the bottom layer (blue): on every side it is 5 mm in from
-the edge. <strong>The two layers do not touch yet.</strong> They are the two inputs
-for the next operation.</p>
-<p><img alt="The wide and narrow layers before hull" src="design/hull_03_two_layers.png" /></p>
-<pre><code>module narrow_layer() {
-    translate([0, 0, height - slice_thickness / 2])
-        cube([length - 2 * chamfer, width - 2 * chamfer,
-              slice_thickness], center = true);
-}
-</code></pre>
-<h4>D. Connect both layers using hull()</h4>
-<p>Now OpenSCAD wraps the two layers in the <strong>smallest solid that encloses
-both of them</strong>. Think of stretching tight plastic film around both.
-This is what <code>hull()</code> does. Since the bottom is wide and the top is
-narrower, the new connecting sides become <strong>sloped</strong>.</p>
-<p><img alt="Hull creates sloping sides between both layers" src="design/hull_04_hull.png" /></p>
-<pre><code>module sloped_hull() {
-    hull() {
-        wide_layer();
-        narrow_layer();
-    }
-}
-</code></pre>
-<h4>E. Compare the before and after</h4>
-<p><strong>Left:</strong> the original bar with sharp edges.
-<strong>Right:</strong> the result after <code>hull()</code>, with sloping edges.
-<code>intersection()</code> can keep only the volume shared by the original bar
-and this new shape. In this simple example the hull is already
-completely inside the bar, so <code>intersection()</code> changes nothing further.</p>
-<p><img alt="Original bar beside bevelled bar" src="design/hull_05_result.png" /></p>
-<pre><code>module clipped_bar() {
-    intersection() {
-        original_bar();
-        sloped_hull();
-    }
-}
-</code></pre>
-<p><strong>Back to the corner bracket.</strong> The real model uses the same principle,
-but the two layers have a different outline: <code>outer_shape()</code> instead
-of rectangles. The code below uses <code>offset(delta = -cs)</code> to make
-one outline smaller, <code>hull()</code> to connect the two sizes, and
-<code>intersection()</code> to trim the actual L-shaped bracket. This avoids
-having to cut every side edge individually. In contrast to the simple
-bar, the bracket's construction keeps the plywood contact faces flat.</p>
-<p><strong>The goal is to remove the sharp edges along the sides of the bracket.</strong> Instead of cutting each edge separately, the model builds a temporary shape that has sloping sides, then uses that shape to trim the bracket.</p>
-<p>Think of two versions of the same outline: one has its <strong>full size in the middle</strong> but does not reach quite as far towards the sides; the other reaches the <strong>full width at the sides</strong>, but its outline is slightly smaller. <code>offset(delta = -cs)</code> makes that smaller outline by moving its edges inwards. Here <code>cs = 2</code> mm.</p>
-<p><strong>What does <code>hull()</code> do?</strong> Imagine wrapping a tight sheet around both shapes. <code>hull()</code> creates the smallest <em>convex</em> solid that contains them both (convex means it has no inward dents). Because the two shapes have different sizes at different widths, the connecting surface becomes sloped. That slope is the chamfer.</p>
-<p>Finally, <code>intersection()</code> keeps only the material that belongs to <strong>both</strong> the original bracket and this temporary sloped shape. The excess is removed, leaving the bevels. The other chamfers, <code>c</code> and <code>ce</code>, were already drawn in step 1.</p>
+<p>The sharp <em>side</em> edges get a bevel. The code first creates two versions
+of the outside outline: one narrower in width and one with a smaller
+perimeter. <code>hull()</code> connects them with sloping surfaces.
+<code>intersection()</code> then trims the original L profile to that shape.
+The two pieces still meet the plywood on flat faces. The parameter
+<code>cs = 2</code> controls this bevel; <code>c</code> and <code>ce</code> belong to the 2D
+polygon from Step 1.</p>
+<p>For an explanation with a <strong>simple bar, the two separate shapes, and
+the result of hull()</strong>, see the <a href="hull-guide.html">separate illustrated hull guide</a>.</p>
 <p><img alt="Outer side-edge chamfers" src="design/02_edge_chamfers.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module outer_shape() {
@@ -277,8 +139,41 @@ difference() {
 }
 </code></pre>
 <h3>4. Elephant-foot relief</h3>
-<p><strong>Why add another tiny bevel?</strong> The first layer of a 3D print can spread out slightly where it touches the print bed. This is called <em>elephant foot</em>. Without compensation, the bracket might not sit flat against the plywood.</p>
-<p>To make room for that extra material, the code cuts away a thin <strong>triangular strip</strong> along the edges that touch the wood. The parameter <code>ef = 0.6</code> mm sets the relief. <code>linear_extrude()</code> stretches the little triangle along straight edges. <code>multmatrix()</code> simply positions and turns a cutting shape; <code>rotate_extrude()</code> carries a similar cut around the rounded inside corner. These cuts are subtracted together in <code>bracket()</code>.</p>
+<p><strong>What is elephant foot?</strong> The very first printed layers sometimes
+spread sideways where they touch the print bed. A nominally square edge
+can become slightly wider at the base. The bracket is printed on one
+of its flat <strong>side faces</strong>, so this bulge can interfere with the surfaces
+where the bracket should fit against the plywood.</p>
+<p>The solution is not to change the entire bracket. We remove a very
+small <strong>45-degree triangle</strong> at the edges near the print bed. The
+parameter <code>ef = 0.6</code> mm sets the nominal size of this relief;
+the illustration deliberately exaggerates it so you can see the cut.</p>
+<p><img alt="First layer bulge versus an intentional triangular relief" src="figures/elephant-foot-section.svg" /></p>
+<p><strong>Where are these triangles removed?</strong> The bracket has three kinds of
+wood-facing edges: a straight edge along the horizontal arm, a straight
+edge along the vertical arm, and the rounded inside corner. Relief is
+applied at <strong>both printed side faces</strong> (<code>Y = +W/2</code> and <code>Y = -W/2</code>).</p>
+<p><img alt="Wood-facing relief edge locations on the bracket" src="figures/elephant-foot-edges.svg" /></p>
+<p>The OpenSCAD code constructs the cutting shapes in stages:</p>
+<ol>
+<li><code>ef_wedge_profile()</code> draws a tiny <strong>triangle in 2D</strong> using
+   <code>polygon()</code>. It is the cross-section of the material to remove.</li>
+<li><code>linear_extrude()</code> stretches that triangle along each <strong>straight</strong>
+   contact edge, like pulling a triangular knife along the bracket.
+   <code>mirror()</code> repeats the operation on the other printed side.</li>
+<li>At the short <strong>diagonal corners</strong>, <code>ef_edge_wedge()</code> uses
+   <code>multmatrix()</code> to position the same triangular cutter at an angle.</li>
+<li>For the <strong>rounded inside corner</strong>, <code>rotate_extrude()</code> sweeps a
+   triangular cutter around a circular path rather than along a line.</li>
+<li>Finally, <code>difference()</code> inside <code>bracket()</code> subtracts all these
+   cutters from the body, along with the nut pockets and bolt holes.</li>
+</ol>
+<p>Setting <code>ef = 0</code> disables the relief. The diagonal cutters depend on
+<code>cs &gt; 0</code>, and the rounded cutter is used when <code>r_in &gt;= 1</code>. This is
+an allowance for printing, <strong>not</strong> a substitute for checking fit on
+an actual print.</p>
+<p>The following render shows the resulting bracket. The complete
+cutter modules used in the source code are listed underneath.</p>
 <p><img alt="Elephant-foot relief" src="design/04_print_relief.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates

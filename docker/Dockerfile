@@ -63,9 +63,11 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
         "colorama==0.4.6" \
         "Markdown==3.9" \
         "codespell==2.4.1" \
+        "vcs2l==1.1.7" \
     && magick -version | grep -q 'ImageMagick 7' \
     && python -c 'import colorama, markdown; assert colorama and markdown' \
     && codespell --version \
+    && vcs --help >/dev/null \
     && command -v openscad \
     && command -v xvfb-run
 

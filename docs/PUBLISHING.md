@@ -49,18 +49,13 @@ gh-pages/
 NopSCADlib `readme.html` is renamed `index.html` for the website. Its
 relative PNG and STL links remain valid.
 
-## Pages deployment limitation
+## Pages deployment
 
-The repository's Pages source has historically been the `gh-pages` branch.
-**GitHub does not trigger a new Pages build for branch commits made using
-the default GitHub Actions `GITHUB_TOKEN`.** The CI push alone therefore
-does not confirm a refreshed public site.
+GitHub Pages is configured to publish the `gh-pages` branch. On
+6 November 2026, the documentation workflow published the generated spacer
+and corner bracket files to this branch and the Pages build/deployment
+completed successfully (GitHub Actions run
+[42212520812](https://github.com/brainboxemb/2026-011-01.cad.model-archive/actions/runs/42212520812)).
 
-For unattended publication, Pages must instead be configured to deploy from
-**GitHub Actions**, using `actions/upload-pages-artifact` and
-`actions/deploy-pages`. Until that migration is completed, an externally
-authenticated update to `gh-pages` can trigger the normal branch-based
-Pages build. We must verify the resulting Pages deployment before claiming
-the public documentation is live.
-
-See [GitHub's Pages publishing configuration](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
+On future updates, verify that the Pages build/deployment workflow completed
+successfully before treating the public site as current.

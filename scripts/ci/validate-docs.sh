@@ -61,6 +61,7 @@ for svg in elephant-foot-section elephant-foot-edges; do
   grep -Fq "figures/$svg.svg" "$bracket/readme.html"
 done
 grep -Fq 'Y = +W/2' "$bracket/readme.md"
+grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \

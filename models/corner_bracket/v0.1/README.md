@@ -15,11 +15,17 @@ From the archive root after `bootstrap.ps1`:
 ```powershell
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/corner_bracket.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/design.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/hull_explained.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential
 stages: base profile, outside chamfers, nut pockets, print relief, plugs and
 fitted plywood preview.
+
+The separate `hull_explained.scad` uses a simple rectangular bar to teach
+how `hull()` connects two differently sized layers. Its five intermediate
+views appear before the real bracket's chamfer code in the generated
+[design documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/).
 
 The [documentation entry point](scad/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design

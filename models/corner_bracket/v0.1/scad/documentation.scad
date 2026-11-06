@@ -458,7 +458,23 @@
 //!
 //! ***
 //!
-//! ## Printing and assembly
+//! ## Alternative mounting arrangements
+//!
+//! The current model uses bolts from the **inside** of the plywood into
+//! **captured nuts** in the outside bracket. There are other possibilities:
+//! reverse the bolts, use accessible locking flange nuts, replace hex nuts
+//! with thin square nuts, or add a second **inside counter-bracket**.
+//!
+//! The options, simple bolt-path diagrams, differences between nut types,
+//! the supplied stainless-steel product references, and the bolt-length
+//! constraints are compared in the separate
+//! **[Mounting options and fastener comparison](mounting-options.html)**.
+//!
+//! These are design alternatives. In v0.1, the **bolt-from-inside,
+//! captive-nut** configuration is the only implemented bolt direction;
+//! the other arrangements require new CAD and physical testing.
+//!
+////! ## Printing and assembly
 //!
 //! 1. Print one bracket and one pair of access plugs, with each part on
 //!    its flat side as arranged by the original designer.

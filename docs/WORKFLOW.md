@@ -34,7 +34,9 @@ Run:
 ```
 
 The example spacer at `examples/spacer/v0.1/scad/spacer.scad` opens in the
-**installed Windows GUI**. To open a specific archive model:
+**installed Windows GUI**. By default the launcher prefers
+`C:\Program Files\OpenSCAD (Nightly)\openscad.exe`, with the regular
+OpenSCAD installation as fallback. To open a specific archive model:
 
 ```powershell
 .\scripts\open-model.ps1 -Model "models/<name>/v0.1/scad/main.scad"

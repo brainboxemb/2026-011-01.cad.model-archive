@@ -85,7 +85,7 @@ module corner_bracket_stl()
 
 module access_plugs_stl()
     stl("access_plugs")
-        plug_print();
+        plugs_print_pair();
 
 //! Printed bracket and the pair of access-window plugs displayed side by
 //! side. See the final design step above for their actual installed position.

@@ -38,6 +38,15 @@ The [documentation entry point](scad/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design
 images are rendered from `design.scad` by the CI documentation workflow.
 
+## Mounting alternatives
+
+The [mounting options](mounting-options.md) compare inside-to-outside
+and outside-to-inside M4 bolts, hex versus thin square nuts, accessible
+locking flange nuts, and a possible second **inside counter-bracket**.
+The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/mounting-options.html)
+includes the supplied hardware references and explains which options
+would need CAD changes.
+
 ## Checks before printing or assembly
 
 - Confirm the actual plywood thickness and round its inside corner to match

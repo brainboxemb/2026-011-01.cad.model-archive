@@ -31,12 +31,18 @@ and files, and the bill of materials. The corner bracket also generates:
   quarter-circle** used to round the bracket's concave inside corner.
 
 The main design manual keeps only the **six actual bracket stages**.
-The extended bar and circle examples are published as `hull-guide.html`;
+The extended bar and circle examples are published as `docs/hull-guide.html`;
 the nine-stage **2D versus 3D inside-corner construction** is published as
-`polygon-guide.html`, with images generated from
-`scad/inside_corner_methods.scad`. The `mounting-options.html` comparison contains
+`docs/polygon-guide.html`, with images generated from
+`design/inside_corner_methods.scad`. The `docs/mounting-options.html` comparison contains
 editable SVG cross-section diagrams for the alternative fixing arrangements.
 The main manual also has SVG illustrations explaining the elephant-foot cuts.
+
+The source tree keeps just `scad/corner_bracket.scad` and
+`scad/inspection.scad` under `scad/`. Tutorials and generated PNGs are
+under `design/`, and Markdown/SCAD documentation inputs under `docs/`.
+At build time CI temporarily copies `docs/documentation.scad` to `scad/`
+for NopSCADlib discovery, then removes that copy before publishing.
 
 OpenSCAD source remains on `main`; generated outputs go to `gh-pages`.
 Documentation generation on Windows/workstations is **not supported**.

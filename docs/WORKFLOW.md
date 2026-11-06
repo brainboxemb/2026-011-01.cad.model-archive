@@ -102,10 +102,9 @@ we do **not** require assembly documentation for every small part.
 NopSCADlib `make_all.py` build. That is a CI check, **not** the normal
 Windows modeling workflow.
 
-The repository has a separate **`gh-pages`** branch containing a
-holding page. GitHub Pages deployment succeeded automatically after the
-branch was created. Actual model documentation is not published or automated
-yet. See [Publishing plan](PUBLISHING.md).
+The separate **`gh-pages`** branch receives NopSCADlib-generated example
+documentation from CI when changes are merged to `main`. Pages publication
+is a separate deployment concern; see [Publishing plan](PUBLISHING.md).
 
 ## Licensing
 

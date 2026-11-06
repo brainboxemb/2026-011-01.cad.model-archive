@@ -61,9 +61,16 @@ if ($OpenSCADExe) {
 
 # Windows OpenSCAD uses ; between library paths. A child process started
 # from here inherits this value. No system-wide library installation is needed.
-$env:OPENSCADPATH = $extPath + $(if ($env:OPENSCADPATH) { ";$env:OPENSCADPATH" } else { "" })
-
-Write-Host "OpenSCAD: $exe"
-Write-Host "Model: $modelPath"
-Write-Host "Library path: $env:OPENSCADPATH"
-Start-Process -FilePath $exe -ArgumentList ('"' + $modelPath + '"') -WorkingDirectory (Split-Path $modelPath -Parent)
+# Keep the library path local to the launched GUI; do not change the
+# caller's PowerShell session or globally installed libraries.
+$previousOpenSCADPath = [Environment]::GetEnvironmentVariable("OPENSCADPATH", "Process")
+try {
+    $env:OPENSCADPATH = $extPath + $(if ($previousOpenSCADPath) { ";$previousOpenSCADPath" } else { "" })
+    Write-Host "OpenSCAD: $exe"
+    Write-Host "Model: $modelPath"
+    Write-Host "Library path: $env:OPENSCADPATH"
+    Start-Process -FilePath $exe -ArgumentList ('"' + $modelPath + '"') -WorkingDirectory (Split-Path $modelPath -Parent)
+}
+finally {
+    [Environment]::SetEnvironmentVariable("OPENSCADPATH", $previousOpenSCADPath, "Process")
+}

@@ -120,7 +120,16 @@ jobs:
 
           for version in examples/spacer/v0.1 models/corner_bracket/v0.1; do
             mkdir -p "$site/$version"
-            cp "$version/readme.html" "$site/$version/index.html"
+            cat > "$site/$version/index.html" <<'HEADER'
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>OpenSCAD Model Archive — Generated documentation</title>
+          <link rel="stylesheet" href="../../../site.css">
+          </head><body><header><a href="../../../">← Model archive</a></header><main>
+          HEADER
+            cat "$version/readme.html" >> "$site/$version/index.html"
+            echo '</main></body></html>' >> "$site/$version/index.html"
             cp "$version/readme.md" "$site/$version/readme.md"
             cp "$version/printme.html" "$site/$version/printme.html"
             cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$site/$version/"
@@ -128,18 +137,30 @@ jobs:
           cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
 
           touch "$site/.nojekyll"
+          cat > "$site/site.css" <<'CSS'
+          *{box-sizing:border-box}
+          body{font:1rem/1.65 system-ui,-apple-system,sans-serif;color:#1f2937;
+               background:#f8fafc;max-width:1000px;margin:auto;padding:1.5rem}
+          main{background:white;border:1px solid #e1e7ef;border-radius:12px;
+               padding:1.3rem 2rem}
+          header{margin-bottom:1rem}
+          h1,h2,h3{line-height:1.3;scroll-margin-top:1rem}
+          h2{margin-top:2.2rem;border-bottom:1px solid #e2e8f0;padding-bottom:.25rem}
+          a{color:#155b9c}img{max-width:100%;height:auto}
+          table{border-collapse:collapse;display:block;overflow-x:auto}
+          th,td{border:1px solid #e2e8f0;padding:.3rem .65rem;text-align:left}
+          code{font-family:ui-monospace,Consolas,monospace}
+          @media(max-width:640px){body{padding:.5rem}main{padding:1rem}}
+          CSS
           cat > "$site/index.html" <<'HTML'
           <!doctype html>
           <html lang="en"><head><meta charset="utf-8">
           <meta name="viewport" content="width=device-width,initial-scale=1">
           <title>OpenSCAD Model Archive — BrainboxEmb</title>
-          <style>
-            body{font:1rem/1.65 system-ui,sans-serif;max-width:880px;margin:auto;padding:2rem;
-                 color:#1f2937;background:#fafbfc}
-            h1{font-size:2rem}a{color:#155b9c}article{background:white;border:1px solid #d9e0e7;
-                 padding:1.2rem 1.6rem;border-radius:12px;margin:1.3rem 0}
-            small{color:#64748b}
-          </style></head><body>
+          <link rel="stylesheet" href="site.css">
+          <style>article{background:white;border:1px solid #d9e0e7;padding:1rem;
+                  border-radius:12px;margin:1.2rem 0}small{color:#64748b}</style>
+          </head><body>
           <h1>OpenSCAD Model Archive</h1>
           <p>Versioned parametric models with generated STL, BOM and build documentation.</p>
           <h2>Models</h2>

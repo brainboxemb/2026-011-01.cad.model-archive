@@ -22,7 +22,7 @@ test -s "$bracket/printme.html"
 grep -q 'Corner bracket' "$bracket/readme.md"
 
 # The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide; do
+for page in mounting-options hull-guide polygon-guide; do
   test -s "$bracket/$page.md"
   test -s "$bracket/$page.html"
   grep -Fq "$page.html" "$bracket/readme.md"

@@ -8,7 +8,7 @@ design_step = "01_profile"; // [01_profile, 02_edge_chamfers, 03_nut_pockets, 04
 // Step 1: Extrude the rounded two-dimensional L profile to the bracket width.
 if (design_step == "01_profile")
     color("SteelBlue")
-        rotate([90, 0, 0]) linear_extrude(height = 20, center = true) profile();
+        profile_extrusion();
 
 // Step 2: Intersect the extrusion with the side-chamfer envelope.
 else if (design_step == "02_edge_chamfers")
@@ -28,7 +28,7 @@ else if (design_step == "04_print_relief")
 
 // Step 5: Show the two removable access plugs in printing orientation.
 else if (design_step == "05_access_plugs")
-    color("Orange") plug_print();
+    color("Orange") plugs_print_pair();
 
 // Step 6: Show the assembled joint with translucent plywood and installed plugs.
 else if (design_step == "06_installed") {

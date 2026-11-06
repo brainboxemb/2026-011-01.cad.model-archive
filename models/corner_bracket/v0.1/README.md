@@ -4,6 +4,31 @@ This is the **unmodified geometric construction** from the uploaded model,
 with English comments/Customizer labels and a local section-inspection helper.
 The bracket is a prototype and its dimensions have not been physically verified.
 
+## Source layout
+
+```text
+scad/
+  corner_bracket.scad       Printable parametric model
+  inspection.scad           Optional cutaway/section helper
+design/
+  design.scad               Six-step model walkthrough
+  hull_explained.scad       3D hull tutorial
+  rounding_explained.scad   Circle and hull examples
+  inside_corner_methods.scad  2D/3D inside-corner alternatives
+  *.png                     CI-generated tutorial images (not committed)
+docs/
+  documentation.scad        NopSCADlib documentation build source
+  hull-guide.md             Hull article
+  polygon-guide.md          2D vs 3D rounding article
+  mounting-options.md       Illustrated fastener alternatives
+figures/                    Editable vector diagrams
+```
+
+Only the **two files in `scad/`** belong to the actual bracket design;
+the other OpenSCAD files are educational illustrations or documentation.
+The build temporarily places the documentation driver in `scad/` because
+NopSCADlib expects to discover it there; it is not a third model file.
+
 The model has a 20 mm bracket width, 10 mm nominal wall, 40 mm arms, a
 2 mm inside-corner radius and two M4 bolt/nut positions by default.
 The `plug` part selector lays out the two separate access plugs on their sides.
@@ -48,7 +73,7 @@ not change the printable v0.1 bracket geometry.
 
 The [documentation entry point](docs/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design
-images are rendered from `design.scad` by the CI documentation workflow.
+images are rendered from `design/design.scad` by the CI documentation workflow.
 
 ## Mounting alternatives
 

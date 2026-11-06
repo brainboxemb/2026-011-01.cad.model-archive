@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OpenSCAD Model Archive — Generated documentation</title>
-<link rel="stylesheet" href="../../../site.css">
-</head><body><header><a href="../../../">← Model archive</a></header><main>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Generated documentation</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header><a href="../../../">← Model archive</a></header>
+  <main>
 <p><a name="TOP"></a></p>
 <h1>V0.1</h1>
 <h1>Corner bracket — v0.1</h1>
@@ -44,6 +49,85 @@ module profile_extrusion() {
             profile();
 }
 </code></pre>
+<h4>Why not use hull() to round this inside corner?</h4>
+<p><code>hull()</code> can produce rounded corners, but only <strong>when the input shapes
+already have rounded outside edges</strong>. To see the difference, compare
+the circle example with the actual inside corner of the bracket.</p>
+<p><strong>Example A — rounded outside corners using circles</strong></p>
+<p>First place four separate circles at the corners of an imaginary
+rectangle. Each circle has a radius of 5 mm.</p>
+<p><img alt="Four separate circles before hull" src="design/rounding_01_four_circles.png" /></p>
+<pre><code>module four_circles() {
+    for (x = [-22, 22], y = [-13, 13])
+        translate([x, y]) circle(r = 5);
+}
+</code></pre>
+<p>Next apply <code>hull()</code>. Picture a tight rubber band around all four
+circles. It connects the outside of the circles with straight lines,
+but <strong>keeps the curved parts at the corners</strong>. So <code>hull()</code> does not
+calculate a corner radius: <code>circle(r = 5)</code> supplies that radius.</p>
+<p><img alt="Rounded rectangle formed by hull around four circles" src="design/rounding_02_hull_of_circles.png" /></p>
+<pre><code>module hull_of_circles() {
+    hull() four_circles();
+}
+</code></pre>
+<p><strong>Example B — the inside corner of our L bracket</strong></p>
+<p>Now look at the L-shaped profile before rounding. Its inside corner
+is the point <code>(0, 0)</code>. Unlike the rectangle above, this is a
+<strong>concave corner</strong>: material is missing between the two arms.</p>
+<p><img alt="L profile with a sharp inside corner" src="design/rounding_03_sharp_L.png" /></p>
+<pre><code>module sharp_L() {
+    polygon([
+        [0, 0], [armH, 0], [armH, wall],
+        [-wall, wall], [-wall, -armV], [0, -armV]
+    ]);
+}
+</code></pre>
+<p>To round <em>only that corner</em>, we calculate points along a quarter
+of a circle. Start by placing a circle with radius <code>r</code> and its
+centre at <code>(r, -r)</code>. In the <strong>actual bracket</strong> <code>r = r_in = 2</code> mm;
+the teaching illustration uses <code>r = 10</code> mm so the construction
+is easier to see.</p>
+<p><img alt="Construction circle centred next to the inside corner" src="design/rounding_04_circle_guide.png" /></p>
+<p>The full circle is <strong>just a visual guide</strong>. The real model does not
+use <code>circle()</code> here. Instead, for each angle <code>a</code> it calculates
+a point on the circle using sine and cosine:</p>
+<pre><code>x = r + r * cos(a);
+z = -r + r * sin(a);
+</code></pre>
+<p>For example, when <code>r = 2</code> mm:</p>
+<ul>
+<li>at 180 degrees, the point is <code>(0, -2)</code>: the start of the arc;</li>
+<li>at 135 degrees, it is about <code>(0.586, -0.586)</code>;</li>
+<li>at 90 degrees, it is <code>(2, 0)</code>: the end of the arc.</li>
+</ul>
+<p>The <code>for</code> expression repeats the calculation every 5 degrees
+from 180 to 90, producing <strong>19 points</strong>. In this picture, red dots
+mark those points. The yellow region shows the small amount of
+material added inside the previously sharp corner.</p>
+<p><img alt="Sampled quarter-circle points and corner fill" src="design/rounding_05_arc_points.png" /></p>
+<pre><code>corner_arc = (r_in &gt; 0)
+    ? [for (a = [180 : -5 : 90])
+        [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
+    : [[0, 0]];
+</code></pre>
+<p><code>polygon()</code> then connects these points with short straight segments.
+The full L outline and the quarter-circle points become <strong>one
+polygon</strong>, rather than two shapes that must be combined later.</p>
+<p><img alt="L profile with a rounded concave inside corner" src="design/rounding_06_rounded_L.png" /></p>
+<p>Finally, why not apply <code>hull()</code> to the whole L? <strong>Because hull
+always makes a convex shape.</strong> It would bridge the space between
+the arms and fill most of the L's open inside corner. The red
+region below is the unwanted extra material.</p>
+<p><img alt="Hull of an L profile fills the open inside corner" src="design/rounding_07_hull_fills_corner.png" /></p>
+<pre><code>// This is deliberately NOT used for the bracket:
+hull() rounded_L();
+</code></pre>
+<p><strong>In short:</strong> <code>hull()</code> is useful for rounded <em>outside</em> corners when
+the inputs are circles, but the bracket's <em>inside</em> corner is rounded
+with points calculated on a circle. This preserves the open L shape.
+You can change the tutorial steps in
+<a href="scad/rounding_explained.scad">rounding_explained.scad</a>.</p>
 <h3>2. Outer side-edge chamfers</h3>
 <p><strong>First, a simpler example.</strong> The bracket is L-shaped, which makes the
 chamfer operation harder to see. Let's try the same idea on an ordinary
@@ -317,7 +401,18 @@ else if (design_step == "06_installed") {
 <li><a href="#Parts_list">Parts list</a></li>
 <li><a href="#main_assembly">Main Assembly</a></li>
 </ol>
-<h2>Printing and assembly</h2>
+<h2>Alternative mounting arrangements</h2>
+<p>The current model uses bolts from the <strong>inside</strong> of the plywood into
+<strong>captured nuts</strong> in the outside bracket. There are other possibilities:
+reverse the bolts, use accessible locking flange nuts, replace hex nuts
+with thin square nuts, or add a second <strong>inside counter-bracket</strong>.</p>
+<p>The options, simple bolt-path diagrams, differences between nut types,
+the supplied stainless-steel product references, and the bolt-length
+constraints are compared in the separate
+<strong><a href="mounting-options.html">Mounting options and fastener comparison</a></strong>.</p>
+<p>These are design alternatives. In v0.1, the <strong>bolt-from-inside,
+captive-nut</strong> configuration is the only implemented bolt direction;
+the other arrangements require new CAD and physical testing.</p>
 <ol>
 <li>Print one bracket and one pair of access plugs, with each part on
    its flat side as arranged by the original designer.</li>
@@ -393,4 +488,5 @@ two-plug set</strong>. Plywood, bolts and nuts are not modeled BOM items.</p>
 side. See the final design step above for their actual installed position.</p>
 <p><img alt="main_assembled" src="assemblies/main_assembled_tn.png" /></p>
 <p><span></span>
-<a href="#TOP">Top</a></p></main></body></html>
+<a href="#TOP">Top</a></p>
+</main></body></html>

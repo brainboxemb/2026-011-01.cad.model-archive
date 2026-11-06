@@ -46,6 +46,105 @@
 //!                 profile();
 //!     }
 //!
+//! #### Why not use hull() to round this inside corner?
+//!
+//! `hull()` can produce rounded corners, but only **when the input shapes
+//! already have rounded outside edges**. To see the difference, compare
+//! the circle example with the actual inside corner of the bracket.
+//!
+//! **Example A — rounded outside corners using circles**
+//!
+//! First place four separate circles at the corners of an imaginary
+//! rectangle. Each circle has a radius of 5 mm.
+//!
+//! ![Four separate circles before hull](design/rounding_01_four_circles.png)
+//!
+//!     module four_circles() {
+//!         for (x = [-22, 22], y = [-13, 13])
+//!             translate([x, y]) circle(r = 5);
+//!     }
+//!
+//! Next apply `hull()`. Picture a tight rubber band around all four
+//! circles. It connects the outside of the circles with straight lines,
+//! but **keeps the curved parts at the corners**. So `hull()` does not
+//! calculate a corner radius: `circle(r = 5)` supplies that radius.
+//!
+//! ![Rounded rectangle formed by hull around four circles](design/rounding_02_hull_of_circles.png)
+//!
+//!     module hull_of_circles() {
+//!         hull() four_circles();
+//!     }
+//!
+//! **Example B — the inside corner of our L bracket**
+//!
+//! Now look at the L-shaped profile before rounding. Its inside corner
+//! is the point `(0, 0)`. Unlike the rectangle above, this is a
+//! **concave corner**: material is missing between the two arms.
+//!
+//! ![L profile with a sharp inside corner](design/rounding_03_sharp_L.png)
+//!
+//!     module sharp_L() {
+//!         polygon([
+//!             [0, 0], [armH, 0], [armH, wall],
+//!             [-wall, wall], [-wall, -armV], [0, -armV]
+//!         ]);
+//!     }
+//!
+//! To round *only that corner*, we calculate points along a quarter
+//! of a circle. Start by placing a circle with radius `r` and its
+//! centre at `(r, -r)`. In the **actual bracket** `r = r_in = 2` mm;
+//! the teaching illustration uses `r = 10` mm so the construction
+//! is easier to see.
+//!
+//! ![Construction circle centred next to the inside corner](design/rounding_04_circle_guide.png)
+//!
+//! The full circle is **just a visual guide**. The real model does not
+//! use `circle()` here. Instead, for each angle `a` it calculates
+//! a point on the circle using sine and cosine:
+//!
+//!     x = r + r * cos(a);
+//!     z = -r + r * sin(a);
+//!
+//! For example, when `r = 2` mm:
+//!
+//! - at 180 degrees, the point is `(0, -2)`: the start of the arc;
+//! - at 135 degrees, it is about `(0.586, -0.586)`;
+//! - at 90 degrees, it is `(2, 0)`: the end of the arc.
+//!
+//! The `for` expression repeats the calculation every 5 degrees
+//! from 180 to 90, producing **19 points**. In this picture, red dots
+//! mark those points. The yellow region shows the small amount of
+//! material added inside the previously sharp corner.
+//!
+//! ![Sampled quarter-circle points and corner fill](design/rounding_05_arc_points.png)
+//!
+//!     corner_arc = (r_in > 0)
+//!         ? [for (a = [180 : -5 : 90])
+//!             [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
+//!         : [[0, 0]];
+//!
+//! `polygon()` then connects these points with short straight segments.
+//! The full L outline and the quarter-circle points become **one
+//! polygon**, rather than two shapes that must be combined later.
+//!
+//! ![L profile with a rounded concave inside corner](design/rounding_06_rounded_L.png)
+//!
+//! Finally, why not apply `hull()` to the whole L? **Because hull
+//! always makes a convex shape.** It would bridge the space between
+//! the arms and fill most of the L's open inside corner. The red
+//! region below is the unwanted extra material.
+//!
+//! ![Hull of an L profile fills the open inside corner](design/rounding_07_hull_fills_corner.png)
+//!
+//!     // This is deliberately NOT used for the bracket:
+//!     hull() rounded_L();
+//!
+//! **In short:** `hull()` is useful for rounded *outside* corners when
+//! the inputs are circles, but the bracket's *inside* corner is rounded
+//! with points calculated on a circle. This preserves the open L shape.
+//! You can change the tutorial steps in
+//! [rounding_explained.scad](scad/rounding_explained.scad).
+//!
 //! ### 2. Outer side-edge chamfers
 //!
 //! **First, a simpler example.** The bracket is L-shaped, which makes the
@@ -359,7 +458,23 @@
 //!
 //! ***
 //!
-//! ## Printing and assembly
+//! ## Alternative mounting arrangements
+//!
+//! The current model uses bolts from the **inside** of the plywood into
+//! **captured nuts** in the outside bracket. There are other possibilities:
+//! reverse the bolts, use accessible locking flange nuts, replace hex nuts
+//! with thin square nuts, or add a second **inside counter-bracket**.
+//!
+//! The options, simple bolt-path diagrams, differences between nut types,
+//! the supplied stainless-steel product references, and the bolt-length
+//! constraints are compared in the separate
+//! **[Mounting options and fastener comparison](mounting-options.html)**.
+//!
+//! These are design alternatives. In v0.1, the **bolt-from-inside,
+//! captive-nut** configuration is the only implemented bolt direction;
+//! the other arrangements require new CAD and physical testing.
+//!
+////! ## Printing and assembly
 //!
 //! 1. Print one bracket and one pair of access plugs, with each part on
 //!    its flat side as arranged by the original designer.

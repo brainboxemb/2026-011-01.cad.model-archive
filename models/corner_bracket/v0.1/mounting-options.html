@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Generated documentation</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header><a href="../../../">← Model archive</a></header>
+  <main>
+<h1>Corner bracket — mounting options</h1>
+<p>The bracket joins two <strong>10 mm plywood panels</strong> from the outside. The main
+choice is <strong>which side the M4 bolt enters from</strong> and <strong>where the nut sits</strong>.
+A second, optional bracket on the inside could clamp the plywood between
+two parts.</p>
+<p>These are <strong>design alternatives</strong>, not all features of the current printable
+model. The <a href="scad/corner_bracket.scad">v0.1 OpenSCAD model</a> currently implements
+an <strong>inside-to-outside bolt</strong> and a <strong>captured nut inside the outer bracket</strong>.
+Do not assume that another arrangement is already printable.</p>
+<h2>Which side receives the bolt?</h2>
+<p>The diagrams below show the stack through <strong>one arm</strong> of the L bracket.
+The same principle applies to the other arm, which is at right angles.</p>
+<p><strong>A — Bolt from inside, captured nut in the outer bracket (current design)</strong></p>
+<p><code>text
+INSIDE                                    OUTSIDE
+bolt head  →  plywood 10 mm  →  outer L bracket
+                                      [captured M4 nut]</code></p>
+<p>The bolt passes through the plywood from the inside and screws into a nut
+held inside the outer bracket. The nut is inserted through the bracket's
+wood-facing access window; a separate printed plug covers the window.
+Because the nut cannot rotate, installation only requires access to the
+<strong>bolt head on the inside</strong>.</p>
+<p>This is convenient when the outside should have <strong>no visible screw head</strong>.
+It is also the least disruptive option because the v0.1 CAD already includes
+the nut pocket, access window, bolt hole and plug.</p>
+<p><strong>B — Bolt from outside, loose or locking nut on the inside (alternative)</strong></p>
+<p><code>text
+OUTSIDE                                    INSIDE
+bolt head  →  outer L bracket  →  plywood  →  M4 nut</code></p>
+<p>The bolt head would be visible on the outer bracket, or sit flush in a
+<strong>90° countersink</strong>. A nut on the inside can be held with a wrench while the
+bolt is tightened. An optional <strong>flanged locking nut</strong> spreads contact over
+more area than an ordinary hex nut and helps resist loosening.</p>
+<p>This needs a <strong>new CAD variant</strong>: the current outer bracket has a closed
+outside skin and a blind bolt-tip hole, not a clearance hole and countersink
+for a bolt entering from the outside. Also verify that a countersink leaves
+enough printed material around the head.</p>
+<p><strong>C — Two brackets: outside corner bracket plus inside counter-bracket</strong></p>
+<p><code>text
+OUTSIDE                                                  INSIDE
+bolt head  →  outer L bracket  →  plywood  →  inner L bracket
+                                                   [nut / captive nut]</code></p>
+<p>A second L bracket on the <strong>inside</strong> can spread the clamping force over a
+larger section of plywood and help locate both panels during assembly.
+It could use either loose hex/flange nuts or captured hex/square nuts. The
+two bracket parts and their bolt holes must line up.</p>
+<p>The inner bracket adds <strong>print time, space and an extra part</strong>. It is not
+automatically stronger: the load also depends on plywood strength, bracket
+geometry, screw positioning, print orientation and tightening force.
+In particular, a printed counter-bracket needs enough clearance at the
+inside plywood corner. This is a <strong>future CAD design</strong>, not part of v0.1.</p>
+<p>The direction can also be reversed, with bolt heads bearing on the inner
+counter-bracket and captured nuts in the outer bracket. That would keep
+the outside closed while offering a larger inside bearing surface.</p>
+<h2>Comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Arrangement</th>
+<th>Where is the nut?</th>
+<th>What is visible outside?</th>
+<th>CAD status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inside → outside</td>
+<td>Captured <strong>hex nut</strong> in outer bracket</td>
+<td>Smooth bracket</td>
+<td><strong>Implemented</strong> (v0.1 default)</td>
+</tr>
+<tr>
+<td>Inside → outside</td>
+<td>Captured <strong>square nut</strong> in outer bracket</td>
+<td>Smooth bracket</td>
+<td><strong>Selector present</strong>, test fit required</td>
+</tr>
+<tr>
+<td>Outside → inside</td>
+<td>Loose hex nut or <strong>locking flange nut</strong> inside</td>
+<td>Screw head, possibly countersunk</td>
+<td><strong>New geometry required</strong></td>
+</tr>
+<tr>
+<td>Outside → inside, two brackets</td>
+<td>Nut in / behind inner counter-bracket</td>
+<td>Screw head, possibly countersunk</td>
+<td><strong>New inner + outer designs required</strong></td>
+</tr>
+<tr>
+<td>Inside → outside, two brackets</td>
+<td>Captured nut in outer bracket</td>
+<td>Smooth bracket</td>
+<td><strong>New inner counter-bracket required</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Hexagonal or square M4 nuts?</h2>
+<p>Both shapes can stop the nut rotating when enclosed in a matching printed
+pocket. What differs is how the nut is held, how much space it occupies,
+and how much threaded height is available.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Regular M4 hex nut</th>
+<th>Thin M4 square nut (DIN 562)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shape</td>
+<td>Six sides</td>
+<td>Four sides</td>
+</tr>
+<tr>
+<td>Nominal width across flats/sides</td>
+<td>About <strong>7 mm</strong></td>
+<td><strong>7 mm</strong></td>
+</tr>
+<tr>
+<td>Typical nominal thickness</td>
+<td>About <strong>3.2 mm</strong></td>
+<td><strong>2.2 mm</strong></td>
+</tr>
+<tr>
+<td>Pocket shape</td>
+<td>Hexagonal</td>
+<td>Square</td>
+</tr>
+<tr>
+<td>Rotation prevention</td>
+<td>Needs correctly oriented hexagonal pocket</td>
+<td>Flat faces make a rectangular capture slot straightforward</td>
+</tr>
+<tr>
+<td>Main trade-off</td>
+<td>More thread engagement height</td>
+<td>Lower-profile pocket, <strong>less thread engagement</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The thin square-nut dimensions are from the DIN 562 reference below; actual
+products must be measured. A square nut is not necessarily interchangeable
+with a normal-height hex nut merely because both are M4.</p>
+<p>The current model already has <code>nut_type = "hex"</code> or <code>"square"</code> in its
+Customizer. However <code>nut_h = 3.2</code> is <strong>not changed automatically</strong> when
+switching types. A DIN 562 M4 square nut is typically <strong>2.2 mm</strong> thick, so
+review <code>nut_h</code>, <code>nut_flats</code>, <code>nut_clr</code>, window clearance and plug fit before
+printing. The current slot geometry has <strong>not been validated</strong> with the
+linked PRORAJE nuts.</p>
+<p><strong>A flanged locking nut is a separate option.</strong> Its flange and locking
+feature need more space than a normal captive M4 hex nut. Do not put it
+into the existing captive pocket without redesigning and measuring it.
+It makes most sense as an <strong>accessible nut on the inside</strong>.</p>
+<h2>Bolt heads: countersunk or projecting?</h2>
+<p>A <strong>countersunk socket-head bolt</strong> (DIN 7991, related to ISO 10642) is useful
+when a flush surface matters. It requires a matching <strong>90° countersink</strong>.
+For an M4 DIN 7991 head, a useful nominal reference is <strong>8 mm head diameter</strong>
+and <strong>2.3 mm head height</strong>, with a <strong>2.5 mm Allen key</strong>; check the exact
+purchased fastener.</p>
+<p>A projecting socket or button head avoids machining a deep countersink,
+but remains visible. Against plywood, consider a suitable washer or
+spreading plate and avoid crushing the wood.</p>
+<h3>Watch the bolt length — M4×10 is not a universal choice</h3>
+<p><code>M4×10</code> means a nominal <strong>10 mm bolt length</strong>, including the head for
+countersunk screws. The existing joint uses <strong>10 mm plywood alone</strong>,
+before the threads even reach a nut in the outer bracket.</p>
+<p>For the <strong>current inside-to-outside captive-nut design</strong>, approximate
+distance from the inside face to the far side of the nut is:</p>
+<p>```text
+plywood                 10.0 mm
+bracket retaining wall   3.0 mm
+nominal hex nut          3.2 mm</p>
+<hr />
+<p>total                   16.2 mm
+```</p>
+<p>That makes <strong>M4×10 too short</strong> for this assembly and <strong>M4×16 borderline</strong>
+before considering tolerances, full-thread engagement, the countersink and
+the available blind hole. A longer bolt cannot simply be assumed to fit:
+the outer surface is deliberately closed.</p>
+<p>For an outside-in arrangement, the bolt might have to span the <strong>outer
+bracket, 10 mm plywood and nut</strong>. A two-bracket sandwich adds the inner
+bracket as well. These alternatives need a <strong>fresh bolt-length calculation</strong>
+from the final CAD cross-section and a physical fit test; do not reuse the
+10 mm bolt just because it is the convenient catalogue example.</p>
+<h2>Product references</h2>
+<p>The following links are <strong>candidate components</strong>, not a validated bill of
+materials. Material and size are taken from their listing titles or the
+standards linked below. Check pack size, stock, dimensions and tolerances
+at ordering time.</p>
+<ul>
+<li><strong>Square nuts:</strong> <a href="https://www.amazon.nl/dp/B0F412QQ32">PRORAJE square stainless nuts, Amazon NL (ASIN
+  B0F412QQ32)</a>. The listing could
+  not be read automatically, so its exact dimensions and available size
+  selection still need checking. A third-party project references this
+  ASIN for <strong>M4 A2/304, approximately 7 × 7 × 2.2 mm</strong>; that does not
+  substitute for measuring the purchased nuts.</li>
+<li><strong>Preferred countersunk bolt material:</strong> <a href="https://www.hornbach.nl/p/dresselhaus-metaalschroef-verzonken-kop-binnenzeskant-4x10-mm-din-7991-rvs-a2-100-stuks/6834946/">Dresselhaus M4×10 DIN 7991,
+  stainless steel A2, Hornbach</a>.
+  <strong>Length is a component example only</strong>; it is too short for the
+  current 10 mm plywood joint.</li>
+<li><strong>Alternative, galvanized:</strong> <a href="https://www.hornbach.nl/p/dresselhaus-binnenzeskantbout-verzonken-kop-4x10-mm-din-7991-galv-verzinkt-100-stuks/7662372/">Dresselhaus M4×10 DIN 7991 zinc-plated,
+  Hornbach</a>.
+  The stainless A2 option is the more interesting starting point.</li>
+<li><strong>Inside nut candidate:</strong> <a href="https://www.hornbach.nl/p/marinetech-flensmoer-borg-zeskant-m4-rvs-a2-70-500-stuks/12120010/">Marinetech M4 A2-70 locking flange nut,
+  Hornbach</a>.
+  It is a possible <strong>accessible inside nut</strong>, not a drop-in captive nut.
+  The supplied product URL describes a pack of <strong>500</strong>; dimensions and
+  current availability require checking.</li>
+</ul>
+<p>Useful technical references:
+<a href="https://www.reyher.de/fileadmin/user_upload/Downloadbereich/Reyher_2019-EN_Technische_Informationen_ks.pdf">DIN 562 thin M4 square-nut dimensions (Reyher)</a>;
+<a href="https://fullerfasteners.com/tech/din-7991-specifications-hex-socket-countersunk-head-cap-screws/">M4 countersunk screw dimensions (DIN 7991, Fuller Fasteners)</a>.</p>
+<h2>Suggested prototype tests</h2>
+<ol>
+<li>Print the <strong>existing captive-hex version</strong> first and confirm both
+   insertion windows, plug retention, and M4 head/bolt clearance.</li>
+<li>Print a <strong>square-nut pocket test piece</strong>, using measured PRORAJE
+   dimensions and the intended print material, before changing the whole bracket.</li>
+<li>Model the <strong>outside-in head and countersink</strong> as a separate variant;
+   test remaining wall thickness, the 90° seat and access to the inside nut.</li>
+<li>If the joint needs more clamping area, make a <strong>separate inside
+   counter-bracket prototype</strong>, aligning both bolts and avoiding interference
+   with the plywood corner.</li>
+<li>Compare assembly time, repeatability, crushing of plywood, print-layer
+   direction and joint movement under real use. Do not infer a load rating
+   from CAD alone.</li>
+</ol>
+<p><strong>Status:</strong> concept comparison. Only the inside-to-outside captive-nut
+configuration currently has production CAD geometry, and the entire joint
+still needs physical validation.</p>
+</main></body></html>

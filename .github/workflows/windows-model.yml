@@ -34,23 +34,25 @@ jobs:
       - name: Verify launcher passes model path and local library environment
         shell: pwsh
         run: |
-          $stub = Join-Path $env:RUNNER_TEMP 'openscad-test.exe'
+          $stubRoot = Join-Path $env:RUNNER_TEMP 'openscad-launcher-stub'
           $output = Join-Path $env:RUNNER_TEMP 'launcher-output.txt'
           $env:MODEL_ARCHIVE_TEST_OUTPUT = $output
 
+          # PowerShell 7 Add-Type cannot output a ConsoleApplication executable.
+          # The hosted Windows runner already includes the .NET SDK.
+          dotnet new console -n Stub -o $stubRoot --framework net8.0 --force
           $code = @'
           using System;
           using System.IO;
-          public class Program {
-              public static void Main(string[] args) {
-                  File.WriteAllText(
-                      Environment.GetEnvironmentVariable("MODEL_ARCHIVE_TEST_OUTPUT"),
-                      Environment.GetEnvironmentVariable("OPENSCADPATH") + "\n" + String.Join("\n", args)
-                  );
-              }
-          }
+          File.WriteAllText(
+              Environment.GetEnvironmentVariable("MODEL_ARCHIVE_TEST_OUTPUT")!,
+              Environment.GetEnvironmentVariable("OPENSCADPATH") + "\n" + String.Join("\n", args)
+          );
           '@
-          Add-Type -TypeDefinition $code -OutputAssembly $stub -OutputType ConsoleApplication
+          Set-Content -LiteralPath (Join-Path $stubRoot 'Program.cs') -Value $code
+          dotnet publish (Join-Path $stubRoot 'Stub.csproj') -c Release -o (Join-Path $stubRoot 'publish') --no-self-contained
+          $stub = Join-Path $stubRoot 'publish/Stub.exe'
+          if (!(Test-Path $stub)) { throw 'Native launcher test stub build failed' }
 
           $example = 'examples/spacer/v0.1/scad/spacer.scad'
           .\scripts\open-model.ps1 -Model $example -OpenSCADExe $stub

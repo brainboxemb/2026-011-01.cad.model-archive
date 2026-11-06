@@ -41,6 +41,19 @@ grep -Fq '6834946' "$bracket/mounting-options.html"
 grep -Fq '12120010' "$bracket/mounting-options.html"
 grep -Fq '<table>' "$bracket/mounting-options.html"
 
+# Verify SVG files parse as vector drawings, not only that paths exist.
+python3 - <<'PY'
+from pathlib import Path
+from xml.etree import ElementTree
+figures = sorted(Path("models/corner_bracket/v0.1/figures").glob("*.svg"))
+assert len(figures) >= 7, "Expected mounting and elephant-foot diagrams"
+for figure in figures:
+    root = ElementTree.parse(figure).getroot()
+    assert root.tag == "{http://www.w3.org/2000/svg}svg", figure
+    assert root.attrib.get("viewBox"), f"Missing viewBox: {figure}"
+print(f"Validated {len(figures)} editable SVG illustrations")
+PY
+
 # Elephant-foot compensation has its own illustrated explanation in the manual.
 for svg in elephant-foot-section elephant-foot-edges; do
   test -s "$bracket/figures/$svg.svg"

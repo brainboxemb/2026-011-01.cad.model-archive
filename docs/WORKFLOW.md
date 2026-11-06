@@ -13,7 +13,8 @@
 From the repository root, with Git and Python installed:
 
 ```powershell
-py -m pip install vcs2l colorama markdown
+py -m pip install vcs2l
+New-Item -ItemType Directory -Path ext -Force | Out-Null
 vcs import --input dependencies.repos ext
 ```
 

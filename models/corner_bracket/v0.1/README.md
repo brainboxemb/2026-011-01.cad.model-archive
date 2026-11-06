@@ -14,10 +14,10 @@ From the archive root after `bootstrap.ps1`:
 
 ```powershell
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/corner_bracket.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/design.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/hull_explained.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/rounding_explained.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/inside_corner_methods.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/design.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/hull_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/rounding_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/inside_corner_methods.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential
@@ -28,7 +28,7 @@ The generated [design documentation](https://brainboxemb.github.io/2026-011-01.c
 focuses on the six model stages, including a more detailed explanation of
 elephant-foot relief.
 
-The extended [illustrated hull guide](hull-guide.md) is separate. It covers
+The extended [illustrated hull guide](docs/hull-guide.md) is separate. It covers
 the simple rectangular-bar experiment and rounding an outside corner with
 circles. The original `hull_explained.scad` and
 `rounding_explained.scad` files remain available for interactive exploration.
@@ -38,25 +38,25 @@ four circles connected with `hull()` to make rounded **outside** corners,
 and the bracket's concave **inside** corner drawn from sampled points along
 a quarter-circle.
 
-The new [Polygon and rounded-corner guide](polygon-guide.md) compares two
+The new [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
 straightforward constructions of the same **inside** radius:
 `square() - circle()` with `union()` **before** `linear_extrude()`
 (2D first), and `cube() - cylinder()` with `union()` in **3D**.
-Its [standalone OpenSCAD demo](scad/inside_corner_methods.scad) has
+Its [standalone OpenSCAD demo](design/inside_corner_methods.scad) has
 nine Customizer stages and CI-generated illustrations. These examples do
 not change the printable v0.1 bracket geometry.
 
-The [documentation entry point](scad/documentation.scad) creates printable
+The [documentation entry point](docs/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design
 images are rendered from `design.scad` by the CI documentation workflow.
 
 ## Mounting alternatives
 
-The [illustrated mounting options](mounting-options.md) compare inside-to-outside
+The [illustrated mounting options](docs/mounting-options.md) compare inside-to-outside
 and outside-to-inside M4 bolts, hex versus thin square nuts, accessible
 locking flange nuts, and a possible second **inside counter-bracket**.
 The conceptual section drawings are editable SVG files in `figures/`.
-The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/mounting-options.html)
+The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/docs/mounting-options.html)
 includes the supplied hardware references and explains which options
 would need CAD changes.
 

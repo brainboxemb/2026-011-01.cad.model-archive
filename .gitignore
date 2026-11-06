@@ -29,3 +29,6 @@
 # Authored model indices use uppercase README.md.
 **/v*/readme.md
 **/source/readme.md
+
+# User-specific VS Code workspace configuration
+.vscode/settings.json

@@ -126,4 +126,21 @@ for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_ar
   check_image "rounding_$stage" hull-guide
 done
 
+# 2D and 3D rounding alternatives must both be illustrated in the
+# standalone polygon guide (never duplicated in the short model walkthrough).
+for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
+  check_image "corner_$stage" polygon-guide
+done
+
+for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
+  grep -Fq "$snippet" "$bracket/polygon-guide.md"
+  grep -Fq "$snippet" "$bracket/polygon-guide.html"
+done
+grep -Fq 'polygon-guide.html' "$bracket/hull-guide.html"
+grep -Fq 'polygon-guide.html' "$bracket/readme.html"
+if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
+  echo "General polygon tutorial leaked into the bracket walkthrough" >&2
+  exit 1
+fi
+
 echo "Verified generated documentation and all design illustrations."

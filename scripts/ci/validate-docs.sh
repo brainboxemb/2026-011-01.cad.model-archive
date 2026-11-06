@@ -77,6 +77,15 @@ for svg in elephant-foot-section elephant-foot-edges; do
 done
 grep -Fq 'Y = +W/2' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
+grep -Fq '## Printing and assembly' "$bracket/readme.md"
+grep -Fq '## Further reading' "$bracket/readme.md"
+# Keep a single unobtrusive reference to the extended tutorial outside the
+# six sequential model-construction steps.
+test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -eq 1
+if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
+  echo "Redundant hull aside reintroduced into main design manual" >&2
+  exit 1
+fi
 
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \

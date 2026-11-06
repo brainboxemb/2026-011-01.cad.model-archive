@@ -26,8 +26,9 @@ if (-not (Test-Path -LiteralPath $modelPath -PathType Leaf)) {
 }
 $modelPath = (Resolve-Path -LiteralPath $modelPath).Path
 
-# Prefer an explicitly supplied GUI executable; otherwise try PATH and the
-# standard installation locations (without modifying global Windows settings).
+# Prefer an explicitly supplied executable. Otherwise, use OpenSCAD Nightly
+# by default. Fall back to the regular installation or PATH only if Nightly
+# is absent; do not modify the machine-wide OpenSCAD configuration.
 if ($OpenSCADExe) {
     if (-not (Test-Path -LiteralPath $OpenSCADExe -PathType Leaf)) {
         throw "OpenSCAD executable niet gevonden: $OpenSCADExe"
@@ -35,27 +36,28 @@ if ($OpenSCADExe) {
     $exe = (Resolve-Path -LiteralPath $OpenSCADExe).Path
 } else {
     $exe = $null
-    $cmd = Get-Command openscad.exe -ErrorAction SilentlyContinue
-    if ($cmd) {
-        $exe = $cmd.Source
+    $candidates = @(
+        "C:\Program Files\OpenSCAD (Nightly)\openscad.exe"
+    )
+    if ($env:ProgramFiles) {
+        $candidates += (Join-Path $env:ProgramFiles "OpenSCAD\openscad.exe")
     }
-    if (-not $exe) {
-        $candidates = @(
-            (Join-Path $env:ProgramFiles "OpenSCAD\openscad.exe")
-        )
-        $programFilesX86 = [Environment]::GetFolderPath("ProgramFilesX86")
-        if ($programFilesX86) {
-            $candidates += (Join-Path $programFilesX86 "OpenSCAD\openscad.exe")
-        }
-        foreach ($candidate in $candidates) {
-            if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-                $exe = $candidate
-                break
-            }
+    $programFilesX86 = [Environment]::GetFolderPath("ProgramFilesX86")
+    if ($programFilesX86) {
+        $candidates += (Join-Path $programFilesX86 "OpenSCAD\openscad.exe")
+    }
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            $exe = (Resolve-Path -LiteralPath $candidate).Path
+            break
         }
     }
     if (-not $exe) {
-        throw "OpenSCAD niet gevonden. Installeer OpenSCAD of gebruik -OpenSCADExe 'C:\pad\openscad.exe'."
+        $cmd = Get-Command openscad.exe -CommandType Application -ErrorAction SilentlyContinue
+        if ($cmd) { $exe = $cmd.Source }
+    }
+    if (-not $exe) {
+        throw "OpenSCAD niet gevonden. Verwacht: C:\Program Files\OpenSCAD (Nightly)\openscad.exe. Gebruik anders -OpenSCADExe '<pad>\openscad.exe'."
     }
 }
 

@@ -1,4 +1,0 @@
-# Docker only needs the Dockerfile. Model sources and NopSCADlib are mounted at runtime.
-**
-!docker/
-!docker/Dockerfile

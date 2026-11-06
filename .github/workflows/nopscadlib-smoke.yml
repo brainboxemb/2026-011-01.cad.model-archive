@@ -52,6 +52,22 @@ jobs:
             test -s "$root/design/$stage.png"
           done
 
+      - name: Render five simple-bar hull teaching stages
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="models/corner_bracket/v0.1"
+          mkdir -p "$root/design"
+          for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
+            docker run --rm --init -v "$PWD:/work" \
+              -w "/work/$root" \
+              -e OPENSCADPATH="$LIBRARY_PATH" "$IMAGE" \
+              xvfb-run -a openscad --imgsize=720,450 --viewall --autocenter \
+                -D "demo_stage=\"$stage\"" \
+                -o "design/hull_$stage.png" scad/hull_explained.scad
+            test -s "$root/design/hull_$stage.png"
+          done
+
       - name: Generate corner-bracket BOM, STL and documentation
         run: |
           docker run --rm --init -v "$PWD:/work" \
@@ -90,6 +106,13 @@ jobs:
             test -s "$bracket/design/$stage.png"
             grep -q "design/$stage.png" "$bracket/readme.md"
           done
+          for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
+            test -s "$bracket/design/hull_$stage.png"
+            grep -Fq "design/hull_$stage.png" "$bracket/readme.md"
+            grep -Fq "design/hull_$stage.png" "$bracket/readme.html"
+          done
+          grep -Fq 'module sloped_hull()' "$bracket/readme.md"
+          grep -Fq 'module sloped_hull()' "$bracket/readme.html"
 
       - name: Upload generated documentation previews
         uses: actions/upload-artifact@v4

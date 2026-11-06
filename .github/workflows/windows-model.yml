@@ -1,0 +1,68 @@
+name: Windows model-opening workflow
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  local-workflow:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python for vcs2l
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch pinned NopSCADlib on Windows
+        shell: pwsh
+        run: |
+          python -m pip install vcs2l==1.1.7
+          New-Item -ItemType Directory ext -Force | Out-Null
+          vcs import --input dependencies.repos ext
+          if (!(Test-Path ext/NopSCADlib/core.scad)) { throw "NopSCADlib missing" }
+
+      # Running a graphical app directly inside an Actions Windows runner is
+      # not reliable. This small native executable checks the same launcher
+      # parameters and inherited environment without requiring a GUI desktop.
+      - name: Verify launcher passes model path and local library environment
+        shell: pwsh
+        run: |
+          $stub = Join-Path $env:RUNNER_TEMP 'openscad-test.exe'
+          $output = Join-Path $env:RUNNER_TEMP 'launcher-output.txt'
+          $env:MODEL_ARCHIVE_TEST_OUTPUT = $output
+
+          $code = @'
+          using System;
+          using System.IO;
+          public class Program {
+              public static void Main(string[] args) {
+                  File.WriteAllText(
+                      Environment.GetEnvironmentVariable("MODEL_ARCHIVE_TEST_OUTPUT"),
+                      Environment.GetEnvironmentVariable("OPENSCADPATH") + "\n" + String.Join("\n", args)
+                  );
+              }
+          }
+          '@
+          Add-Type -TypeDefinition $code -OutputAssembly $stub -OutputType ConsoleApplication
+
+          $example = 'examples/spacer/v0.1/scad/spacer.scad'
+          .\scripts\open-model.ps1 -Model $example -OpenSCADExe $stub
+
+          for ($i = 0; $i -lt 40 -and !(Test-Path $output); $i++) {
+              Start-Sleep -Milliseconds 100
+          }
+          if (!(Test-Path $output)) { throw "OpenSCAD launcher did not invoke the child executable" }
+
+          $lines = Get-Content $output
+          $ext = (Resolve-Path ext).Path
+          $model = (Resolve-Path $example).Path
+          if ($lines[0] -notlike "$ext*") { throw "OPENSCADPATH does not begin with repo ext/" }
+          if ($lines[-1] -ne $model) { throw "Incorrect model path passed to OpenSCAD: $($lines[-1])" }
+          Write-Host "Windows launcher correctly passes OPENSCADPATH and model path"

@@ -9,7 +9,7 @@ and two removable plugs that conceal the access windows after assembly.</p>
 clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.</p>
 <h2>Design walkthrough</h2>
-<p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="scad/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
+<p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="design/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
 <h3>1. L-shaped polygon profile</h3>
 <p><strong>First draw the bracket from the side.</strong> Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, <code>polygon()</code> connects those points and fills the area. <code>concat()</code> joins three groups of points: the top end (<code>tip_top</code>), the main outside edges and bottom end (<code>tip_vert</code>), and the rounded inside corner (<code>corner_arc</code>). In this v0.1 source, the inside arc is built from 19 points along a quarter-circle, at 5-degree steps.</p>
 <p><strong>Then give the flat drawing thickness.</strong> <code>linear_extrude()</code> turns the 2D shape into a 3D part, 20 mm wide (<code>W</code>). <code>rotate()</code> puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (<code>c</code> and <code>ce</code>) are already part of the drawing.</p>
@@ -278,9 +278,9 @@ else if (design_step == "06_installed") {
 <li><a href="#main_assembly">Main Assembly</a></li>
 </ol>
 <h2>Further reading</h2>
-<p>A separate <a href="hull-guide.html">OpenSCAD hull() guide</a> shows how that
+<p>A separate <a href="docs/hull-guide.html">OpenSCAD hull() guide</a> shows how that
 operation creates sloping sides and rounded <em>outside</em> corners.
-The <a href="polygon-guide.html">Polygon and rounded-corner guide</a> compares
+The <a href="docs/polygon-guide.html">Polygon and rounded-corner guide</a> compares
 two easier-to-follow ways to make this inside corner: using
 <code>square() - circle()</code> in <strong>2D before extrusion</strong>, or <code>cube() - cylinder()</code>
 directly in <strong>3D</strong>. It also explains the point-based <code>polygon()</code> code
@@ -294,7 +294,7 @@ with thin square nuts, or add a second <strong>inside counter-bracket</strong>.<
 <p>The options, simple bolt-path diagrams, differences between nut types,
 the supplied stainless-steel product references, and the bolt-length
 constraints are compared in the separate
-<strong><a href="mounting-options.html">Mounting options and fastener comparison</a></strong>.</p>
+<strong><a href="docs/mounting-options.html">Mounting options and fastener comparison</a></strong>.</p>
 <p>These are design alternatives. In v0.1, the <strong>bolt-from-inside,
 captive-nut</strong> configuration is the only implemented bolt direction;
 the other arrangements require new CAD and physical testing.</p>

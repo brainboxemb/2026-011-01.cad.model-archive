@@ -10,6 +10,11 @@ NopSCADlib writes generated lowercase `readme.md` beside each project's
 `scad/` directory. Keeping the `source/` (or `vX.Y/`) directory separate from
 the model overview avoids a case-insensitive filename clash on Windows.
 
-No finished models have been archived yet. Start with the
-[spacer example](../examples/spacer/v0.1/scad/spacer.scad)
-and the [Windows workflow](../docs/WORKFLOW.md).
+## Models
+
+- [Corner bracket](corner_bracket/README.md): a configurable outside-corner
+  plywood bracket with captive nuts, two removable access plugs, and
+  a six-stage design/documentation walkthrough.
+
+The [spacer example](../examples/spacer/v0.1/scad/spacer.scad) remains a
+minimal generator test. See the [Windows workflow](../docs/WORKFLOW.md).

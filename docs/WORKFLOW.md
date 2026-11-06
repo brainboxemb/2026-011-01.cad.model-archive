@@ -31,7 +31,7 @@ $env:OPENSCADPATH = "$root\ext" + $(if ($env:OPENSCADPATH) { "$sep$env:OPENSCADP
 
 ## Fast PNG / STL using the existing Docker image
 
-The existing `ghcr.io/brainboxemb/scad-toolchain-openscad` image already includes OpenSCAD, Xvfb and its other OpenSCAD tooling. It does **not** yet provide all dependencies of NopSCADlib's full document-generation pipeline. It is suitable for direct OpenSCAD exports.
+The existing `ghcr.io/brainboxemb/scad-toolchain-openscad` image already includes OpenSCAD, Xvfb and its other OpenSCAD tooling. For full NopSCADlib documentation prefer the dedicated archive Docker image. It does **not** yet provide all dependencies of NopSCADlib's full document-generation pipeline. It is suitable for direct OpenSCAD exports.
 
 Run from the repository root in PowerShell, after `vcs import`. `:edge` is a **mutable development** image; use a verified immutable released tag for a fixed workflow.
 
@@ -51,7 +51,7 @@ The container's default BOSL2 search path is preserved by appending `/opt/opensc
 
 ## NopSCADlib documentation (upstream workflow)
 
-NopSCADlib expects OpenSCAD on `PATH`, **ImageMagick 7** (`magick` command), and Python packages such as `colorama` and `markdown`. The Docker image above does not yet include ImageMagick 7 or all Python requirements; do **not** assume the following works inside it unchanged.
+NopSCADlib expects OpenSCAD on `PATH`, **ImageMagick 7** (`magick` command), and Python packages including `colorama`, `markdown` and `codespell`. The *shared* OpenSCAD image above lacks these extras. Use the [dedicated archive image](../docker/README.md) for NopSCADlib's full `make_all.py` workflow. This image also includes `vcs2l`, so even the external checkout can be done from Docker.
 
 On a Windows host with those tools installed, run from the repository root:
 

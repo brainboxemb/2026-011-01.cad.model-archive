@@ -1,30 +1,71 @@
 # 2026-011-01.cad.model-archive
 
-A public collection of small, independent OpenSCAD models.
+Public archive for small, independent OpenSCAD models. A model can have
+multiple retained versions, each with its own `.scad` source.
 
-The archive is deliberately **lightweight**: no `project.yml`, Moon, SCons or custom documentation generator. It uses the upstream **NopSCADlib** conventions and tools, with **vcs2l** to fetch a pinned external dependency.
+The archive is deliberately lightweight: **no `project.yml`, Moon or SCons**.
+[NopSCADlib](https://github.com/nophead/NopSCADlib) is the modeling/documentation
+dependency, pinned in `dependencies.repos` and fetched with
+[vcs2l](https://github.com/ros-infrastructure/vcs2l).
 
-## Layout
+## Start on Windows (without Docker)
 
-```text
-dependencies.repos                Pinned NopSCADlib revision
-ext/NopSCADlib/                   Local checkout (ignored by Git)
-models/<model>/                   Model overview and, optionally, versions
-models/<model>/vX.Y/scad/         OpenSCAD sources for a version
-examples/spacer/v0.1/scad/        Small proof-of-concept (not an archived model)
-docs/WORKFLOW.md                  Setup, rendering and documentation
+Install [OpenSCAD for Windows](https://openscad.org/downloads.html), Git,
+Python and vcs2l. From the repository root in PowerShell:
+
+```powershell
+py -m pip install vcs2l
+New-Item -ItemType Directory -Path ext -Force | Out-Null
+vcs import --input dependencies.repos ext
+.\scripts\open-model.ps1
 ```
 
-Each version can stand on its own. When a model needs no separate versions, it may use `models/<model>/scad/` directly.
+The last command opens the example spacer in the **installed OpenSCAD GUI**.
+It temporarily sets `OPENSCADPATH` for that launch, so
+`include <NopSCADlib/core.scad>;` works without installing a global library.
+
+Open any other model by passing its path:
+
+```powershell
+.\scripts\open-model.ps1 -Model "models/<name>/v0.1/scad/main.scad"
+```
+
+If PowerShell blocks the script, use the one-off execution-policy option
+documented in [the Windows workflow](docs/WORKFLOW.md); do not change your
+machine's global policy.
+
+## Structure
+
+```text
+dependencies.repos               Pin NopSCADlib commit
+ext/NopSCADlib/                  Local fetched checkout; ignored by Git
+scripts/open-model.ps1           Launch the Windows OpenSCAD GUI
+models/<model>/                  Model description and versions
+models/<model>/vX.Y/scad/        OpenSCAD source for one version
+examples/spacer/v0.1/scad/       Minimal NopSCADlib example
+docker/                          CI-only NopSCADlib runtime
+docs/                            Usage and future publication decisions
+```
+
+When no separate versions are needed, a model may put `scad/` directly under
+its model directory.
 
 ## Model catalog
 
-No finished models have been archived yet. The [spacer example](examples/spacer/v0.1/scad/spacer.scad) exercises NopSCADlib's `_stl` / `_assembly` conventions.
+No finished models have been archived yet. Try the
+[example spacer](examples/spacer/v0.1/scad/spacer.scad).
 
-## Start here
+- [Windows modeling workflow](docs/WORKFLOW.md)
+- [CI-only Docker image](docker/README.md)
+- [Generated documentation: planned GitHub Pages publication](docs/PUBLISHING.md)
 
-See [Workflow](docs/WORKFLOW.md) for Windows setup, STL/PNG output, and NopSCADlib's documentation pipeline. A [dedicated Docker runtime](docker/README.md) extends the existing BrainboxEmb OpenSCAD image with NopSCADlib's extra requirements, leaving the shared toolchain unchanged.
+Documentation generation is **not required on Windows** at this stage.
+CI currently exercises NopSCADlib's upstream document generator as a
+qualification test, but does not publish a site.
 
-NopSCADlib is fetched from upstream, not vendored. Its GPL-3.0-or-later terms still apply to the upstream code and must be considered when publishing models that incorporate its code. No archive-wide license is assumed at this stage.
+## Licensing
 
-**Status:** initial setup / proof of concept. The NopSCADlib end-to-end documentation generation and its container prerequisites still need a verified run.
+NopSCADlib is an external GPL-3.0-or-later dependency. Fetching it via vcs2l
+does not change its license. Whether an individual model incorporates
+NopSCADlib code and is distributed must be assessed separately. No license
+has yet been assigned to the archive's own models.

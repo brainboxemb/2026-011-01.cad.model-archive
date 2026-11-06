@@ -21,6 +21,17 @@ test -s "$bracket/readme.html"
 test -s "$bracket/printme.html"
 grep -q 'Corner bracket' "$bracket/readme.md"
 
+# Mounting alternatives must be generated and linked from the model page.
+test -s "$bracket/mounting-options.md"
+test -s "$bracket/mounting-options.html"
+grep -Fq 'mounting-options.html' "$bracket/readme.md"
+grep -Fq 'mounting-options.html' "$bracket/readme.html"
+grep -Fq 'counter-bracket' "$bracket/mounting-options.html"
+grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
+grep -Fq '6834946' "$bracket/mounting-options.html"
+grep -Fq '12120010' "$bracket/mounting-options.html"
+grep -Fq '<table>' "$bracket/mounting-options.html"
+
 # The design guide must retain actual SCAD code, not just rendered images.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \

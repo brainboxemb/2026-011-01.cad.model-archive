@@ -17,6 +17,7 @@ From the archive root after `bootstrap.ps1`:
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/design.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/hull_explained.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/rounding_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/inside_corner_methods.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential

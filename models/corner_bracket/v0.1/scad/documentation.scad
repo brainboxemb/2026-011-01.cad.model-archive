@@ -46,12 +46,6 @@
 //!                 profile();
 //!     }
 //!
-//! **Why is there no `hull()` for the inside corner?** `hull()` would
-//! fill the open space between the two arms. Instead, the code calculates
-//! 19 points along a quarter-circle with `sin()` and `cos()`, then includes
-//! those points in the L-shaped `polygon()`. See the separate
-//! [illustrated guide to hull and rounded corners](hull-guide.html).
-//!
 //! ### 2. Outer side-edge chamfers
 //!
 //! The sharp *side* edges get a bevel. The code first creates two versions

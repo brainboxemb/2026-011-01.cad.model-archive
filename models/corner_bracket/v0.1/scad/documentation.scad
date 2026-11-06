@@ -15,7 +15,7 @@
 //!
 //! ### 1. L-shaped polygon profile
 //!
-//! **First draw the bracket from the side.** Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, `polygon()` connects those points and fills the area. `concat()` joins three groups of points: the top end (`tip_top`), the main outside edges and bottom end (`tip_vert`), and the rounded inside corner (`corner_arc`). The curve is made from several nearby points rather than one perfect arc.
+//! **First draw the bracket from the side.** Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, `polygon()` connects those points and fills the area. `concat()` joins three groups of points: the top end (`tip_top`), the main outside edges and bottom end (`tip_vert`), and the rounded inside corner (`corner_arc`). In this v0.1 source, the inside arc is built from 19 points along a quarter-circle, at 5-degree steps.
 //!
 //! **Then give the flat drawing thickness.** `linear_extrude()` turns the 2D shape into a 3D part, 20 mm wide (`W`). `rotate()` puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (`c` and `ce`) are already part of the drawing.
 //!
@@ -314,11 +314,14 @@
 //!
 //! ## Further reading
 //!
-//! The separate [illustrated guide to OpenSCAD hull()](hull-guide.html)
-//! shows how the operation connects simple shapes and creates rounded
-//! outer corners. It also explains the quarter-circle calculation used
-//! for the bracket's inside corner. These general examples are kept
-//! outside the six-step bracket design walkthrough.
+//! A separate [OpenSCAD hull() guide](hull-guide.html) shows how that
+//! operation creates sloping sides and rounded *outside* corners.
+//! The [Polygon and rounded-corner guide](polygon-guide.html) compares
+//! two easier-to-follow ways to make this inside corner: using
+//! `square() - circle()` in **2D before extrusion**, or `cube() - cylinder()`
+//! directly in **3D**. It also explains the point-based `polygon()` code
+//! currently used in v0.1. These are teaching alternatives; the printable
+//! bracket geometry has not been changed.
 //!
 //! ## Alternative mounting arrangements
 //!

@@ -1,24 +1,30 @@
-# vcs2l worktrees are fetched locally, never vendored.
+# Fetched dependencies (vcstool / vcs2l), never commit vendor copies.
 /ext/
 
-# Python and temporary tools
+# Python and local temporary files
 **/__pycache__/
 **/*.pyc
 **/.pytest_cache/
 **/.DS_Store
 
-# NopSCADlib temporary/generated bookkeeping.
+# Generated NopSCADlib outputs from model/version working directories.
+# Keep generated artifacts in CI initially; future publication uses gh-pages.
+**/bom/
+**/stls/
+**/dxfs/
+**/svgs/
+**/assemblies/
+**/printed/
+**/routed/
+**/readme.html
+**/printme.html
 **/openscad.log
 **/openscad.echo
 **/cmd_times.txt
 **/magick.log
 **/*_diff.png
 **/tmp/
-**/bom/*.deps
-**/stls/deps/
-**/dxfs/deps/
-**/svgs/deps/
-**/assemblies/deps/
 
-# Deliberately do NOT ignore readme.md, PNG, STL or BOM deliverables:
-# after reviewing a finished model version, these may be committed.
+# NopSCADlib produces lowercase readme.md within the version directory.
+# Authored model indices use uppercase README.md.
+**/v*/readme.md

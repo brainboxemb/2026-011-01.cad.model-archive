@@ -40,6 +40,19 @@ grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
 grep -Fq '6834946' "$bracket/mounting-options.html"
 grep -Fq '12120010' "$bracket/mounting-options.html"
 grep -Fq '<table>' "$bracket/mounting-options.html"
+# Explicit product photo URLs supplied for these three candidate components.
+for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg'; do
+  grep -Fq "$photo" "$bracket/mounting-options.md"
+  grep -Fq "$photo" "$bracket/mounting-options.html"
+done
+grep -Fq 'figures/m4-bolt-head-types.svg' "$bracket/mounting-options.html"
+test -s "$bracket/figures/m4-bolt-head-types.svg"
+for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out; do
+  file="$bracket/figures/mounting-$section.svg"
+  grep -Fq 'OUTSIDE' "$file"
+  grep -Fq 'INSIDE' "$file"
+  grep -Fq '520' "$file"
+done
 
 # Verify SVG files parse as vector drawings, not only that paths exist.
 python3 - <<'PY'

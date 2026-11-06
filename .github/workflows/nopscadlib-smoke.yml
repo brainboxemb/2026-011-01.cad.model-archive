@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   documentation:
@@ -104,3 +104,62 @@ jobs:
             models/corner_bracket/v0.1/bom/
             models/corner_bracket/v0.1/design/
           retention-days: 14
+
+      # Generate and commit the static site on pushes to main, after all
+      # documentation outputs have passed the artifact checks.
+      # NOTE: a GITHUB_TOKEN-authored commit to a branch-based Pages source
+      # does not itself trigger a Pages deployment; see docs/PUBLISHING.md.
+      - name: Prepare GitHub Pages site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages
+          site="$(mktemp -d)"
+          git worktree add --detach "$site" origin/gh-pages
+
+          for version in examples/spacer/v0.1 models/corner_bracket/v0.1; do
+            mkdir -p "$site/$version"
+            cp "$version/readme.html" "$site/$version/index.html"
+            cp "$version/readme.md" "$site/$version/readme.md"
+            cp "$version/printme.html" "$site/$version/printme.html"
+            cp -a "$version/stls" "$version/assemblies" "$version/bom" "$site/$version/"
+          done
+          cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
+
+          touch "$site/.nojekyll"
+          cat > "$site/index.html" <<'HTML'
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>OpenSCAD Model Archive — BrainboxEmb</title>
+          <style>
+            body{font:1rem/1.65 system-ui,sans-serif;max-width:880px;margin:auto;padding:2rem;
+                 color:#1f2937;background:#fafbfc}
+            h1{font-size:2rem}a{color:#155b9c}article{background:white;border:1px solid #d9e0e7;
+                 padding:1.2rem 1.6rem;border-radius:12px;margin:1.3rem 0}
+            small{color:#64748b}
+          </style></head><body>
+          <h1>OpenSCAD Model Archive</h1>
+          <p>Versioned parametric models with generated STL, BOM and build documentation.</p>
+          <h2>Models</h2>
+          <article><h3><a href="models/corner_bracket/v0.1/">Corner bracket — v0.1</a></h3>
+          <p>Outside-corner plywood bracket with captive M4 nuts and access plugs.
+          Includes a six-step illustrated design walkthrough.</p>
+          <small>Prototype / work in progress</small></article>
+          <h2>Examples</h2>
+          <article><h3><a href="examples/spacer/v0.1/">Spacer — v0.1</a></h3>
+          <p>Minimal NopSCADlib documentation example.</p></article>
+          <p><a href="https://github.com/brainboxemb/2026-011-01.cad.model-archive">Source repository</a></p>
+          </body></html>
+          HTML
+
+          git -C "$site" config user.name "github-actions[bot]"
+          git -C "$site" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$site" add -A
+          if git -C "$site" diff --cached --quiet; then
+            echo "Pages content unchanged"
+          else
+            git -C "$site" commit -m "Publish generated model documentation from ${GITHUB_SHA:0:12}"
+            git -C "$site" push origin HEAD:gh-pages
+          fi

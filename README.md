@@ -58,11 +58,13 @@ No finished models have been archived yet. Try the
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
 - [CI-only Docker image](docker/README.md)
-- [Generated documentation: planned GitHub Pages publication](docs/PUBLISHING.md)
+- [GitHub Pages holding page](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
+- [Generated documentation publication plan](docs/PUBLISHING.md)
 
 Documentation generation is **not required on Windows** at this stage.
 CI currently exercises NopSCADlib's upstream document generator as a
-qualification test, but does not publish a site.
+qualification test, but does not yet publish model documentation. Windows
+OpenSCAD launcher behavior is checked independently in CI without Docker.
 
 ## Licensing
 

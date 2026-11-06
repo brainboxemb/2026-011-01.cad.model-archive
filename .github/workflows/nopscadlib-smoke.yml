@@ -1,4 +1,4 @@
-name: NopSCADlib smoke
+name: NopSCADlib generated documentation
 
 on:
   pull_request:
@@ -9,51 +9,86 @@ permissions:
   contents: read
 
 jobs:
-  end-to-end:
+  documentation:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 55
+    env:
+      IMAGE: ghcr.io/brainboxemb/scad-toolchain-drawing:edge
+      LIBRARY_PATH: /work/ext:/opt/openscad-libraries
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build dedicated model-archive runtime
-        run: docker build -f docker/Dockerfile -t model-archive-nopscadlib:ci .
-
-      - name: Fetch pinned NopSCADlib with vcs2l inside Docker
+      # The image is built centrally in brainboxemb/docker.scad-toolchain.
+      # No Dockerfile or image build belongs in this model archive.
+      - name: Fetch pinned NopSCADlib through shared toolchain
         run: |
           mkdir -p ext
-          docker run --rm --init \
-            -v "$PWD:/work" \
-            -w /work \
-            model-archive-nopscadlib:ci \
+          docker run --rm --init -v "$PWD:/work" -w /work \
+            -e OPENSCADPATH="$LIBRARY_PATH" "$IMAGE" \
             vcs import --input dependencies.repos ext
           test -f ext/NopSCADlib/core.scad
           test -f ext/NopSCADlib/scripts/make_all.py
 
-      - name: Generate complete documentation for spacer example
+      - name: Generate spacer example documentation
         run: |
-          docker run --rm --init \
-            -v "$PWD:/work" \
+          docker run --rm --init -v "$PWD:/work" \
             -w /work/examples/spacer/v0.1 \
-            model-archive-nopscadlib:ci \
+            -e OPENSCADPATH="$LIBRARY_PATH" "$IMAGE" \
+            xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
+
+      - name: Render six corner-bracket design stages
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="models/corner_bracket/v0.1"
+          mkdir -p "$root/design"
+          for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
+            docker run --rm --init -v "$PWD:/work" \
+              -w "/work/$root" \
+              -e OPENSCADPATH="$LIBRARY_PATH" "$IMAGE" \
+              xvfb-run -a openscad --imgsize=800,600 --viewall --autocenter \
+                -D "design_step=\"$stage\"" \
+                -o "design/$stage.png" scad/design.scad
+            test -s "$root/design/$stage.png"
+          done
+
+      - name: Generate corner-bracket BOM, STL and documentation
+        run: |
+          docker run --rm --init -v "$PWD:/work" \
+            -w /work/models/corner_bracket/v0.1 \
+            -e OPENSCADPATH="$LIBRARY_PATH" "$IMAGE" \
             xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
 
       - name: Check generated deliverables
+        shell: bash
         run: |
-          version=examples/spacer/v0.1
-          test -s "$version/stls/spacer.stl"
-          test -s "$version/stls/spacer.png"
-          test -s "$version/assemblies/main_assembled.png"
-          test -s "$version/assemblies/main_assembly.png"
-          test -s "$version/bom/bom.json"
-          test -s "$version/readme.md"
-          test -s "$version/readme.html"
-          test -s "$version/printme.html"
-          grep -q 'Example spacer' "$version/readme.md"
+          set -euo pipefail
+          spacer=examples/spacer/v0.1
+          test -s "$spacer/stls/spacer.stl"
+          test -s "$spacer/stls/spacer.png"
+          test -s "$spacer/assemblies/main_assembled.png"
+          test -s "$spacer/bom/bom.json"
+          test -s "$spacer/readme.html"
+          grep -q 'Example spacer' "$spacer/readme.md"
 
-      - name: Upload generated documentation preview
+          bracket=models/corner_bracket/v0.1
+          test -s "$bracket/stls/corner_bracket.stl"
+          test -s "$bracket/stls/access_plugs.stl"
+          test -s "$bracket/assemblies/main_assembled.png"
+          test -s "$bracket/bom/bom.json"
+          test -s "$bracket/readme.md"
+          test -s "$bracket/readme.html"
+          test -s "$bracket/printme.html"
+          grep -q 'Corner bracket' "$bracket/readme.md"
+          for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
+            test -s "$bracket/design/$stage.png"
+            grep -q "design/$stage.png" "$bracket/readme.md"
+          done
+
+      - name: Upload generated documentation previews
         uses: actions/upload-artifact@v4
         with:
-          name: spacer-nopscadlib-docs
+          name: nopscadlib-generated-documentation
           path: |
             examples/spacer/v0.1/readme.md
             examples/spacer/v0.1/readme.html
@@ -61,4 +96,11 @@ jobs:
             examples/spacer/v0.1/stls/
             examples/spacer/v0.1/assemblies/
             examples/spacer/v0.1/bom/
+            models/corner_bracket/v0.1/readme.md
+            models/corner_bracket/v0.1/readme.html
+            models/corner_bracket/v0.1/printme.html
+            models/corner_bracket/v0.1/stls/
+            models/corner_bracket/v0.1/assemblies/
+            models/corner_bracket/v0.1/bom/
+            models/corner_bracket/v0.1/design/
           retention-days: 14

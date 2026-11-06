@@ -113,18 +113,25 @@ module wood() {
 }
 
 // ---------- Bracket side profile ----------
-// The rounded inside corner (r_in) adds material around the plywood corner,
-// reducing stress concentration. Round the corresponding plywood corner.
-corner_arc = (r_in > 0)
-    ? [for (a = [180 : -5 : 90]) [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-    : [[0, 0]];
+// Make the inside fillet from ordinary 2D shapes, before extrusion.
+// The square sits in the open part of the L, at the sharp inner corner.
+// Subtracting a circle leaves only the small curved region to add.
+// Keep 72 segments (5 degrees each) to match the legacy 19-point arc.
+module inside_corner_2d(r) {
+    difference() {
+        translate([0, -r]) square([r, r]);
+        translate([r, -r]) circle(r = r, $fn = 72);
+    }
+}
 
 // End edges also receive elephant-foot relief so the wood-facing bevel
 // continues around side edges, ends, and the inside corner.
 tip_top  = (ef > 0) ? [[armH - ef, 0], [armH, ef]] : [[armH, 0]];
 tip_vert = (ef > 0) ? [[-ef, -armV], [0, -armV + ef]] : [[0, -armV]];
 
-module profile() {
+// Draw the unchanged L outline with a sharp inside corner at (0,0).
+// The arm-end and outside-corner chamfers are part of this outline.
+module sharp_profile() {
     polygon(concat(tip_top, [
         [armH, t - c],            // 45-degree top-arm end
         [armH - c, t],
@@ -132,7 +139,16 @@ module profile() {
         [-t, t - ce],             // 45-degree outside corner
         [-t, -armV + c],
         [-t + c, -armV]           // 45-degree vertical-arm end
-    ], tip_vert, corner_arc));    // rounded inside corner from (0,-r) to (r,0)
+    ], tip_vert, [[0, 0]]));
+}
+
+// Complete the side profile in 2D, then extrude it in profile_extrusion().
+// Radius zero leaves the original sharp corner without creating a square.
+module profile() {
+    union() {
+        sharp_profile();
+        if (r_in > 0) inside_corner_2d(r_in);
+    }
 }
 
 // Convex envelope of the bracket with its inside corner filled in. Side

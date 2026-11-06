@@ -17,6 +17,13 @@ the bracket thicknesses, head geometry and clearances are schematic.
 Blue is the outside bracket, orange is an optional inside counter-bracket,
 beige is plywood and grey is M4 hardware.
 
+![Overall L-joint with two perpendicular bolts and optional inner counter-bracket](figures/mounting-corner-overview.svg)
+
+The overview shows the **actual right-angle arrangement**: there is a
+fixing point on each arm of the outer L bracket. The optional inside
+counter-bracket is drawn in orange with a dashed outline because it is
+a **future concept**, not part of the existing CAD.
+
 ## Which side receives the bolt?
 
 The diagrams below show the stack through **one arm** of the L bracket.

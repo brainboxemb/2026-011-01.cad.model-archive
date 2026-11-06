@@ -15,17 +15,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install vcs2l and fetch pinned upstream NopSCADlib
-        run: |
-          python3 -m pip install --user vcs2l
-          export PATH="$HOME/.local/bin:$PATH"
-          mkdir -p ext
-          vcs import ext < dependencies.repos
-          test -f ext/NopSCADlib/core.scad
-          test -f ext/NopSCADlib/scripts/make_all.py
-
       - name: Build dedicated model-archive runtime
         run: docker build -f docker/Dockerfile -t model-archive-nopscadlib:ci .
+
+      - name: Fetch pinned NopSCADlib with vcs2l inside Docker
+        run: |
+          mkdir -p ext
+          docker run --rm --init \
+            -v "$PWD:/work" \
+            -w /work \
+            model-archive-nopscadlib:ci \
+            vcs import --input dependencies.repos ext
+          test -f ext/NopSCADlib/core.scad
+          test -f ext/NopSCADlib/scripts/make_all.py
 
       - name: Generate complete documentation for spacer example
         run: |
@@ -47,3 +49,16 @@ jobs:
           test -s "$version/readme.html"
           test -s "$version/printme.html"
           grep -q 'Example spacer' "$version/readme.md"
+
+      - name: Upload generated documentation preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: spacer-nopscadlib-docs
+          path: |
+            examples/spacer/v0.1/readme.md
+            examples/spacer/v0.1/readme.html
+            examples/spacer/v0.1/printme.html
+            examples/spacer/v0.1/stls/
+            examples/spacer/v0.1/assemblies/
+            examples/spacer/v0.1/bom/
+          retention-days: 14

@@ -12,15 +12,18 @@ unverified `magick` compatibility wrapper.
 ## Prerequisites
 
 - Docker Desktop on Windows.
-- Git, Python and `vcs2l` on the host to fetch NopSCADlib (not included in the image).
+- Docker Desktop. The image contains Git, Python and `vcs2l` itself, so no host-side Python installation is required.
 
 ## Build locally (PowerShell, from repository root)
 
 ```powershell
-py -m pip install vcs2l
-New-Item -ItemType Directory -Path ext -Force | Out-Null
-vcs import --input dependencies.repos ext
 docker build -f docker/Dockerfile -t model-archive-nopscadlib:local .
+New-Item -ItemType Directory -Path ext -Force | Out-Null
+docker run --rm `
+    -v "${PWD}:/work" `
+    -w /work `
+    model-archive-nopscadlib:local `
+    vcs import --input dependencies.repos ext
 ```
 
 ## Generate all documents and outputs for an example version
@@ -46,7 +49,7 @@ The checkout is provided through `/work/ext/NopSCADlib`; Docker's
 ## CI validation
 
 [The NopSCADlib smoke workflow](../.github/workflows/nopscadlib-smoke.yml)
-builds this image, fetches the pinned library via vcs2l, executes `make_all.py`
+builds this image, fetches the pinned library via vcs2l **inside the container**, executes `make_all.py`
 on the spacer example and checks for the expected outputs. It is the intended
 end-to-end qualification of this Dockerfile.
 

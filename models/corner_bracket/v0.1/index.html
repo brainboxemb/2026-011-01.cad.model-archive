@@ -49,11 +49,6 @@ module profile_extrusion() {
             profile();
 }
 </code></pre>
-<p><strong>Why is there no <code>hull()</code> for the inside corner?</strong> <code>hull()</code> would
-fill the open space between the two arms. Instead, the code calculates
-19 points along a quarter-circle with <code>sin()</code> and <code>cos()</code>, then includes
-those points in the L-shaped <code>polygon()</code>. See the separate
-<a href="hull-guide.html">illustrated guide to hull and rounded corners</a>.</p>
 <h3>2. Outer side-edge chamfers</h3>
 <p>The sharp <em>side</em> edges get a bevel. The code first creates two versions
 of the outside outline: one narrower in width and one with a smaller
@@ -62,8 +57,6 @@ perimeter. <code>hull()</code> connects them with sloping surfaces.
 The two pieces still meet the plywood on flat faces. The parameter
 <code>cs = 2</code> controls this bevel; <code>c</code> and <code>ce</code> belong to the 2D
 polygon from Step 1.</p>
-<p>For an explanation with a <strong>simple bar, the two separate shapes, and
-the result of hull()</strong>, see the <a href="hull-guide.html">separate illustrated hull guide</a>.</p>
 <p><img alt="Outer side-edge chamfers" src="design/02_edge_chamfers.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module outer_shape() {
@@ -296,6 +289,12 @@ else if (design_step == "06_installed") {
 <li><a href="#Parts_list">Parts list</a></li>
 <li><a href="#main_assembly">Main Assembly</a></li>
 </ol>
+<h2>Further reading</h2>
+<p>The separate <a href="hull-guide.html">illustrated guide to OpenSCAD hull()</a>
+shows how the operation connects simple shapes and creates rounded
+outer corners. It also explains the quarter-circle calculation used
+for the bracket's inside corner. These general examples are kept
+outside the six-step bracket design walkthrough.</p>
 <h2>Alternative mounting arrangements</h2>
 <p>The current model uses bolts from the <strong>inside</strong> of the plywood into
 <strong>captured nuts</strong> in the outside bracket. There are other possibilities:
@@ -308,6 +307,7 @@ constraints are compared in the separate
 <p>These are design alternatives. In v0.1, the <strong>bolt-from-inside,
 captive-nut</strong> configuration is the only implemented bolt direction;
 the other arrangements require new CAD and physical testing.</p>
+<h2>Printing and assembly</h2>
 <ol>
 <li>Print one bracket and one pair of access plugs, with each part on
    its flat side as arranged by the original designer.</li>

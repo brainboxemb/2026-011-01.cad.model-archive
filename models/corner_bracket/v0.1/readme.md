@@ -48,12 +48,6 @@ The six pictures show how the bracket is built, from a flat drawing to the finis
                 profile();
     }
 
-**Why is there no `hull()` for the inside corner?** `hull()` would
-fill the open space between the two arms. Instead, the code calculates
-19 points along a quarter-circle with `sin()` and `cos()`, then includes
-those points in the L-shaped `polygon()`. See the separate
-[illustrated guide to hull and rounded corners](hull-guide.html).
-
 ### 2. Outer side-edge chamfers
 
 The sharp *side* edges get a bevel. The code first creates two versions
@@ -63,9 +57,6 @@ perimeter. `hull()` connects them with sloping surfaces.
 The two pieces still meet the plywood on flat faces. The parameter
 `cs = 2` controls this bevel; `c` and `ce` belong to the 2D
 polygon from Step 1.
-
-For an explanation with a **simple bar, the two separate shapes, and
-the result of hull()**, see the [separate illustrated hull guide](hull-guide.html).
 
 ![Outer side-edge chamfers](design/02_edge_chamfers.png)
 
@@ -329,6 +320,14 @@ The plywood is only there to help you see the fit: the `%` before `wood()` tells
 1. [Main Assembly](#main_assembly)
 
 
+## Further reading
+
+The separate [illustrated guide to OpenSCAD hull()](hull-guide.html)
+shows how the operation connects simple shapes and creates rounded
+outer corners. It also explains the quarter-circle calculation used
+for the bracket's inside corner. These general examples are kept
+outside the six-step bracket design walkthrough.
+
 ## Alternative mounting arrangements
 
 The current model uses bolts from the **inside** of the plywood into
@@ -345,6 +344,7 @@ These are design alternatives. In v0.1, the **bolt-from-inside,
 captive-nut** configuration is the only implemented bolt direction;
 the other arrangements require new CAD and physical testing.
 
+## Printing and assembly
 
 1. Print one bracket and one pair of access plugs, with each part on
    its flat side as arranged by the original designer.

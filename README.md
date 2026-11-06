@@ -49,7 +49,9 @@ models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
 models/corner_bracket/v0.1/scad/  Corner bracket and interactive design walkthrough
-docs/                            Usage and future publication decisions
+site/                            GitHub Pages HTML/CSS templates
+scripts/ci/                      Documentation generation and publishing
+docs/                            Usage and publication notes
 ```
 
 Unversioned models use `source/scad/` to keep NopSCADlib's generated lowercase
@@ -68,8 +70,8 @@ For a minimal NopSCADlib demonstration, try the
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
 - [Shared CAD toolchain](https://github.com/brainboxemb/docker.scad-toolchain) (CI only)
-- [GitHub Pages holding page](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
-- [Generated documentation publication plan](docs/PUBLISHING.md)
+- [Published model documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
+- [Documentation generation and publication](docs/PUBLISHING.md)
 
 **Documentation generation on Windows/workstations is not supported.**
 Documentation is generated in GitHub Actions.

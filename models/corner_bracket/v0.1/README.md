@@ -16,6 +16,7 @@ From the archive root after `bootstrap.ps1`:
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/corner_bracket.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/design.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/hull_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/rounding_explained.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential
@@ -27,9 +28,24 @@ how `hull()` connects two differently sized layers. Its five intermediate
 views appear before the real bracket's chamfer code in the generated
 [design documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/).
 
+The `rounding_explained.scad` tutorial shows two different kinds of corner:
+four circles connected with `hull()` to make rounded **outside** corners,
+and the bracket's concave **inside** corner drawn from sampled points along
+a quarter-circle. It also shows why applying `hull()` to the entire L profile
+would incorrectly fill the opening between the arms.
+
 The [documentation entry point](scad/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design
 images are rendered from `design.scad` by the CI documentation workflow.
+
+## Mounting alternatives
+
+The [mounting options](mounting-options.md) compare inside-to-outside
+and outside-to-inside M4 bolts, hex versus thin square nuts, accessible
+locking flange nuts, and a possible second **inside counter-bracket**.
+The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/mounting-options.html)
+includes the supplied hardware references and explains which options
+would need CAD changes.
 
 ## Checks before printing or assembly
 

@@ -1,61 +1,46 @@
 # Generated documentation and GitHub Pages
 
-The model archive publishes NopSCADlib-generated HTML, STL, BOM, and PNG
-design/assembly images to the `gh-pages` branch.
+GitHub Actions generates HTML, STL, BOM and illustrated design documentation
+using NopSCADlib and publishes it to the `gh-pages` branch.
 
-## Generator
+## Where things live
 
-GitHub Actions runs the upstream NopSCADlib `make_all.py` generator inside
-the central `ghcr.io/brainboxemb/scad-toolchain-drawing` image (defined in
-[`docker.scad-toolchain`](https://github.com/brainboxemb/docker.scad-toolchain)).
-There is **no repository-local Dockerfile**.
+- [Workflow](../.github/workflows/nopscadlib-smoke.yml): **only** declares
+  checkout, generation, artifact upload and publication.
+- [Generator](../scripts/ci/generate-docs.sh): invokes the central Docker
+  toolchain and NopSCADlib.
+- [Illustration renderer](../scripts/ci/render-bracket-steps.sh): creates the
+  PNG images for each design tutorial step.
+- [Output checks](../scripts/ci/validate-docs.sh): verifies generated files.
+- [Pages publisher](../scripts/ci/publish-pages.sh): assembles and commits
+  the generated website.
+- [Website templates](../site/): homepage, page wrapper and CSS.
 
-For each production model, NopSCADlib generates:
-- `readme.html`, `readme.md`, and print-friendly `printme.html`;
-- printed-part STL files and previews under `stls/`;
-- assembly views under `assemblies/`;
-- a bill of materials under `bom/`.
+**HTML, CSS and website assembly logic do not belong in the workflow YAML.**
 
-The corner bracket adds six sequential, source-generated images under
-`design/`. They come from `models/corner_bracket/v0.1/scad/design.scad`;
-this file calls the same geometry modules as the parametric model.
+## Generator output
 
-These files are created **only in GitHub Actions**. Generation on local
-Windows workstations is not supported.
+The central [CAD drawing image](https://github.com/brainboxemb/docker.scad-toolchain)
+provides the tools needed by NopSCADlib. No repository-local Dockerfile exists.
 
-## Publication paths
+NopSCADlib generates HTML/Markdown build notes, assembly images, STL previews
+and files, and the bill of materials. The corner bracket also generates:
+- six images explaining its actual geometry;
+- five images demonstrating `hull()` using a rectangular bar;
+- seven images comparing `hull()` around circles with the **sampled
+  quarter-circle** used to round the bracket's concave inside corner.
 
-On pushes to `main`, the CI workflow copies the generated files into a
-commit on the `gh-pages` branch:
+OpenSCAD source remains on `main`; generated outputs go to `gh-pages`.
+Documentation generation on Windows/workstations is **not supported**.
 
-```text
-gh-pages/
-├── index.html
-├── examples/spacer/v0.1/
-│   ├── index.html
-│   ├── printme.html
-│   ├── stls/
-│   ├── assemblies/
-│   └── bom/
-└── models/corner_bracket/v0.1/
-    ├── index.html
-    ├── printme.html
-    ├── design/
-    ├── stls/
-    ├── assemblies/
-    └── bom/
-```
+## Public site
 
-NopSCADlib `readme.html` is renamed `index.html` for the website. Its
-relative PNG and STL links remain valid.
+The [model archive](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
+is published from the `gh-pages` branch. Each model version has its own
+page, STL/BOM outputs, source SCAD files and design images. The generated
+NopSCADlib `readme.html` is wrapped by `site/model-header.html` and
+written as `index.html`.
 
-## Pages deployment
-
-GitHub Pages is configured to publish the `gh-pages` branch. On
-6 November 2026, the documentation workflow published the generated spacer
-and corner bracket files to this branch and the Pages build/deployment
-completed successfully (GitHub Actions run
-[42212520812](https://github.com/brainboxemb/2026-011-01.cad.model-archive/actions/runs/42212520812)).
-
-On future updates, verify that the Pages build/deployment workflow completed
-successfully before treating the public site as current.
+Publishing runs after successful output validation on pushes to `main`.
+Verify the GitHub Pages deployment run before assuming the public page
+has refreshed.

@@ -21,8 +21,8 @@ upstream `scripts/make_all.py` for the sample spacer and checks the resulting
 STL, images, BOM and Markdown/HTML.
 
 Current CI builds the generated files as a verification exercise; it does not
-publish them to Pages. Future generated documentation is planned for a
-separate `gh-pages` orphan branch; see [publication plan](../docs/PUBLISHING.md).
+publish them to Pages. A separate `gh-pages` branch with a placeholder page exists already, but
+published model documentation is not automated yet; see [publication plan](../docs/PUBLISHING.md).
 
 NopSCADlib is checked out at runtime, not vendored in the image. The upstream
 GPL-3.0-or-later license remains applicable to its source.

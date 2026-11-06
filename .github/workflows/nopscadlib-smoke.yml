@@ -123,7 +123,7 @@ jobs:
             cp "$version/readme.html" "$site/$version/index.html"
             cp "$version/readme.md" "$site/$version/readme.md"
             cp "$version/printme.html" "$site/$version/printme.html"
-            cp -a "$version/stls" "$version/assemblies" "$version/bom" "$site/$version/"
+            cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$site/$version/"
           done
           cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
 

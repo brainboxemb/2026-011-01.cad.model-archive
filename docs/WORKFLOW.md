@@ -88,7 +88,9 @@ models/
 ```
 
 Each version is independent so an older design remains reproducible. A single
-unversioned model can use `models/tube-clip/scad/main.scad`.
+unversioned model uses `models/tube-clip/source/scad/main.scad` instead.
+The extra `source/` level avoids a Windows filename collision between a model's
+human-maintained `README.md` and NopSCADlib's lowercase generated `readme.md`.
 
 NopSCADlib's `_stl`, `_assembly` and `//! ` conventions are available, but
 we do **not** require assembly documentation for every small part.

@@ -32,6 +32,6 @@ in_container /work/models/corner_bracket/v0.1 \
 # Separate focused guides: mounting options and the extended hull tutorial.
 # Use the central drawing image, just like the NopSCADlib generator.
 in_container /work/models/corner_bracket/v0.1 \
-  bash -c 'for page in mounting-options hull-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
+  bash -c 'for page in mounting-options hull-guide polygon-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
 bash scripts/ci/validate-docs.sh

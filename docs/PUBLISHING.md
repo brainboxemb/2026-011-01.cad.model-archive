@@ -1,26 +1,53 @@
-# Documentation publication — planned, not enabled
+# Documentation publication — GitHub Pages
 
-## Decision: GitHub Pages, not the GitHub Wiki
+## Choice: Pages rather than Wiki
 
-The **GitHub Wiki is not the publication target**. NopSCADlib generates
-Markdown, HTML, diagrams, PNG previews, STL exports and BOMs together. Those
-files are better published as a versioned static site than copied into a Wiki.
+NopSCADlib generates a combination of HTML, Markdown, image previews,
+STLs and BOMs. A static GitHub Pages site preserves these files and their
+relative links better than manually copying them into GitHub Wiki.
 
-**Target:** GitHub Pages from a clean, **orphan `gh-pages` branch**, with
-`.nojekyll` in its root. This keeps generated content completely separate from
-the OpenSCAD sources and their Git history on `main`.
+## Branch already available
 
-Intended site layout (example, *not deployed*):
+The **`gh-pages` branch exists** and currently contains only:
 
 ```text
-gh-pages/ (orphan: no shared ancestor with main)
+gh-pages/
 ├── .nojekyll
-├── index.html                      Model index / catalog
+└── index.html        A basic holding page; no models published yet
+```
+
+The file tree is separate from the model source on `main`. **Technical
+clarification:** the current branch was initialized from `main` and its
+contents replaced with a clean site tree; it is not a parentless *orphan*
+Git commit. That distinction does not affect GitHub Pages publishing.
+We can convert it to a true orphan later if history isolation is worth
+doing, but it is not needed to enable Pages.
+
+## Enable the site manually
+
+In GitHub, open the model archive repository:
+
+1. **Settings → Pages**
+2. Under **Build and deployment**, select **Deploy from a branch**.
+3. Select **`gh-pages`** and **`/(root)`**.
+4. Select **Save**.
+
+GitHub should then publish the holding page at
+`https://brainboxemb.github.io/2026-011-01.cad.model-archive/`.
+This URL is the expected destination, not a claim that the Pages site
+is already active.
+
+## Intended model pages
+
+```text
+gh-pages/
+├── .nojekyll
+├── index.html                       Model index
 └── models/
-    └── spacer/
-        ├── index.html              Links to version pages
+    └── tube-clip/
+        ├── index.html               Links to retained versions
         ├── v0.1/
-        │   ├── index.html          NopSCADlib's generated readme.html
+        │   ├── index.html           Generated NopSCADlib readme.html
         │   ├── printme.html
         │   ├── assemblies/
         │   ├── stls/
@@ -29,34 +56,20 @@ gh-pages/ (orphan: no shared ancestor with main)
             └── ...
 ```
 
-**Authoring vs output**
+Authoritative model sources and `dependencies.repos` remain on `main`;
+generated content lives on `gh-pages`, where old versions should be
+preserved instead of overwritten.
 
-- `main`: hand-edited `.scad`, model descriptions, `dependencies.repos`,
-  Windows opening workflow and CI definitions.
-- `gh-pages`: **only generated output**, grouped per model/version.
-- NopSCADlib's version-local `readme.html` can become the published
-  `index.html` without rewriting the entire document, while all relative image
-  and STL paths remain in the same version folder.
-- Previous published versions stay available; avoid overwriting v0.1 when
-  preparing v0.2.
+## Publication automation (later)
 
-## Status and future deployment
+We do **not** yet publish generated documentation from the CI smoke workflow.
+Its output is a short-lived CI artifact. For now the priority is **opening
+models in the local Windows OpenSCAD GUI**.
 
-There is **no `gh-pages` branch, GitHub Pages setting, or publishing workflow
-yet**. Documentation generation is currently only exercised as a CI smoke
-test and published as a short-lived workflow artifact. Manual Windows work
-starts with **opening and editing models**, not documentation generation.
+When automated publication is desired, decide explicitly how Pages deploys:
+a push with the default `GITHUB_TOKEN` does **not** trigger a build of a
+branch-based Pages site. A supported `actions/upload-pages-artifact` +
+`actions/deploy-pages` workflow with Pages set to **GitHub Actions** is an
+alternative. Do not silently mix these methods.
 
-When publication is wanted, first validate the generated HTML and assets,
-then create the orphan branch and configure GitHub **Settings > Pages >
-Deploy from a branch > `gh-pages` > /(root)**.
-
-**GitHub Actions caveat:** pushing commits to `gh-pages` using the default
-`GITHUB_TOKEN` does not itself trigger a Pages build. Before automating
-publication, choose a supported deployment path (for example
-`actions/upload-pages-artifact` + `actions/deploy-pages` with GitHub Pages
-configured for **GitHub Actions**) rather than silently relying on that push.
-This does not require a new Python documentation framework.
-
-Reference:
-[GitHub Pages publishing sources](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
+See [GitHub Pages publishing sources](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).

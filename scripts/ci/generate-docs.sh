@@ -24,6 +24,12 @@ in_container /work/examples/spacer/v0.1 \
 
 bracket="models/corner_bracket/v0.1"
 mkdir -p "$bracket/design" "$bracket/docs"
+
+# Verify the new 2D square-minus-circle profile is geometrically identical
+# to the former 19-point polygon for supported radius/relief combinations.
+in_container /work/models/corner_bracket/v0.1 \
+  bash /work/scripts/ci/verify-corner-rounding.sh
+
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/render-bracket-steps.sh
 

@@ -71,11 +71,8 @@ For a minimal NopSCADlib demonstration, try the
 - [GitHub Pages holding page](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
 - [Generated documentation publication plan](docs/PUBLISHING.md)
 
-Documentation generation is **not required on Windows**. GitHub Actions
-uses the centrally built `scad-toolchain-drawing` image to generate a spacer
-example plus the corner bracket's STL, BOM, HTML and six design images.
-Generated results are retained as CI artifacts; GitHub Pages publishing is
-a separate step. The local OpenSCAD launcher is tested independently on Windows.
+**Documentation generation on Windows/workstations is not supported.**
+Documentation is generated in GitHub Actions.
 
 ## Licensing
 

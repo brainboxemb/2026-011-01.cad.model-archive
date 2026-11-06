@@ -1,0 +1,48 @@
+name: NopSCADlib smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install vcs2l and fetch pinned upstream NopSCADlib
+        run: |
+          python3 -m pip install --user vcs2l
+          export PATH="$HOME/.local/bin:$PATH"
+          vcs import ext < dependencies.repos
+          test -f ext/NopSCADlib/core.scad
+          test -f ext/NopSCADlib/scripts/make_all.py
+
+      - name: Build dedicated model-archive runtime
+        run: docker build -f docker/Dockerfile -t model-archive-nopscadlib:ci .
+
+      - name: Generate complete documentation for spacer example
+        run: |
+          docker run --rm --init \
+            -v "$PWD:/work" \
+            -w /work/examples/spacer/v0.1 \
+            model-archive-nopscadlib:ci \
+            xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
+
+      - name: Check generated deliverables
+        run: |
+          version=examples/spacer/v0.1
+          test -s "$version/stls/spacer.stl"
+          test -s "$version/stls/spacer.png"
+          test -s "$version/assemblies/main_assembled.png"
+          test -s "$version/assemblies/main_assembly.png"
+          test -s "$version/bom/bom.json"
+          test -s "$version/readme.md"
+          test -s "$version/readme.html"
+          test -s "$version/printme.html"
+          grep -q 'Example spacer' "$version/readme.md"

@@ -27,8 +27,14 @@ NopSCADlib generates HTML/Markdown build notes, assembly images, STL previews
 and files, and the bill of materials. The corner bracket also generates:
 - six images explaining its actual geometry;
 - five images demonstrating `hull()` using a rectangular bar;
-- seven images comparing `hull()` around circles with the **sampled
-  quarter-circle** used to round the bracket's concave inside corner.
+- seven images comparing `hull()` around circles with the **former sampled
+  quarter-circle** construction of the bracket's concave inside corner;
+- nine images comparing 2D and 3D constructions from ordinary shapes.
+
+The current bracket uses the **2D square-minus-circle construction**.
+Before generating the documentation, CI compares this profile with the
+former 19-point polygon profile for several radii and print-relief settings
+using [geometry equivalence checks](../scripts/ci/verify-corner-rounding.sh).
 
 The main design manual keeps only the **six actual bracket stages**.
 The extended bar and circle examples are published as `docs/hull-guide.html`;

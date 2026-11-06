@@ -23,3 +23,9 @@ done
 for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
   render rounding_explained.scad demo_stage "$stage" "rounding_$stage" "720,450"
 done
+
+# Nine clear examples of a concave L fillet: 2D square/circle, 3D
+# cube/cylinder, and the existing point-list polygon approach.
+for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
+  render inside_corner_methods.scad demo_stage "$stage" "corner_$stage" "720,450"
+done

@@ -36,8 +36,15 @@ circles. The original `hull_explained.scad` and
 The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
 and the bracket's concave **inside** corner drawn from sampled points along
-a quarter-circle. It also shows why applying `hull()` to the entire L profile
-would incorrectly fill the opening between the arms.
+a quarter-circle.
+
+The new [Polygon and rounded-corner guide](polygon-guide.md) compares two
+straightforward constructions of the same **inside** radius:
+`square() - circle()` with `union()` **before** `linear_extrude()`
+(2D first), and `cube() - cylinder()` with `union()` in **3D**.
+Its [standalone OpenSCAD demo](scad/inside_corner_methods.scad) has
+nine Customizer stages and CI-generated illustrations. These examples do
+not change the printable v0.1 bracket geometry.
 
 The [documentation entry point](scad/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design

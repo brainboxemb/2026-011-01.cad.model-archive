@@ -148,9 +148,48 @@
 //!
 //! ### 4. Elephant-foot relief
 //!
-//! **Why add another tiny bevel?** The first layer of a 3D print can spread out slightly where it touches the print bed. This is called *elephant foot*. Without compensation, the bracket might not sit flat against the plywood.
+//! **What is elephant foot?** The very first printed layers sometimes
+//! spread sideways where they touch the print bed. A nominally square edge
+//! can become slightly wider at the base. The bracket is printed on one
+//! of its flat **side faces**, so this bulge can interfere with the surfaces
+//! where the bracket should fit against the plywood.
 //!
-//! To make room for that extra material, the code cuts away a thin **triangular strip** along the edges that touch the wood. The parameter `ef = 0.6` mm sets the relief. `linear_extrude()` stretches the little triangle along straight edges. `multmatrix()` simply positions and turns a cutting shape; `rotate_extrude()` carries a similar cut around the rounded inside corner. These cuts are subtracted together in `bracket()`.
+//! The solution is not to change the entire bracket. We remove a very
+//! small **45-degree triangle** at the edges near the print bed. The
+//! parameter `ef = 0.6` mm sets the nominal size of this relief;
+//! the illustration deliberately exaggerates it so you can see the cut.
+//!
+//! ![First layer bulge versus an intentional triangular relief](figures/elephant-foot-section.svg)
+//!
+//! **Where are these triangles removed?** The bracket has three kinds of
+//! wood-facing edges: a straight edge along the horizontal arm, a straight
+//! edge along the vertical arm, and the rounded inside corner. Relief is
+//! applied at **both printed side faces** (`Y = +W/2` and `Y = -W/2`).
+//!
+//! ![Wood-facing relief edge locations on the bracket](figures/elephant-foot-edges.svg)
+//!
+//! The OpenSCAD code constructs the cutting shapes in stages:
+//!
+//! 1. `ef_wedge_profile()` draws a tiny **triangle in 2D** using
+//!    `polygon()`. It is the cross-section of the material to remove.
+//! 2. `linear_extrude()` stretches that triangle along each **straight**
+//!    contact edge, like pulling a triangular knife along the bracket.
+//!    `mirror()` repeats the operation on the other printed side.
+//! 3. At the short **diagonal corners**, `ef_edge_wedge()` uses
+//!    `multmatrix()` to position the same triangular cutter at an angle.
+//! 4. For the **rounded inside corner**, `rotate_extrude()` sweeps a
+//!    triangular cutter around a circular path rather than along a line.
+//! 5. Finally, `difference()` inside `bracket()` subtracts all these
+//!    cutters from the body, along with the nut pockets and bolt holes.
+//!
+//! Setting `ef = 0` disables the relief. The diagonal cutters depend on
+//! `cs > 0`, and the rounded cutter is used when `r_in >= 1`. This is
+//! an allowance for printing, **not** a substitute for checking fit on
+//! an actual print.
+//!
+//! The following render shows the resulting bracket. The complete
+//! cutter modules used in the source code are listed underneath.
+
 //!
 //! ![Elephant-foot relief](design/04_print_relief.png)
 //!

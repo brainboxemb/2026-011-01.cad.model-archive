@@ -5,7 +5,7 @@ set -euo pipefail
 render() {
   local file="$1" variable="$2" stage="$3" output="$4" imgsize="$5"
   xvfb-run -a openscad --imgsize="$imgsize" --viewall --autocenter \
-    -D "$variable=\"$stage\"" -o "design/$output.png" "scad/$file"
+    -D "$variable=\"$stage\"" -o "design/$output.png" "design/$file"
   test -s "design/$output.png"
 }
 

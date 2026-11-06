@@ -7,23 +7,23 @@ part of the current setup.
 ## Prerequisites
 
 - [OpenSCAD for Windows](https://openscad.org/downloads.html), installed normally.
-- Git, Python (`py`) and `vcs2l` for pulling the external NopSCADlib library.
-- Windows PowerShell. There is **no requirement to install Docker Desktop**.
+- Git and the shared `brainboxemb-dev-tools` Conda environment from
+  [`tool.py-dev-env`](https://github.com/brainboxemb/tool.py-dev-env).
+  This environment supplies `vcs2l`.
+- Windows PowerShell. **Docker Desktop is not required.**
 
 From the repository root:
 
 ```powershell
-py -m pip install vcs2l
-New-Item -ItemType Directory -Path ext -Force | Out-Null
-vcs import --input dependencies.repos ext
+.\bootstrap.ps1
 ```
 
-If `vcs` is not found after installation, ensure the Python *Scripts* folder
-is available on your PATH (or reinstall vcs2l using the Python environment
-whose Scripts directory is already on PATH).
-
-The result is `ext/NopSCADlib`, pinned to the upstream commit in
-`dependencies.repos`. The external checkout is ignored by Git.
+The bootstrap script creates `ext/` and uses `vcs import` to retrieve
+`ext/NopSCADlib` at the commit pinned in `dependencies.repos`. It uses
+the active `vcs` command, or runs `vcs` via `brainboxemb-dev-tools`
+with `conda.exe` if the Conda environment is not activated. Re-running
+it is supported, and it does not modify global Python or OpenSCAD settings.
+The external checkout is ignored by Git.
 
 ## Open a model in desktop OpenSCAD
 

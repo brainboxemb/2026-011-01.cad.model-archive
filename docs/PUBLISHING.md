@@ -23,19 +23,15 @@ Git commit. That distinction does not affect GitHub Pages publishing.
 We can convert it to a true orphan later if history isolation is worth
 doing, but it is not needed to enable Pages.
 
-## Enable the site manually
+## Current Pages state
 
-In GitHub, open the model archive repository:
+GitHub automatically started the **Pages build and deployment** workflow
+after the `gh-pages` branch was created. That initial deployment completed
+successfully. No manual Pages-setting change was needed.
 
-1. **Settings → Pages**
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Select **`gh-pages`** and **`/(root)`**.
-4. Select **Save**.
-
-GitHub should then publish the holding page at
+The placeholder is intended to be available at
 `https://brainboxemb.github.io/2026-011-01.cad.model-archive/`.
-This URL is the expected destination, not a claim that the Pages site
-is already active.
+No model documentation is published yet.
 
 ## Intended model pages
 

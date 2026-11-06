@@ -30,9 +30,11 @@ and files, and the bill of materials. The corner bracket also generates:
 - seven images comparing `hull()` around circles with the **sampled
   quarter-circle** used to round the bracket's concave inside corner.
 
-The main design manual keeps only the **six actual bracket stages**;
-the extended bar and circle examples are published separately as
-`hull-guide.html`. The `mounting-options.html` comparison contains
+The main design manual keeps only the **six actual bracket stages**.
+The extended bar and circle examples are published as `hull-guide.html`;
+the nine-stage **2D versus 3D inside-corner construction** is published as
+`polygon-guide.html`, with images generated from
+`scad/inside_corner_methods.scad`. The `mounting-options.html` comparison contains
 editable SVG cross-section diagrams for the alternative fixing arrangements.
 The main manual also has SVG illustrations explaining the elephant-foot cuts.
 

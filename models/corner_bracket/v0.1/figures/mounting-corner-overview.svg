@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" role="img" aria-label="Conceptual L-section showing plywood, outside corner bracket, two perpendicular bolts, and optional inside counter-bracket">
+<rect width="960" height="440" fill="#fff"/><rect width="960" height="8" fill="#335f85"/>
+<text x="32" y="43" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#203246">Corner joint: the same fixing principle on both arms</text>
+<text x="32" y="70" font-family="Arial,sans-serif" font-size="14" fill="#6b7c8e">Schematic side section — not to scale or a finished drawing of the counter-bracket.</text>
+<!-- plywood right-angle -->
+<path d="M290 160 H808 V194 H326 V398 H290 Z" fill="#eed4aa" stroke="#bd9064" stroke-width="2"/>
+<!-- outer corner bracket, top and left -->
+<path d="M258 110 H808 V155 H286 V398 H238 V130 Z" fill="#335f85" stroke="#214c6c" stroke-width="2"/>
+<!-- optional inner counter-bracket, translucent/dashed because not designed -->
+<path d="M331 199 H471 V222 H355 V348 H331 Z" fill="#d68c3d" fill-opacity=".58" stroke="#b7772b" stroke-width="3" stroke-dasharray="8 6"/>
+<!-- top arm bolt shank -->
+<line x1="611" y1="236" x2="611" y2="128" stroke="#687784" stroke-width="9"/>
+<rect x="596" y="224" width="30" height="15" rx="4" fill="#687784" stroke="#47586c"/>
+<polygon points="598,127 605,115 618,115 625,127 618,139 605,139" fill="#7f9b9b" stroke="#47586c"/>
+<!-- vertical arm bolt -->
+<line x1="385" y1="314" x2="254" y2="314" stroke="#687784" stroke-width="9"/>
+<rect x="377" y="299" width="17" height="30" rx="4" fill="#687784" stroke="#47586c"/>
+<polygon points="248,300 261,300 269,314 261,328 248,328 240,314" fill="#7f9b9b" stroke="#47586c"/>
+<!-- title callouts -->
+<line x1="703" y1="122" x2="817" y2="104" stroke="#335f85" stroke-width="2"/>
+<text x="727" y="98" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#335f85">Outside bracket</text>
+<line x1="708" y1="177" x2="810" y2="202" stroke="#bd9064" stroke-width="2"/>
+<text x="736" y="222" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#8f6436">Plywood</text>
+<line x1="460" y1="213" x2="508" y2="245" stroke="#b7772b" stroke-width="2"/>
+<text x="501" y="260" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#b7772b">Optional inner</text>
+<text x="501" y="280" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#b7772b">counter-bracket</text>
+<line x1="623" y1="230" x2="670" y2="291" stroke="#687784" stroke-width="2"/>
+<text x="641" y="313" font-family="Arial,sans-serif" font-size="15" fill="#687784">Bolt for top arm</text>
+<line x1="385" y1="314" x2="436" y2="362" stroke="#687784" stroke-width="2"/>
+<text x="427" y="385" font-family="Arial,sans-serif" font-size="15" fill="#687784">Bolt for vertical arm</text>
+<text x="42" y="414" font-family="Arial,sans-serif" font-size="13" fill="#6b7c8e">This overview shows the inside-to-outside bolt direction. The optional orange bracket has not been modeled in v0.1.</text>
+</svg>

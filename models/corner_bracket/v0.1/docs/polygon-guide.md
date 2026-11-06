@@ -11,7 +11,7 @@ separate from thickness, nut pockets, and other 3D details. The 3D method
 is included to show how exactly the same idea works with solids.
 
 The illustrations come from the standalone, editable
-[inside_corner_methods.scad](scad/inside_corner_methods.scad). Select
+[inside_corner_methods.scad](../design/inside_corner_methods.scad). Select
 `demo_stage` in the OpenSCAD Customizer to view each construction step.
 
 > These are **teaching alternatives**, not a silent replacement of the
@@ -24,7 +24,7 @@ The illustrations come from the standalone, editable
 `polygon()` needs a list of coordinates. OpenSCAD joins them in order
 and closes the outline. The inside corner is sharp at `(0, 0)`.
 
-![Plain L-profile in 2D](design/corner_01_sharp_2d.png)
+![Plain L-profile in 2D](../design/corner_01_sharp_2d.png)
 
 ```openscad
 module sharp_L_2d() {
@@ -47,7 +47,7 @@ The corner needs a little extra material in the empty quadrant next to
 `(0, 0)`. Place a `radius × radius` square at `(0, -radius)`.
 Place a circle with the **same radius** at `(radius, -radius)`.
 
-![2D square and circle, before subtracting](design/corner_02_square_circle_2d.png)
+![2D square and circle, before subtracting](../design/corner_02_square_circle_2d.png)
 
 ```openscad
 module corner_square_2d() {
@@ -71,7 +71,7 @@ lies outside the circle*.
 `difference()` keeps the square and removes anything the circle overlaps.
 The result is a small curved triangular-looking piece.
 
-![Remaining 2D curved corner piece](design/corner_03_piece_2d.png)
+![Remaining 2D curved corner piece](../design/corner_03_piece_2d.png)
 
 ```openscad
 module corner_piece_2d() {
@@ -87,7 +87,7 @@ module corner_piece_2d() {
 `union()` combines the two filled 2D shapes. Only the inside corner
 changes; the rest of the original L outline stays where it is.
 
-![The L profile and the added rounded inside-corner piece](design/corner_04_rounded_2d.png)
+![The L profile and the added rounded inside-corner piece](../design/corner_04_rounded_2d.png)
 
 ```openscad
 module rounded_L_2d() {
@@ -103,7 +103,7 @@ module rounded_L_2d() {
 Once the 2D profile is correct, a **single** `linear_extrude()` turns
 the complete outline into a 3D bracket-like solid.
 
-![The rounded 2D L extruded into 3D](design/corner_05_extruded_2d.png)
+![The rounded 2D L extruded into 3D](../design/corner_05_extruded_2d.png)
 
 ```openscad
 module extruded_from_2d() {
@@ -133,7 +133,7 @@ The cube is placed where the 2D square was, and the cylinder is
 positioned at the circle's centre. Both cover the **full intended
 depth** of the bracket.
 
-![3D cube and cylinder before subtraction](design/corner_06_cube_cylinder_3d.png)
+![3D cube and cylinder before subtraction](../design/corner_06_cube_cylinder_3d.png)
 
 ```openscad
 module corner_cube_3d() {
@@ -153,7 +153,7 @@ it **does not** make the finished part thicker.
 
 ### B2. Subtract the cylinder
 
-![Small 3D corner piece after subtracting the cylinder](design/corner_07_piece_3d.png)
+![Small 3D corner piece after subtracting the cylinder](../design/corner_07_piece_3d.png)
 
 ```openscad
 module corner_piece_3d() {
@@ -166,7 +166,7 @@ module corner_piece_3d() {
 
 ### B3. Add the result to an extruded L
 
-![Complete L solid with an inside radius, constructed in 3D](design/corner_08_rounded_3d.png)
+![Complete L solid with an inside radius, constructed in 3D](../design/corner_08_rounded_3d.png)
 
 ```openscad
 module rounded_L_3d() {
@@ -188,7 +188,7 @@ The v0.1 bracket does not use either separate corner piece above. It
 calculates **19 points** along a quarter-circle and puts those points
 directly into its one `polygon()` outline.
 
-![L profile built directly from sampled arc points](design/corner_09_polygon_points_2d.png)
+![L profile built directly from sampled arc points](../design/corner_09_polygon_points_2d.png)
 
 ```openscad
 corner_arc = (r_in > 0)

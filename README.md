@@ -10,15 +10,20 @@ dependency, pinned in `dependencies.repos` and fetched with
 
 ## Start on Windows (without Docker)
 
-Install [OpenSCAD for Windows](https://openscad.org/downloads.html), Git,
-Python and vcs2l. From the repository root in PowerShell:
+Install [OpenSCAD for Windows](https://openscad.org/downloads.html),
+Git, and the shared `brainboxemb-dev-tools` Conda environment from
+[`tool.py-dev-env`](https://github.com/brainboxemb/tool.py-dev-env).
+From the repository root in PowerShell:
 
 ```powershell
-py -m pip install vcs2l
-New-Item -ItemType Directory -Path ext -Force | Out-Null
-vcs import --input dependencies.repos ext
+.\bootstrap.ps1
 .\scripts\open-model.ps1
 ```
+
+`bootstrap.ps1` creates `ext/` and fetches the pinned NopSCADlib dependency
+through `vcs2l`. It can use `vcs` from an activated environment or invoke it
+through the shared Conda environment. No global `pip install` or manual
+directory creation is necessary; rerunning the script is supported.
 
 The last command opens the example spacer in the **installed OpenSCAD GUI**.
 It temporarily sets `OPENSCADPATH` for that launch, so
@@ -39,7 +44,7 @@ machine's global policy.
 ```text
 dependencies.repos               Pin NopSCADlib commit
 ext/NopSCADlib/                  Local fetched checkout; ignored by Git
-scripts/open-model.ps1           Launch the Windows OpenSCAD GUI
+bootstrap.ps1                    Fetch pinned external libraries into ext/\nscripts/open-model.ps1           Launch the Windows OpenSCAD GUI
 models/<model>/                  Model description and versions
 models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions

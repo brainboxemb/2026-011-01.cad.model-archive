@@ -21,33 +21,43 @@ test -s "$bracket/readme.html"
 test -s "$bracket/printme.html"
 grep -q 'Corner bracket' "$bracket/readme.md"
 
+# The source root holds exactly one model and one inspection helper.
+test -s "$bracket/scad/corner_bracket.scad"
+test -s "$bracket/scad/inspection.scad"
+test ! -e "$bracket/scad/documentation.scad"
+test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
+for source in design hull_explained rounding_explained inside_corner_methods; do
+  test -s "$bracket/design/$source.scad"
+done
+test -s "$bracket/docs/documentation.scad"
+
 # The main manual should remain concise and link to two focused guides.
 for page in mounting-options hull-guide polygon-guide; do
-  test -s "$bracket/$page.md"
-  test -s "$bracket/$page.html"
-  grep -Fq "$page.html" "$bracket/readme.md"
-  grep -Fq "$page.html" "$bracket/readme.html"
+  test -s "$bracket/docs/$page.md"
+  test -s "$bracket/docs/$page.html"
+  grep -Fq "docs/$page.html" "$bracket/readme.md"
+  grep -Fq "docs/$page.html" "$bracket/readme.html"
 done
 
 # Mounting diagrams are editable SVG files. The generated HTML must link to them.
 for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out mounting-e-pronged-t-nut m4-nuts-hex-square; do
   test -s "$bracket/figures/$svg.svg"
-  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.md"
-  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.html"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.md"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.html"
 done
-grep -Fq 'counter-bracket' "$bracket/mounting-options.html"
-grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
-grep -Fq '6834946' "$bracket/mounting-options.html"
-grep -Fq '12120010' "$bracket/mounting-options.html"
-grep -Fq '12120360' "$bracket/mounting-options.html"
+grep -Fq 'counter-bracket' "$bracket/docs/mounting-options.html"
+grep -Fq 'B0F412QQ32' "$bracket/docs/mounting-options.html"
+grep -Fq '6834946' "$bracket/docs/mounting-options.html"
+grep -Fq '12120010' "$bracket/docs/mounting-options.html"
+grep -Fq '12120360' "$bracket/docs/mounting-options.html"
 grep -Fq 'Prongs point INTO plywood' "$bracket/figures/mounting-e-pronged-t-nut.svg"
-grep -Fq '<table>' "$bracket/mounting-options.html"
+grep -Fq '<table>' "$bracket/docs/mounting-options.html"
 # Explicit product photo URLs supplied for these three candidate components.
 for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg' 'as.89415179.jpg'; do
-  grep -Fq "$photo" "$bracket/mounting-options.md"
-  grep -Fq "$photo" "$bracket/mounting-options.html"
+  grep -Fq "$photo" "$bracket/docs/mounting-options.md"
+  grep -Fq "$photo" "$bracket/docs/mounting-options.html"
 done
-grep -Fq 'figures/m4-bolt-head-types.svg' "$bracket/mounting-options.html"
+grep -Fq '../figures/m4-bolt-head-types.svg' "$bracket/docs/mounting-options.html"
 test -s "$bracket/figures/m4-bolt-head-types.svg"
 for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out e-pronged-t-nut; do
   file="$bracket/figures/mounting-$section.svg"
@@ -103,17 +113,22 @@ fi
 
 # The separate hull guide owns both original step-by-step demonstrations.
 for source_module in 'module sloped_hull()' 'module hull_of_circles()' 'module sharp_L()'; do
-  grep -Fq "$source_module" "$bracket/hull-guide.md"
-  grep -Fq "$source_module" "$bracket/hull-guide.html"
+  grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
+  grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq 'cos(a)' "$bracket/hull-guide.md"
+grep -Fq 'cos(a)' "$bracket/docs/hull-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
   local file="$1" page="$2"
   test -s "$bracket/design/$file.png"
-  grep -Fq "design/$file.png" "$bracket/$page.md"
-  grep -Fq "design/$file.png" "$bracket/$page.html"
+  if [[ "$page" == "readme" ]]; then
+    grep -Fq "design/$file.png" "$bracket/readme.md"
+    grep -Fq "design/$file.png" "$bracket/readme.html"
+  else
+    grep -Fq "../design/$file.png" "$bracket/docs/$page.md"
+    grep -Fq "../design/$file.png" "$bracket/docs/$page.html"
+  fi
 }
 
 for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
@@ -133,10 +148,10 @@ for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extrud
 done
 
 for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
-  grep -Fq "$snippet" "$bracket/polygon-guide.md"
-  grep -Fq "$snippet" "$bracket/polygon-guide.html"
+  grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
+  grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
 done
-grep -Fq 'polygon-guide.html' "$bracket/hull-guide.html"
+grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
 grep -Fq 'polygon-guide.html' "$bracket/readme.html"
 if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   echo "General polygon tutorial leaked into the bracket walkthrough" >&2

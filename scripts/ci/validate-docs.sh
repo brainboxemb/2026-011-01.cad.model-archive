@@ -30,7 +30,7 @@ for page in mounting-options hull-guide; do
 done
 
 # Mounting diagrams are editable SVG files. The generated HTML must link to them.
-for svg in mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out m4-nuts-hex-square; do
+for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out m4-nuts-hex-square; do
   test -s "$bracket/figures/$svg.svg"
   grep -Fq "figures/$svg.svg" "$bracket/mounting-options.md"
   grep -Fq "figures/$svg.svg" "$bracket/mounting-options.html"

@@ -237,7 +237,7 @@ module nut_side() {
     translate([x0 + 0.01, 0, vz]) rotate([0, -90, 0]) cylinder(d = bolt_d + bolt_clr, h = tip_hole + 0.01);
 }
 
-module beugel() {
+module bracket() {
     difference() {
         body();
         nut_top();
@@ -286,7 +286,7 @@ if (part == "plug") {
             for (i = [0, 1]) translate([i * (Lw + lip_l + 4), 0, 0]) plug_print();
 } else {
     util_section_inspect(c_section_axis, c_section_position_mm, c_section_depth_mm, c_section_direction)
-        color(part_color) beugel();
+        color(part_color) bracket();
     if (show_wood)
         %util_section_inspect(c_section_axis, c_section_position_mm, c_section_depth_mm, c_section_direction)
             wood();

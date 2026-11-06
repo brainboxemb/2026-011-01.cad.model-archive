@@ -1,10 +1,10 @@
 # How OpenSCAD hull() works
 
-This separate, illustrated tutorial explains the `hull()` operation without interrupting the [corner bracket design walkthrough](index.html).
+This separate, illustrated tutorial explains the `hull()` operation without interrupting the [corner bracket design walkthrough](../index.html).
 
 **The key idea:** `hull()` creates the smallest convex shape around its inputs. That can produce rounded *outside* corners if the inputs are circles, or sloped sides when connecting two rectangles of different sizes. It **cannot preserve the concave inside corner** of an L shape.
 
-You can explore the examples in OpenSCAD using [rounding_explained.scad](scad/rounding_explained.scad) and [hull_explained.scad](scad/hull_explained.scad).
+You can explore the examples in OpenSCAD using [rounding_explained.scad](../design/rounding_explained.scad) and [hull_explained.scad](../design/hull_explained.scad).
 
 ## Rounded corners: circles versus a concave L
 
@@ -17,7 +17,7 @@ the circle example with the actual inside corner of the bracket.
 First place four separate circles at the corners of an imaginary
 rectangle. Each circle has a radius of 5 mm.
 
-![Four separate circles before hull](design/rounding_01_four_circles.png)
+![Four separate circles before hull](../design/rounding_01_four_circles.png)
 
     module four_circles() {
         for (x = [-22, 22], y = [-13, 13])
@@ -29,7 +29,7 @@ circles. It connects the outside of the circles with straight lines,
 but **keeps the curved parts at the corners**. So `hull()` does not
 calculate a corner radius: `circle(r = 5)` supplies that radius.
 
-![Rounded rectangle formed by hull around four circles](design/rounding_02_hull_of_circles.png)
+![Rounded rectangle formed by hull around four circles](../design/rounding_02_hull_of_circles.png)
 
     module hull_of_circles() {
         hull() four_circles();
@@ -41,7 +41,7 @@ Now look at the L-shaped profile before rounding. Its inside corner
 is the point `(0, 0)`. Unlike the rectangle above, this is a
 **concave corner**: material is missing between the two arms.
 
-![L profile with a sharp inside corner](design/rounding_03_sharp_L.png)
+![L profile with a sharp inside corner](../design/rounding_03_sharp_L.png)
 
     module sharp_L() {
         polygon([
@@ -56,7 +56,7 @@ centre at `(r, -r)`. In the **actual bracket** `r = r_in = 2` mm;
 the teaching illustration uses `r = 10` mm so the construction
 is easier to see.
 
-![Construction circle centred next to the inside corner](design/rounding_04_circle_guide.png)
+![Construction circle centred next to the inside corner](../design/rounding_04_circle_guide.png)
 
 The full circle is **just a visual guide**. The real model does not
 use `circle()` here. Instead, for each angle `a` it calculates
@@ -76,7 +76,7 @@ from 180 to 90, producing **19 points**. In this picture, red dots
 mark those points. The yellow region shows the small amount of
 material added inside the previously sharp corner.
 
-![Sampled quarter-circle points and corner fill](design/rounding_05_arc_points.png)
+![Sampled quarter-circle points and corner fill](../design/rounding_05_arc_points.png)
 
     corner_arc = (r_in > 0)
         ? [for (a = [180 : -5 : 90])
@@ -87,14 +87,14 @@ material added inside the previously sharp corner.
 The full L outline and the quarter-circle points become **one
 polygon**, rather than two shapes that must be combined later.
 
-![L profile with a rounded concave inside corner](design/rounding_06_rounded_L.png)
+![L profile with a rounded concave inside corner](../design/rounding_06_rounded_L.png)
 
 Finally, why not apply `hull()` to the whole L? **Because hull
 always makes a convex shape.** It would bridge the space between
 the arms and fill most of the L's open inside corner. The red
 region below is the unwanted extra material.
 
-![Hull of an L profile fills the open inside corner](design/rounding_07_hull_fills_corner.png)
+![Hull of an L profile fills the open inside corner](../design/rounding_07_hull_fills_corner.png)
 
     // This is deliberately NOT used for the bracket:
     hull() rounded_L();
@@ -103,7 +103,7 @@ region below is the unwanted extra material.
 the inputs are circles, but the bracket's *inside* corner is rounded
 with points calculated on a circle. This preserves the open L shape.
 You can change the tutorial steps in
-[rounding_explained.scad](scad/rounding_explained.scad).
+[rounding_explained.scad](../design/rounding_explained.scad).
 
 ---
 
@@ -112,14 +112,14 @@ You can change the tutorial steps in
 **First, a simpler example.** The bracket is L-shaped, which makes the
 chamfer operation harder to see. Let's try the same idea on an ordinary
 rectangular bar. The following pictures are generated from the small,
-editable [hull_explained.scad](scad/hull_explained.scad) example.
+editable [hull_explained.scad](../design/hull_explained.scad) example.
 
 #### A. Start with a plain bar
 
 This rectangular block has straight, sharp edges. It is what we want
 to change. In OpenSCAD, `cube()` makes a rectangular solid.
 
-![A plain rectangular bar](design/hull_01_original_bar.png)
+![A plain rectangular bar](../design/hull_01_original_bar.png)
 
     module original_bar() {
         translate([0, 0, height / 2])
@@ -132,7 +132,7 @@ Imagine taking a very thin horizontal slice through the bottom of the
 bar. It is **as wide and as long as the original bar**, but only 0.5 mm
 thick. This is the first shape that we will give to `hull()`.
 
-![The wide bottom layer](design/hull_02_wide_layer.png)
+![The wide bottom layer](../design/hull_02_wide_layer.png)
 
     module wide_layer() {
         translate([0, 0, slice_thickness / 2])
@@ -146,7 +146,7 @@ smaller than the bottom layer (blue): on every side it is 5 mm in from
 the edge. **The two layers do not touch yet.** They are the two inputs
 for the next operation.
 
-![The wide and narrow layers before hull](design/hull_03_two_layers.png)
+![The wide and narrow layers before hull](../design/hull_03_two_layers.png)
 
     module narrow_layer() {
         translate([0, 0, height - slice_thickness / 2])
@@ -161,7 +161,7 @@ both of them**. Think of stretching tight plastic film around both.
 This is what `hull()` does. Since the bottom is wide and the top is
 narrower, the new connecting sides become **sloped**.
 
-![Hull creates sloping sides between both layers](design/hull_04_hull.png)
+![Hull creates sloping sides between both layers](../design/hull_04_hull.png)
 
     module sloped_hull() {
         hull() {
@@ -178,7 +178,7 @@ narrower, the new connecting sides become **sloped**.
 and this new shape. In this simple example the hull is already
 completely inside the bar, so `intersection()` changes nothing further.
 
-![Original bar beside bevelled bar](design/hull_05_result.png)
+![Original bar beside bevelled bar](../design/hull_05_result.png)
 
     module clipped_bar() {
         intersection() {
@@ -216,4 +216,4 @@ The bracket's **inside radius** is produced by calculating 19 points on a quarte
 
 For the **outer side-edge chamfers**, the code creates a broad and a slightly inset version of a temporary outline. `hull()` connects these into a sloped limiting shape. `intersection()` keeps only the material shared by the real L profile and that temporary shape.
 
-See [Step 1 and Step 2 of the model design](index.html) for the actual `profile()`, `side_chamfer_env()`, and `body()` code. The examples are for learning; they are not replacement CAD geometries.
+See [Step 1 and Step 2 of the model design](../index.html) for the actual `profile()`, `side_chamfer_env()`, and `body()` code. The examples are for learning; they are not replacement CAD geometries.

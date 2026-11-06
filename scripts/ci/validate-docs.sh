@@ -30,6 +30,15 @@ for source in design hull_explained rounding_explained inside_corner_methods; do
   test -s "$bracket/design/$source.scad"
 done
 test -s "$bracket/docs/documentation.scad"
+test -s "$bracket/tests/inside-corner-equivalence.scad"
+grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module inside_corner_2d(r)' "$bracket/readme.md"
+grep -Fq 'module sharp_profile()' "$bracket/readme.md"
+if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
+  echo "Old sampled-point fillet returned to active model" >&2
+  exit 1
+fi
 
 # The main manual should remain concise and link to two focused guides.
 for page in mounting-options hull-guide polygon-guide; do

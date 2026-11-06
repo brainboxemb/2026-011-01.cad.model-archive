@@ -15,9 +15,10 @@ and two removable plugs that conceal the access windows after assembly.</p>
 clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.</p>
 <h2>Design walkthrough</h2>
-<p>The six images show the steps used to construct the bracket. Each stage now includes <strong>actual OpenSCAD source excerpts</strong> explaining how its geometry is produced. The complete parametric model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; the interactive <a href="scad/design.scad">design.scad</a> uses the same geometry modules. All dimensions are millimetres.</p>
+<p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="scad/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
 <h3>1. L-shaped polygon profile</h3>
-<p>The cross-section is a <strong>single 2D polygon</strong> in the X/Z plane, not two overlapping cubes. <code>polygon(concat(...))</code> joins the end points (<code>tip_top</code>, <code>tip_vert</code>) and the inner circular arc (<code>corner_arc</code>). The arc is approximated using points in 5° increments. The points governed by <code>c</code> and <code>ce</code> already cut the arm ends and outer corner. <code>linear_extrude()</code> then gives the profile its bracket width <code>W = 20</code> along the Y axis.</p>
+<p><strong>First draw the bracket from the side.</strong> Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, <code>polygon()</code> connects those points and fills the area. <code>concat()</code> joins three groups of points: the top end (<code>tip_top</code>), the main outside edges and bottom end (<code>tip_vert</code>), and the rounded inside corner (<code>corner_arc</code>). The curve is made from several nearby points rather than one perfect arc.</p>
+<p><strong>Then give the flat drawing thickness.</strong> <code>linear_extrude()</code> turns the 2D shape into a 3D part, 20 mm wide (<code>W</code>). <code>rotate()</code> puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (<code>c</code> and <code>ce</code>) are already part of the drawing.</p>
 <p><img alt="L-shaped polygon profile" src="design/01_profile.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>corner_arc = (r_in &gt; 0)
@@ -44,7 +45,10 @@ module profile_extrusion() {
 }
 </code></pre>
 <h3>2. Outer side-edge chamfers</h3>
-<p>The side-edge chamfers use a separate <strong>sloped envelope</strong>, not a chamfer primitive. <code>outer_shape()</code> defines a convex outside outline. <code>hull()</code> joins a narrower original extrusion (<code>W - 2 * cs</code>) with a full-width inset extrusion created by <code>offset(delta = -cs)</code>. Finally, <code>intersection()</code> clips the L-shaped body to this envelope. This bevels the exposed edges while keeping the plywood-facing surfaces flat. The parameter <code>cs</code> controls these chamfers; <code>c</code> and <code>ce</code> apply to the 2D profile in step 1.</p>
+<p><strong>The goal is to remove the sharp edges along the sides of the bracket.</strong> Instead of cutting each edge separately, the model builds a temporary shape that has sloping sides, then uses that shape to trim the bracket.</p>
+<p>Think of two versions of the same outline: one has its <strong>full size in the middle</strong> but does not reach quite as far towards the sides; the other reaches the <strong>full width at the sides</strong>, but its outline is slightly smaller. <code>offset(delta = -cs)</code> makes that smaller outline by moving its edges inwards. Here <code>cs = 2</code> mm.</p>
+<p><strong>What does <code>hull()</code> do?</strong> Imagine wrapping a tight sheet around both shapes. <code>hull()</code> creates the smallest <em>convex</em> solid that contains them both (convex means it has no inward dents). Because the two shapes have different sizes at different widths, the connecting surface becomes sloped. That slope is the chamfer.</p>
+<p>Finally, <code>intersection()</code> keeps only the material that belongs to <strong>both</strong> the original bracket and this temporary sloped shape. The excess is removed, leaving the bevels. The other chamfers, <code>c</code> and <code>ce</code>, were already drawn in step 1.</p>
 <p><img alt="Outer side-edge chamfers" src="design/02_edge_chamfers.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module outer_shape() {
@@ -70,7 +74,8 @@ module body() {
 }
 </code></pre>
 <h3>3. Captive nuts and access windows</h3>
-<p>Both arms get a <strong>hexagonal M4 nut pocket</strong>, a connecting slot, an access window on the plywood side, and the bolt clearance holes. The six-sided <code>cylinder($fn = 6)</code> forms the nut pocket. <code>cube()</code> removes the window and insertion slot. The upper arm is cut along Z, the vertical one along X. The bolt-tip recess is blind so the exterior stays closed. Subtracting <code>nut_top()</code> and <code>nut_side()</code> from <code>body()</code> produces the stage-3 geometry.</p>
+<p><strong>Now make room for the bolts and nuts.</strong> OpenSCAD can treat ordinary shapes as cutting tools. Put a cylinder or box where you want a hole, then use <code>difference()</code> to subtract it from the bracket.</p>
+<p>For each arm, the code makes four spaces: a hexagonal pocket for an M4 nut, a short slot to slide the nut into position, an opening on the wood-facing side to insert the nut, and the bolt hole. <code>cylinder($fn = 6)</code> is a cylinder with <strong>six flat sides</strong>, so it matches a hex nut; <code>cube()</code> cuts rectangular slots and openings. The two arms use the same idea but in different directions (<code>nut_top()</code> and <code>nut_side()</code>). The bolt's extra clearance is a <strong>blind hole</strong>, so it does not break through the outside wall.</p>
 <p><img alt="Captive nuts and access windows" src="design/03_nut_pockets.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>Wn       = nut_flats + nut_clr;   // nut pocket width (across flats)
@@ -119,7 +124,8 @@ difference() {
 }
 </code></pre>
 <h3>4. Elephant-foot relief</h3>
-<p>A second subtraction removes <strong>45° cutting wedges</strong> from the plywood contact edges. <code>ef = 0.6</code> controls their depth. A triangular polygon is extruded along straight edges, <code>multmatrix()</code> aligns diagonal wedges, and <code>rotate_extrude()</code> follows the rounded inner corner. <code>bracket()</code> combines these cuts with the captive-nut pockets. Matching relief may be needed in the plywood corner.</p>
+<p><strong>Why add another tiny bevel?</strong> The first layer of a 3D print can spread out slightly where it touches the print bed. This is called <em>elephant foot</em>. Without compensation, the bracket might not sit flat against the plywood.</p>
+<p>To make room for that extra material, the code cuts away a thin <strong>triangular strip</strong> along the edges that touch the wood. The parameter <code>ef = 0.6</code> mm sets the relief. <code>linear_extrude()</code> stretches the little triangle along straight edges. <code>multmatrix()</code> simply positions and turns a cutting shape; <code>rotate_extrude()</code> carries a similar cut around the rounded inside corner. These cuts are subtracted together in <code>bracket()</code>.</p>
 <p><img alt="Elephant-foot relief" src="design/04_print_relief.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates
@@ -171,7 +177,8 @@ module bracket() {
 }
 </code></pre>
 <h3>5. Access-window plugs</h3>
-<p>Each plug is another <strong>extruded polygon</strong> with a hooked tab. <code>plug_clr</code> reduces its width for fit. The optional extraction hole or screwdriver slot is subtracted from the extrusion. <code>plug_print()</code> rotates the plug into its printing orientation; <code>plugs_print_pair()</code> places <strong>two plugs</strong> in one export.</p>
+<p><strong>The nut windows need covers.</strong> Each plug starts as a small side-view drawing made with <code>polygon()</code>. The shape includes a hook that slips under the lip inside the bracket. <code>linear_extrude()</code> gives the plug its width; <code>plug_clr</code> leaves a little space around it so it can fit.</p>
+<p><code>difference()</code> can also cut a small hole or screwdriver slot to help remove the plug. <code>plug_print()</code> places one plug on its side for printing, and <code>plugs_print_pair()</code> puts <strong>two separate plugs</strong> next to each other in the STL.</p>
 <p><img alt="Access-window plugs" src="design/05_access_plugs.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module plug_local() {
@@ -202,7 +209,8 @@ module plugs_print_pair() {
 }
 </code></pre>
 <h3>6. Installed preview</h3>
-<p>The finished preview keeps the <strong>bracket, inserted plugs, and plywood</strong> separate. <code>plugs_in_place()</code> positions one plug in each window. <code>wood()</code> constructs the perpendicular reference panels with matching bolt holes and a rounded corner. In <code>design.scad</code>, the <code>%wood()</code> background modifier makes the plywood ghosted rather than part of the printable STL.</p>
+<p><strong>Finally, check how everything fits together.</strong> <code>plugs_in_place()</code> moves and turns the two plugs into their windows. <code>wood()</code> draws the two plywood panels at a right angle, including bolt holes and the rounded corner.</p>
+<p>The plywood is only there to help you see the fit: the <code>%</code> before <code>wood()</code> tells OpenSCAD to show it as a transparent background shape. <strong>It is not included in the printed bracket STL.</strong></p>
 <p><img alt="Installed preview" src="design/06_installed.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
 <pre><code>module plugs_in_place() {

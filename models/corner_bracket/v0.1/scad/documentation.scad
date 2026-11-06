@@ -11,11 +11,13 @@
 //!
 //! ## Design walkthrough
 //!
-//! The six images show the steps used to construct the bracket. Each stage now includes **actual OpenSCAD source excerpts** explaining how its geometry is produced. The complete parametric model is in [corner_bracket.scad](scad/corner_bracket.scad); the interactive [design.scad](scad/design.scad) uses the same geometry modules. All dimensions are millimetres.
+//! The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains **what happens and why**, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in [corner_bracket.scad](scad/corner_bracket.scad); you can explore the steps in [design.scad](scad/design.scad). All dimensions are in millimetres.
 //!
 //! ### 1. L-shaped polygon profile
 //!
-//! The cross-section is a **single 2D polygon** in the X/Z plane, not two overlapping cubes. `polygon(concat(...))` joins the end points (`tip_top`, `tip_vert`) and the inner circular arc (`corner_arc`). The arc is approximated using points in 5° increments. The points governed by `c` and `ce` already cut the arm ends and outer corner. `linear_extrude()` then gives the profile its bracket width `W = 20` along the Y axis.
+//! **First draw the bracket from the side.** Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, `polygon()` connects those points and fills the area. `concat()` joins three groups of points: the top end (`tip_top`), the main outside edges and bottom end (`tip_vert`), and the rounded inside corner (`corner_arc`). The curve is made from several nearby points rather than one perfect arc.
+//!
+//! **Then give the flat drawing thickness.** `linear_extrude()` turns the 2D shape into a 3D part, 20 mm wide (`W`). `rotate()` puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (`c` and `ce`) are already part of the drawing.
 //!
 //! ![L-shaped polygon profile](design/01_profile.png)
 //!
@@ -46,7 +48,13 @@
 //!
 //! ### 2. Outer side-edge chamfers
 //!
-//! The side-edge chamfers use a separate **sloped envelope**, not a chamfer primitive. `outer_shape()` defines a convex outside outline. `hull()` joins a narrower original extrusion (`W - 2 * cs`) with a full-width inset extrusion created by `offset(delta = -cs)`. Finally, `intersection()` clips the L-shaped body to this envelope. This bevels the exposed edges while keeping the plywood-facing surfaces flat. The parameter `cs` controls these chamfers; `c` and `ce` apply to the 2D profile in step 1.
+//! **The goal is to remove the sharp edges along the sides of the bracket.** Instead of cutting each edge separately, the model builds a temporary shape that has sloping sides, then uses that shape to trim the bracket.
+//!
+//! Think of two versions of the same outline: one has its **full size in the middle** but does not reach quite as far towards the sides; the other reaches the **full width at the sides**, but its outline is slightly smaller. `offset(delta = -cs)` makes that smaller outline by moving its edges inwards. Here `cs = 2` mm.
+//!
+//! **What does `hull()` do?** Imagine wrapping a tight sheet around both shapes. `hull()` creates the smallest *convex* solid that contains them both (convex means it has no inward dents). Because the two shapes have different sizes at different widths, the connecting surface becomes sloped. That slope is the chamfer.
+//!
+//! Finally, `intersection()` keeps only the material that belongs to **both** the original bracket and this temporary sloped shape. The excess is removed, leaving the bevels. The other chamfers, `c` and `ce`, were already drawn in step 1.
 //!
 //! ![Outer side-edge chamfers](design/02_edge_chamfers.png)
 //!
@@ -76,7 +84,9 @@
 //!
 //! ### 3. Captive nuts and access windows
 //!
-//! Both arms get a **hexagonal M4 nut pocket**, a connecting slot, an access window on the plywood side, and the bolt clearance holes. The six-sided `cylinder($fn = 6)` forms the nut pocket. `cube()` removes the window and insertion slot. The upper arm is cut along Z, the vertical one along X. The bolt-tip recess is blind so the exterior stays closed. Subtracting `nut_top()` and `nut_side()` from `body()` produces the stage-3 geometry.
+//! **Now make room for the bolts and nuts.** OpenSCAD can treat ordinary shapes as cutting tools. Put a cylinder or box where you want a hole, then use `difference()` to subtract it from the bracket.
+//!
+//! For each arm, the code makes four spaces: a hexagonal pocket for an M4 nut, a short slot to slide the nut into position, an opening on the wood-facing side to insert the nut, and the bolt hole. `cylinder($fn = 6)` is a cylinder with **six flat sides**, so it matches a hex nut; `cube()` cuts rectangular slots and openings. The two arms use the same idea but in different directions (`nut_top()` and `nut_side()`). The bolt's extra clearance is a **blind hole**, so it does not break through the outside wall.
 //!
 //! ![Captive nuts and access windows](design/03_nut_pockets.png)
 //!
@@ -129,7 +139,9 @@
 //!
 //! ### 4. Elephant-foot relief
 //!
-//! A second subtraction removes **45° cutting wedges** from the plywood contact edges. `ef = 0.6` controls their depth. A triangular polygon is extruded along straight edges, `multmatrix()` aligns diagonal wedges, and `rotate_extrude()` follows the rounded inner corner. `bracket()` combines these cuts with the captive-nut pockets. Matching relief may be needed in the plywood corner.
+//! **Why add another tiny bevel?** The first layer of a 3D print can spread out slightly where it touches the print bed. This is called *elephant foot*. Without compensation, the bracket might not sit flat against the plywood.
+//!
+//! To make room for that extra material, the code cuts away a thin **triangular strip** along the edges that touch the wood. The parameter `ef = 0.6` mm sets the relief. `linear_extrude()` stretches the little triangle along straight edges. `multmatrix()` simply positions and turns a cutting shape; `rotate_extrude()` carries a similar cut around the rounded inside corner. These cuts are subtracted together in `bracket()`.
 //!
 //! ![Elephant-foot relief](design/04_print_relief.png)
 //!
@@ -185,7 +197,9 @@
 //!
 //! ### 5. Access-window plugs
 //!
-//! Each plug is another **extruded polygon** with a hooked tab. `plug_clr` reduces its width for fit. The optional extraction hole or screwdriver slot is subtracted from the extrusion. `plug_print()` rotates the plug into its printing orientation; `plugs_print_pair()` places **two plugs** in one export.
+//! **The nut windows need covers.** Each plug starts as a small side-view drawing made with `polygon()`. The shape includes a hook that slips under the lip inside the bracket. `linear_extrude()` gives the plug its width; `plug_clr` leaves a little space around it so it can fit.
+//!
+//! `difference()` can also cut a small hole or screwdriver slot to help remove the plug. `plug_print()` places one plug on its side for printing, and `plugs_print_pair()` puts **two separate plugs** next to each other in the STL.
 //!
 //! ![Access-window plugs](design/05_access_plugs.png)
 //!
@@ -220,7 +234,9 @@
 //!
 //! ### 6. Installed preview
 //!
-//! The finished preview keeps the **bracket, inserted plugs, and plywood** separate. `plugs_in_place()` positions one plug in each window. `wood()` constructs the perpendicular reference panels with matching bolt holes and a rounded corner. In `design.scad`, the `%wood()` background modifier makes the plywood ghosted rather than part of the printable STL.
+//! **Finally, check how everything fits together.** `plugs_in_place()` moves and turns the two plugs into their windows. `wood()` draws the two plywood panels at a right angle, including bolt holes and the rounded corner.
+//!
+//! The plywood is only there to help you see the fit: the `%` before `wood()` tells OpenSCAD to show it as a transparent background shape. **It is not included in the printed bracket STL.**
 //!
 //! ![Installed preview](design/06_installed.png)
 //!

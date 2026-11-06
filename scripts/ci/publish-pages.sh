@@ -26,7 +26,7 @@ cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
 
 # Keep both in-depth guides separate from the main model design manual.
 bracket="models/corner_bracket/v0.1"
-for page in mounting-options hull-guide; do
+for page in mounting-options hull-guide polygon-guide; do
   cat site/model-header.html "$bracket/$page.html" > "$site/$bracket/$page.html"
   printf '\n</main></body></html>\n' >> "$site/$bracket/$page.html"
   cp "$bracket/$page.md" "$site/$bracket/$page.md"

@@ -35,7 +35,7 @@ calculate a corner radius: <code>circle(r = 5)</code> supplies that radius.</p>
     hull() four_circles();
 }
 </code></pre>
-<p><strong>Example B — the inside corner of our L bracket</strong></p>
+<p><strong>Example B — why a point-based inside arc was originally used</strong></p>
 <p>Now look at the L-shaped profile before rounding. Its inside corner
 is the point <code>(0, 0)</code>. Unlike the rectangle above, this is a
 <strong>concave corner</strong>: material is missing between the two arms.</p>
@@ -47,15 +47,15 @@ is the point <code>(0, 0)</code>. Unlike the rectangle above, this is a
     ]);
 }
 </code></pre>
-<p>To round <em>only that corner</em>, we calculate points along a quarter
-of a circle. Start by placing a circle with radius <code>r</code> and its
-centre at <code>(r, -r)</code>. In the <strong>actual bracket</strong> <code>r = r_in = 2</code> mm;
-the teaching illustration uses <code>r = 10</code> mm so the construction
-is easier to see.</p>
+<p>One way to round <em>only that corner</em> is to calculate points along a
+quarter-circle. This was used in the <strong>original v0.1 profile</strong>.
+Start with a circle of radius <code>r</code>, centred at <code>(r, -r)</code>.
+The actual bracket still defaults to <code>r_in = 2</code> mm, but the teaching
+illustration uses <code>r = 10</code> mm to make the construction easier to see.</p>
 <p><img alt="Construction circle centred next to the inside corner" src="../design/rounding_04_circle_guide.png" /></p>
-<p>The full circle is <strong>just a visual guide</strong>. The real model does not
-use <code>circle()</code> here. Instead, for each angle <code>a</code> it calculates
-a point on the circle using sine and cosine:</p>
+<p>The full circle in this <strong>legacy point-based example</strong> is a visual
+construction guide. That earlier method used sine and cosine to
+calculate each arc vertex, rather than subtracting a <code>circle()</code>:</p>
 <pre><code>x = r + r * cos(a);
 z = -r + r * sin(a);
 </code></pre>
@@ -65,19 +65,20 @@ z = -r + r * sin(a);
 <li>at 135 degrees, it is about <code>(0.586, -0.586)</code>;</li>
 <li>at 90 degrees, it is <code>(2, 0)</code>: the end of the arc.</li>
 </ul>
-<p>The <code>for</code> expression repeats the calculation every 5 degrees
+<p>The older <code>for</code> expression repeats the calculation every 5 degrees
 from 180 to 90, producing <strong>19 points</strong>. In this picture, red dots
-mark those points. The yellow region shows the small amount of
-material added inside the previously sharp corner.</p>
+mark those points. The yellow region shows the material added at
+the inside corner. In the current model, the same shape is built
+with ordinary 2D <code>square()</code> and <code>circle()</code> operations.</p>
 <p><img alt="Sampled quarter-circle points and corner fill" src="../design/rounding_05_arc_points.png" /></p>
 <pre><code>corner_arc = (r_in &gt; 0)
     ? [for (a = [180 : -5 : 90])
         [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
     : [[0, 0]];
 </code></pre>
-<p><code>polygon()</code> then connects these points with short straight segments.
-The full L outline and the quarter-circle points become <strong>one
-polygon</strong>, rather than two shapes that must be combined later.</p>
+<p>In the former implementation, <code>polygon()</code> joined the points into a
+<strong>single 2D outline</strong>. This picture is retained to explain that
+technique, not to show the current <code>profile()</code> implementation.</p>
 <p><img alt="L profile with a rounded concave inside corner" src="../design/rounding_06_rounded_L.png" /></p>
 <p>Finally, why not apply <code>hull()</code> to the whole L? <strong>Because hull
 always makes a convex shape.</strong> It would bridge the space between
@@ -87,11 +88,12 @@ region below is the unwanted extra material.</p>
 <pre><code>// This is deliberately NOT used for the bracket:
 hull() rounded_L();
 </code></pre>
-<p><strong>In short:</strong> <code>hull()</code> is useful for rounded <em>outside</em> corners when
-the inputs are circles, but the bracket's <em>inside</em> corner is rounded
-with points calculated on a circle. This preserves the open L shape.
-You can change the tutorial steps in
-<a href="../design/rounding_explained.scad">rounding_explained.scad</a>.</p>
+<p><strong>In short:</strong> <code>hull()</code> is suitable for rounded <em>outside</em> corners made
+from circles, but not for this concave L corner. The current bracket
+uses <strong>2D <code>square() - circle()</code> plus <code>union()</code></strong>. The older approach
+using calculated polygon points is kept in the editable
+<a href="../design/rounding_explained.scad">rounding_explained.scad</a> tutorial
+as a comparison.</p>
 <hr />
 <h2>Sloped edges: hull between two rectangular layers</h2>
 <p><strong>First, a simpler example.</strong> The bracket is L-shaped, which makes the
@@ -164,8 +166,8 @@ one outline smaller, <code>hull()</code> to connect the two sizes, and
 having to cut every side edge individually. In contrast to the simple
 bar, the bracket's construction keeps the plywood contact faces flat.</p>
 <h2>Is hull() the simplest way to round an L corner?</h2>
-<p>Not for a <strong>concave</strong> (inside) corner. Here two ordinary shape-based
-alternatives are easier to understand:</p>
+<p>Not for a <strong>concave</strong> (inside) corner. Two ordinary shape-based
+methods are easier to understand:</p>
 <ul>
 <li><strong>2D first:</strong> <code>difference()</code> of a <code>square()</code> and a <code>circle()</code>,
   <code>union()</code> that small corner piece with the L, then <code>linear_extrude()</code>.</li>
@@ -177,7 +179,13 @@ OpenSCAD constructions, and a comparison with point-based <code>polygon()</code>
 is on the separate <a href="polygon-guide.html">Polygon and rounded-corner guide</a>.
 Those alternatives show the same target shape without using <code>hull()</code>.</p>
 <h2>Applying this to the actual bracket</h2>
-<p>The bracket's <strong>inside radius</strong> is produced by calculating 19 points on a quarter-circle with <code>sin()</code> and <code>cos()</code>, then including them in its 2D <code>polygon()</code>. This preserves the open inside corner.</p>
+<p>The bracket's <strong>inside radius</strong> is now made in <strong>2D</strong> from a small
+<code>square()</code> with a matching <code>circle()</code> subtracted, joined to a sharp L
+profile with <code>union()</code>, then extruded. The former 19-point
+<code>polygon()</code> arc is documented above as a historical comparison.
+Using 72 circle segments retains the same 5-degree approximation.</p>
 <p>For the <strong>outer side-edge chamfers</strong>, the code creates a broad and a slightly inset version of a temporary outline. <code>hull()</code> connects these into a sloped limiting shape. <code>intersection()</code> keeps only the material shared by the real L profile and that temporary shape.</p>
-<p>See <a href="../index.html">Step 1 and Step 2 of the model design</a> for the actual <code>profile()</code>, <code>side_chamfer_env()</code>, and <code>body()</code> code. The examples are for learning; they are not replacement CAD geometries.</p>
+<p>See <a href="../index.html">Step 1 and Step 2 of the model design</a> for the actual <code>profile()</code>, <code>side_chamfer_env()</code>, and <code>body()</code> code. The examples are for learning. Step 1 of the real design now uses the
+2D boolean approach; the <code>hull()</code> demonstration still applies to its
+outer side-edge chamfers.</p>
 </main></body></html>

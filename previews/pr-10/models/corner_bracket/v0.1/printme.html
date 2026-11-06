@@ -10,26 +10,48 @@ clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.</p>
 <h2>Design walkthrough</h2>
 <p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="design/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
-<h3>1. L-shaped polygon profile</h3>
-<p><strong>First draw the bracket from the side.</strong> Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, <code>polygon()</code> connects those points and fills the area. <code>concat()</code> joins three groups of points: the top end (<code>tip_top</code>), the main outside edges and bottom end (<code>tip_vert</code>), and the rounded inside corner (<code>corner_arc</code>). In this v0.1 source, the inside arc is built from 19 points along a quarter-circle, at 5-degree steps.</p>
-<p><strong>Then give the flat drawing thickness.</strong> <code>linear_extrude()</code> turns the 2D shape into a 3D part, 20 mm wide (<code>W</code>). <code>rotate()</code> puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (<code>c</code> and <code>ce</code>) are already part of the drawing.</p>
+<h3>1. Draw the L profile and round its inside corner in 2D</h3>
+<p><strong>Start with a simple L shape.</strong> <code>polygon()</code> connects the vertices
+around the bracket's outline. The two arm-end bevels and the outside
+corner chamfer are included directly. The inner corner is initially
+sharp at <code>(0, 0)</code>.</p>
+<p><strong>Add a small rounded piece using ordinary 2D shapes.</strong> Place a
+<code>r_in × r_in</code> square just inside the sharp corner. Subtract a
+<code>circle(r = r_in)</code> whose centre is at <code>(r_in, -r_in)</code>.
+The remaining piece curves into the corner. <code>union()</code> joins it
+to the L without affecting the opposite edges.</p>
+<p><strong>Then give the finished 2D outline thickness.</strong> <code>linear_extrude()</code>
+produces the 20 mm wide bracket (<code>W</code>), and <code>rotate()</code> orients it.
+The <code>$fn = 72</code> setting on this circle gives 5-degree steps, matching
+the old 19-point inside radius. <code>r_in = 0</code> leaves a sharp corner.</p>
 <p><img alt="L-shaped polygon profile" src="design/01_profile.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
-<pre><code>corner_arc = (r_in &gt; 0)
-? [for (a = [180 : -5 : 90]) [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-: [[0, 0]];
+<pre><code>module inside_corner_2d(r) {
+    difference() {
+        translate([0, -r]) square([r, r]);
+        translate([r, -r]) circle(r = r, $fn = 72);
+    }
+}
+
 tip_top  = (ef &gt; 0) ? [[armH - ef, 0], [armH, ef]] : [[armH, 0]];
 tip_vert = (ef &gt; 0) ? [[-ef, -armV], [0, -armV + ef]] : [[0, -armV]];
 
-module profile() {
+module sharp_profile() {
     polygon(concat(tip_top, [
-        [armH, t - c],            // 45-degree top-arm end
+        [armH, t - c],           // top-arm end
         [armH - c, t],
         [-t + ce, t],
-        [-t, t - ce],             // 45-degree outside corner
+        [-t, t - ce],            // outside corner
         [-t, -armV + c],
-        [-t + c, -armV]           // 45-degree vertical-arm end
-    ], tip_vert, corner_arc));    // rounded inside corner from (0,-r) to (r,0)
+        [-t + c, -armV]          // vertical-arm end
+    ], tip_vert, [[0, 0]]));
+}
+
+module profile() {
+    union() {
+        sharp_profile();
+        if (r_in &gt; 0) inside_corner_2d(r_in);
+    }
 }
 
 module profile_extrusion() {
@@ -281,11 +303,11 @@ else if (design_step == "06_installed") {
 <p>A separate <a href="docs/hull-guide.html">OpenSCAD hull() guide</a> shows how that
 operation creates sloping sides and rounded <em>outside</em> corners.
 The <a href="docs/polygon-guide.html">Polygon and rounded-corner guide</a> compares
-two easier-to-follow ways to make this inside corner: using
-<code>square() - circle()</code> in <strong>2D before extrusion</strong>, or <code>cube() - cylinder()</code>
-directly in <strong>3D</strong>. It also explains the point-based <code>polygon()</code> code
-currently used in v0.1. These are teaching alternatives; the printable
-bracket geometry has not been changed.</p>
+the <strong>2D square-minus-circle method now used in the bracket</strong> with an
+equivalent 3D cube-minus-cylinder approach and the former
+point-based <code>polygon()</code> construction. Only the inside-corner
+implementation changed; the intended shape, chamfers and other
+bracket features were preserved.</p>
 <h2>Alternative mounting arrangements</h2>
 <p>The current model uses bolts from the <strong>inside</strong> of the plywood into
 <strong>captured nuts</strong> in the outside bracket. There are other possibilities:

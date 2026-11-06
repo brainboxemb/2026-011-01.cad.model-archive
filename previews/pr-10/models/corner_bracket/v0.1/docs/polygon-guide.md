@@ -14,10 +14,10 @@ The illustrations come from the standalone, editable
 [inside_corner_methods.scad](../design/inside_corner_methods.scad). Select
 `demo_stage` in the OpenSCAD Customizer to view each construction step.
 
-> These are **teaching alternatives**, not a silent replacement of the
-> printable v0.1 corner bracket. That model currently constructs its
-> `corner_arc` from calculated `polygon()` points. Its outside chamfers,
-> nut pockets, and elephant-foot relief are separate operations.
+> **The printable corner bracket now uses Method A (2D shapes).**
+> The 3D method and the former point-based approach are included here
+> for comparison. The outside chamfers, nut pockets and elephant-foot
+> relief remain separate, unchanged operations.
 
 ## First: draw a simple L with polygon()
 
@@ -112,8 +112,10 @@ module extruded_from_2d() {
 }
 ```
 
-This is the approach I would choose when the goal is a **clear,
-maintainable model**: finish the side view first, then add depth.
+This is **now the approach in `scad/corner_bracket.scad`**: finish the
+side profile in 2D, then extrude. In the real source, the module names
+are `sharp_profile()`, `inside_corner_2d(r)` and `profile()`; the
+teaching example uses slightly longer descriptive names.
 
 ## Method B: build the same corner from 3D solids
 
@@ -182,11 +184,12 @@ Both methods are intended to produce the **same solid**, with the same
 radius, depth and circle segmentation. Method A is shorter to reason
 about because the round corner is settled **before** anything becomes 3D.
 
-## What does polygon() have to do with the original bracket?
+## What did the original point-based polygon method do?
 
-The v0.1 bracket does not use either separate corner piece above. It
-calculates **19 points** along a quarter-circle and puts those points
-directly into its one `polygon()` outline.
+The earlier version of the bracket constructed its corner by calculating
+**19 points** along a quarter-circle and putting those vertices
+directly into one `polygon()` outline. That version was replaced in
+PR #10 by the simpler 2D square-minus-circle approach.
 
 ![L profile built directly from sampled arc points](../design/corner_09_polygon_points_2d.png)
 
@@ -197,8 +200,8 @@ corner_arc = (r_in > 0)
          -r_in + r_in * sin(a)]]
     : [[0, 0]];
 
-// The actual profile() joins the arm points and corner_arc
-// in one polygon(concat(...)).
+// This is historical/reference code; the current model uses
+// sharp_profile() plus inside_corner_2d(r_in) in profile().
 ```
 
 This approach is **not wrong**. It is especially useful when a profile
@@ -207,10 +210,13 @@ over the individual segments matters. But for learning and for this
 local rounded corner, **`square() - circle() + union()` is easier
 to understand and modify**.
 
-The shape comparison depends on segment resolution. Here `$fn = 72`
-gives circle segments every 5°, matching the existing angular step.
-That makes results closely comparable but is **not proof that all the
-other bracket details remain identical**.
+The 2D method uses **`$fn = 72`** for the corner circle: one segment
+per 5°, exactly like the former 19-point quarter-arc. We compared
+OpenSCAD STL meshes from the original and updated implementation
+across the default and several parameter combinations. They had
+matching vertices, face centres, and bounding boxes, with only
+floating-point-level volume differences. **Physical fitting and print
+verification are still required.**
 
 ## A third compact option: two offsets
 
@@ -236,7 +242,8 @@ feature needs a genuine volume subtraction. For this model, it is
 reasonable to combine them: make the L and the inside radius in 2D,
 extrude, then subtract the 3D nut pockets and print-relief cutters.
 
-The existing printable corner bracket stays unchanged while these
-alternatives are being studied. Before replacing its `corner_arc`,
-compare the generated solid, exact boundary positions, mating fit,
-STL output and print-compensation details.
+The production corner radius now uses the **2D square-minus-circle
+construction**. The alternative 3D solid method and legacy point-list
+polygon are provided for learning. The change preserves the outside
+chamfers, bolt and nut features, and elephant-foot cutters; final
+print fit and mechanical strength still require physical testing.

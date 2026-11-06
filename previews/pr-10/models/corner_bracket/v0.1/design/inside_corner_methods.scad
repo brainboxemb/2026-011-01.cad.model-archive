@@ -1,8 +1,8 @@
 // Compare two easily understandable ways to make a concave corner fillet:
 // (A) 2D shapes: square() minus circle(), union() with a 2D L, then extrude.
 // (B) 3D solids: cube() minus cylinder(), union() with an extruded L.
-// A third view shows the original point-list polygon method.
-// Standalone teaching model. The production bracket remains unchanged.
+// A third view shows the former point-list polygon method.
+// Standalone educational model: method A (2D) is now the production approach.
 
 /* [Demonstration] */
 demo_stage = "01_sharp_2d"; // [01_sharp_2d, 02_square_circle_2d, 03_piece_2d, 04_rounded_2d, 05_extruded_2d, 06_cube_cylinder_3d, 07_piece_3d, 08_rounded_3d, 09_polygon_points_2d]
@@ -78,8 +78,8 @@ module rounded_L_3d() {
     }
 }
 
-// Original v0.1 idea: calculate vertices along 180..90 degrees and include
-// them directly in ONE polygon rather than building a separate 2D piece.
+// Historical v0.1 idea: sample points along 180..90 degrees and include
+// them directly in one polygon. The current bracket uses the 2D pieces above.
 corner_arc_points = [
     for (a = [180 : -5 : 90])
         [radius + radius * cos(a), -radius + radius * sin(a)]

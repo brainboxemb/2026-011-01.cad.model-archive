@@ -1,5 +1,5 @@
-// Understanding round corners: hull() around circles versus
-// a sampled circular arc inside an L-shaped corner bracket.
+// Understanding hull() on circles versus the *former* sampled-arc
+// technique for the inside corner of an L-shaped bracket.
 // Independent educational model: no external OpenSCAD library required.
 
 // Choose one step from the OpenSCAD Customizer.
@@ -36,15 +36,15 @@ module sharp_L() {
 
 // Circle centre: (radius, -radius).
 // cos()/sin() sample its top-left quarter, from 180° down to 90°.
-// Because we explicitly create points, circle() is NOT used to
-// construct the actual rounded L polygon.
+// This historical demonstration uses sampled points, not circle().
+// The current bracket instead uses square() - circle() in 2D.
 function arc_point(a) = [
     radius + radius * cos(a),
     -radius + radius * sin(a)
 ];
 arc_points = [for (a = [180 : -step_degrees : 90]) arc_point(a)];
 
-// A single concave polygon with the arc points replacing the sharp corner.
+// Historical method: one concave polygon with sampled inside-corner points.
 module rounded_L() {
     polygon(concat([
         [armH, 0], [armH, wall],
@@ -65,7 +65,7 @@ module circle_guide() {
 }
 
 // Highlight exactly the small sector that the sampled arc adds to the L.
-// In the actual model it is part of a polygon, not a separate solid.
+// In the historical polygon approach, this area was not a separate solid.
 module arc_added_region() {
     polygon(concat([[0, 0]], arc_points));
 }

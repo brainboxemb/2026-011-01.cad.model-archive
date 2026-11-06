@@ -52,7 +52,7 @@
 //! those points in the L-shaped `polygon()`. See the separate
 //! [illustrated guide to hull and rounded corners](hull-guide.html).
 //!
-//! //! ### 2. Outer side-edge chamfers
+//! ### 2. Outer side-edge chamfers
 //!
 //! The sharp *side* edges get a bevel. The code first creates two versions
 //! of the outside outline: one narrower in width and one with a smaller

@@ -28,3 +28,4 @@
 # NopSCADlib produces lowercase readme.md within the version directory.
 # Authored model indices use uppercase README.md.
 **/v*/readme.md
+**/source/readme.md

@@ -44,7 +44,7 @@ models/<model>/                  Model description and versions
 models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
-docker/                          CI-only NopSCADlib runtime
+(no local Dockerfile)           CI uses published shared drawing image
 docs/                            Usage and future publication decisions
 ```
 
@@ -57,13 +57,14 @@ No finished models have been archived yet. Try the
 [example spacer](examples/spacer/v0.1/scad/spacer.scad).
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
-- [CI-only Docker image](docker/README.md)
+- [Shared Docker toolchain (drawing runtime)](https://github.com/brainboxemb/docker.scad-toolchain)
 - [GitHub Pages holding page](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
 - [Generated documentation publication plan](docs/PUBLISHING.md)
 
 Documentation generation is **not required on Windows** at this stage.
-CI currently exercises NopSCADlib's upstream document generator as a
-qualification test, but does not yet publish model documentation. Windows
+CI uses the centrally built `scad-toolchain-drawing` image, runs upstream
+NopSCADlib document generation, and publishes the example to `gh-pages`
+on merges to `main`. Windows
 OpenSCAD launcher behavior is checked independently in CI without Docker.
 
 ## Licensing

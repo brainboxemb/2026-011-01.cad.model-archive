@@ -23,7 +23,7 @@ No finished models have been archived yet. The [spacer example](examples/spacer/
 
 ## Start here
 
-See [Workflow](docs/WORKFLOW.md) for Windows setup, the existing BrainboxEmb Docker image, generating STL/PNG output, and NopSCADlib's own documentation pipeline.
+See [Workflow](docs/WORKFLOW.md) for Windows setup, STL/PNG output, and NopSCADlib's documentation pipeline. A [dedicated Docker runtime](docker/README.md) extends the existing BrainboxEmb OpenSCAD image with NopSCADlib's extra requirements, leaving the shared toolchain unchanged.
 
 NopSCADlib is fetched from upstream, not vendored. Its GPL-3.0-or-later terms still apply to the upstream code and must be considered when publishing models that incorporate its code. No archive-wide license is assumed at this stage.
 

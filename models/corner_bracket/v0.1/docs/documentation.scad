@@ -11,7 +11,7 @@
 //!
 //! ## Design walkthrough
 //!
-//! The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains **what happens and why**, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in [corner_bracket.scad](scad/corner_bracket.scad); you can explore the steps in [design.scad](scad/design.scad). All dimensions are in millimetres.
+//! The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains **what happens and why**, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in [corner_bracket.scad](scad/corner_bracket.scad); you can explore the steps in [design.scad](design/design.scad). All dimensions are in millimetres.
 //!
 //! ### 1. L-shaped polygon profile
 //!
@@ -314,9 +314,9 @@
 //!
 //! ## Further reading
 //!
-//! A separate [OpenSCAD hull() guide](hull-guide.html) shows how that
+//! A separate [OpenSCAD hull() guide](docs/hull-guide.html) shows how that
 //! operation creates sloping sides and rounded *outside* corners.
-//! The [Polygon and rounded-corner guide](polygon-guide.html) compares
+//! The [Polygon and rounded-corner guide](docs/polygon-guide.html) compares
 //! two easier-to-follow ways to make this inside corner: using
 //! `square() - circle()` in **2D before extrusion**, or `cube() - cylinder()`
 //! directly in **3D**. It also explains the point-based `polygon()` code
@@ -333,7 +333,7 @@
 //! The options, simple bolt-path diagrams, differences between nut types,
 //! the supplied stainless-steel product references, and the bolt-length
 //! constraints are compared in the separate
-//! **[Mounting options and fastener comparison](mounting-options.html)**.
+//! **[Mounting options and fastener comparison](docs/mounting-options.html)**.
 //!
 //! These are design alternatives. In v0.1, the **bolt-from-inside,
 //! captive-nut** configuration is the only implemented bolt direction;

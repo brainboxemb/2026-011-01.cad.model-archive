@@ -30,6 +30,12 @@ and files, and the bill of materials. The corner bracket also generates:
 - seven images comparing `hull()` around circles with the **sampled
   quarter-circle** used to round the bracket's concave inside corner.
 
+The main design manual keeps only the **six actual bracket stages**;
+the extended bar and circle examples are published separately as
+`hull-guide.html`. The `mounting-options.html` comparison contains
+editable SVG cross-section diagrams for the alternative fixing arrangements.
+The main manual also has SVG illustrations explaining the elephant-foot cuts.
+
 OpenSCAD source remains on `main`; generated outputs go to `gh-pages`.
 Documentation generation on Windows/workstations is **not supported**.
 

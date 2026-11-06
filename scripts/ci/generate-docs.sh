@@ -29,9 +29,9 @@ in_container /work/models/corner_bracket/v0.1 \
 in_container /work/models/corner_bracket/v0.1 \
   xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
 
-# Build the extra mounting-comparison page with the same Markdown tooling as
-# the NopSCADlib readme. Local Windows generation remains unsupported.
+# Separate focused guides: mounting options and the extended hull tutorial.
+# Use the central drawing image, just like the NopSCADlib generator.
 in_container /work/models/corner_bracket/v0.1 \
-  bash -c 'python -m markdown -x tables -x sane_lists mounting-options.md > mounting-options.html'
+  bash -c 'for page in mounting-options hull-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
 bash scripts/ci/validate-docs.sh

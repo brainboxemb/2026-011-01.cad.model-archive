@@ -24,11 +24,14 @@ done
 
 cp -a models/corner_bracket/v0.1/design "$site/models/corner_bracket/v0.1/"
 
-# Keep the long fastener comparison separate from the generated design manual.
+# Keep both in-depth guides separate from the main model design manual.
 bracket="models/corner_bracket/v0.1"
-cat site/model-header.html "$bracket/mounting-options.html" > "$site/$bracket/mounting-options.html"
-printf '\n</main></body></html>\n' >> "$site/$bracket/mounting-options.html"
-cp "$bracket/mounting-options.md" "$site/$bracket/mounting-options.md"
+for page in mounting-options hull-guide; do
+  cat site/model-header.html "$bracket/$page.html" > "$site/$bracket/$page.html"
+  printf '\n</main></body></html>\n' >> "$site/$bracket/$page.html"
+  cp "$bracket/$page.md" "$site/$bracket/$page.md"
+done
+cp -a "$bracket/figures" "$site/$bracket/"
 cp site/index.html site/site.css "$site/"
 touch "$site/.nojekyll"
 

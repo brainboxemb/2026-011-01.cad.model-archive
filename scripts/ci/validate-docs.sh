@@ -21,46 +21,100 @@ test -s "$bracket/readme.html"
 test -s "$bracket/printme.html"
 grep -q 'Corner bracket' "$bracket/readme.md"
 
-# Mounting alternatives must be generated and linked from the model page.
-test -s "$bracket/mounting-options.md"
-test -s "$bracket/mounting-options.html"
-grep -Fq 'mounting-options.html' "$bracket/readme.md"
-grep -Fq 'mounting-options.html' "$bracket/readme.html"
+# The main manual should remain concise and link to two focused guides.
+for page in mounting-options hull-guide; do
+  test -s "$bracket/$page.md"
+  test -s "$bracket/$page.html"
+  grep -Fq "$page.html" "$bracket/readme.md"
+  grep -Fq "$page.html" "$bracket/readme.html"
+done
+
+# Mounting diagrams are editable SVG files. The generated HTML must link to them.
+for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out mounting-e-pronged-t-nut m4-nuts-hex-square; do
+  test -s "$bracket/figures/$svg.svg"
+  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.md"
+  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.html"
+done
 grep -Fq 'counter-bracket' "$bracket/mounting-options.html"
 grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
 grep -Fq '6834946' "$bracket/mounting-options.html"
 grep -Fq '12120010' "$bracket/mounting-options.html"
+grep -Fq '12120360' "$bracket/mounting-options.html"
+grep -Fq 'Prongs point INTO plywood' "$bracket/figures/mounting-e-pronged-t-nut.svg"
 grep -Fq '<table>' "$bracket/mounting-options.html"
+# Explicit product photo URLs supplied for these three candidate components.
+for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg' 'as.89415179.jpg'; do
+  grep -Fq "$photo" "$bracket/mounting-options.md"
+  grep -Fq "$photo" "$bracket/mounting-options.html"
+done
+grep -Fq 'figures/m4-bolt-head-types.svg' "$bracket/mounting-options.html"
+test -s "$bracket/figures/m4-bolt-head-types.svg"
+for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out e-pronged-t-nut; do
+  file="$bracket/figures/mounting-$section.svg"
+  grep -Fq 'OUTSIDE' "$file"
+  grep -Fq 'INSIDE' "$file"
+  grep -Fq '520' "$file"
+done
 
-# The design guide must retain actual SCAD code, not just rendered images.
+# Verify SVG files parse as vector drawings, not only that paths exist.
+python3 - <<'PY'
+from pathlib import Path
+from xml.etree import ElementTree
+figures = sorted(Path("models/corner_bracket/v0.1/figures").glob("*.svg"))
+assert len(figures) >= 7, "Expected mounting and elephant-foot diagrams"
+for figure in figures:
+    root = ElementTree.parse(figure).getroot()
+    assert root.tag == "{http://www.w3.org/2000/svg}svg", figure
+    assert root.attrib.get("viewBox"), f"Missing viewBox: {figure}"
+print(f"Validated {len(figures)} editable SVG illustrations")
+PY
+
+# Elephant-foot compensation has its own illustrated explanation in the manual.
+for svg in elephant-foot-section elephant-foot-edges; do
+  test -s "$bracket/figures/$svg.svg"
+  grep -Fq "figures/$svg.svg" "$bracket/readme.md"
+  grep -Fq "figures/$svg.svg" "$bracket/readme.html"
+done
+grep -Fq 'Y = +W/2' "$bracket/readme.md"
+grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
+
+# Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \
   'module nut_top()' 'module ef_cuts()' \
-  'module plug_local()' 'module plugs_in_place()' \
-  'module sloped_hull()' 'module hull_of_circles()' \
-  'module sharp_L()'; do
+  'module plug_local()' 'module plugs_in_place()'; do
   grep -Fq "$source_module" "$bracket/readme.md"
   grep -Fq "$source_module" "$bracket/readme.html"
 done
 grep -Fq '<pre><code>' "$bracket/readme.html"
-grep -Fq 'cos(a)' "$bracket/readme.md"
+if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
+  echo "Extended hull tutorial leaked back into the main design manual" >&2
+  exit 1
+fi
 
-# Each teaching stage must have both a rendered image and a document link.
+# The separate hull guide owns both original step-by-step demonstrations.
+for source_module in 'module sloped_hull()' 'module hull_of_circles()' 'module sharp_L()'; do
+  grep -Fq "$source_module" "$bracket/hull-guide.md"
+  grep -Fq "$source_module" "$bracket/hull-guide.html"
+done
+grep -Fq 'cos(a)' "$bracket/hull-guide.md"
+
+# Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
-  local file="$1"
+  local file="$1" page="$2"
   test -s "$bracket/design/$file.png"
-  grep -Fq "design/$file.png" "$bracket/readme.md"
-  grep -Fq "design/$file.png" "$bracket/readme.html"
+  grep -Fq "design/$file.png" "$bracket/$page.md"
+  grep -Fq "design/$file.png" "$bracket/$page.html"
 }
 
 for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
-  check_image "$stage"
+  check_image "$stage" readme
 done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
-  check_image "hull_$stage"
+  check_image "hull_$stage" hull-guide
 done
 for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
-  check_image "rounding_$stage"
+  check_image "rounding_$stage" hull-guide
 done
 
 echo "Verified generated documentation and all design illustrations."

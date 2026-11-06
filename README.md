@@ -48,7 +48,9 @@ models/<model>/                  Model description and versions
 models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
-models/corner_bracket/v0.1/scad/  Corner bracket and interactive design walkthrough
+models/corner_bracket/v0.1/scad/    Main bracket and inspection helper (2 source files)
+models/corner_bracket/v0.1/design/  OpenSCAD teaching demos and generated images
+models/corner_bracket/v0.1/docs/    Documentation builder and illustrated guides
 site/                            GitHub Pages HTML/CSS templates
 scripts/ci/                      Documentation generation and publishing
 docs/                            Usage and publication notes
@@ -62,7 +64,7 @@ Unversioned models use `source/scad/` to keep NopSCADlib's generated lowercase
 Current model:
 [**Corner bracket — v0.1**](models/corner_bracket/README.md), a configurable
 plywood outside-corner bracket with captive M4 nuts and two removable plugs.
-Its [design walkthrough](models/corner_bracket/v0.1/scad/design.scad) shows six
+Its [design walkthrough](models/corner_bracket/v0.1/design/design.scad) shows six
 construction stages and is used to generate documentation images in CI.
 
 For a minimal NopSCADlib demonstration, try the

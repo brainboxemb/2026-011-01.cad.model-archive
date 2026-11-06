@@ -50,6 +50,92 @@ The six pictures show how the bracket is built, from a flat drawing to the finis
 
 ### 2. Outer side-edge chamfers
 
+**First, a simpler example.** The bracket is L-shaped, which makes the
+chamfer operation harder to see. Let's try the same idea on an ordinary
+rectangular bar. The following pictures are generated from the small,
+editable [hull_explained.scad](scad/hull_explained.scad) example.
+
+#### A. Start with a plain bar
+
+This rectangular block has straight, sharp edges. It is what we want
+to change. In OpenSCAD, `cube()` makes a rectangular solid.
+
+![A plain rectangular bar](design/hull_01_original_bar.png)
+
+    module original_bar() {
+        translate([0, 0, height / 2])
+            cube([length, width, height], center = true);
+    }
+
+#### B. Make a thin, wide layer at the bottom
+
+Imagine taking a very thin horizontal slice through the bottom of the
+bar. It is **as wide and as long as the original bar**, but only 0.5 mm
+thick. This is the first shape that we will give to `hull()`.
+
+![The wide bottom layer](design/hull_02_wide_layer.png)
+
+    module wide_layer() {
+        translate([0, 0, slice_thickness / 2])
+            cube([length, width, slice_thickness], center = true);
+    }
+
+#### C. Put a smaller layer above it
+
+Now add a second thin layer at the **top** of the bar (orange). It is
+smaller than the bottom layer (blue): on every side it is 5 mm in from
+the edge. **The two layers do not touch yet.** They are the two inputs
+for the next operation.
+
+![The wide and narrow layers before hull](design/hull_03_two_layers.png)
+
+    module narrow_layer() {
+        translate([0, 0, height - slice_thickness / 2])
+            cube([length - 2 * chamfer, width - 2 * chamfer,
+                  slice_thickness], center = true);
+    }
+
+#### D. Connect both layers using hull()
+
+Now OpenSCAD wraps the two layers in the **smallest solid that encloses
+both of them**. Think of stretching tight plastic film around both.
+This is what `hull()` does. Since the bottom is wide and the top is
+narrower, the new connecting sides become **sloped**.
+
+![Hull creates sloping sides between both layers](design/hull_04_hull.png)
+
+    module sloped_hull() {
+        hull() {
+            wide_layer();
+            narrow_layer();
+        }
+    }
+
+#### E. Compare the before and after
+
+**Left:** the original bar with sharp edges.
+**Right:** the result after `hull()`, with sloping edges.
+`intersection()` can keep only the volume shared by the original bar
+and this new shape. In this simple example the hull is already
+completely inside the bar, so `intersection()` changes nothing further.
+
+![Original bar beside bevelled bar](design/hull_05_result.png)
+
+    module clipped_bar() {
+        intersection() {
+            original_bar();
+            sloped_hull();
+        }
+    }
+
+**Back to the corner bracket.** The real model uses the same principle,
+but the two layers have a different outline: `outer_shape()` instead
+of rectangles. The code below uses `offset(delta = -cs)` to make
+one outline smaller, `hull()` to connect the two sizes, and
+`intersection()` to trim the actual L-shaped bracket. This avoids
+having to cut every side edge individually. In contrast to the simple
+bar, the bracket's construction keeps the plywood contact faces flat.
+
 **The goal is to remove the sharp edges along the sides of the bracket.** Instead of cutting each edge separately, the model builds a temporary shape that has sloping sides, then uses that shape to trim the bracket.
 
 Think of two versions of the same outline: one has its **full size in the middle** but does not reach quite as far towards the sides; the other reaches the **full width at the sides**, but its outline is slightly smaller. `offset(delta = -cs)` makes that smaller outline by moving its edges inwards. Here `cs = 2` mm.

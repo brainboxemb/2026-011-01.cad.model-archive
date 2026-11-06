@@ -10,6 +10,13 @@ model. The [v0.1 OpenSCAD model](scad/corner_bracket.scad) currently implements
 an **inside-to-outside bolt** and a **captured nut inside the outer bracket**.
 Do not assume that another arrangement is already printable.
 
+The **cross-section drawings** below illustrate one arm of the outside
+L bracket. The second arm is perpendicular and uses the same bolt arrangement.
+They are **concept sketches, not dimensioned manufacturing drawings**:
+the bracket thicknesses, head geometry and clearances are schematic.
+Blue is the outside bracket, orange is an optional inside counter-bracket,
+beige is plywood and grey is M4 hardware.
+
 ## Which side receives the bolt?
 
 The diagrams below show the stack through **one arm** of the L bracket.
@@ -17,11 +24,7 @@ The same principle applies to the other arm, which is at right angles.
 
 **A — Bolt from inside, captured nut in the outer bracket (current design)**
 
-```text
-INSIDE                                    OUTSIDE
-bolt head  →  plywood 10 mm  →  outer L bracket
-                                      [captured M4 nut]
-```
+![A — Bolt from inside, captured nut in the outer bracket (current design)](figures/mounting-a-inside-out.svg)
 
 The bolt passes through the plywood from the inside and screws into a nut
 held inside the outer bracket. The nut is inserted through the bracket's
@@ -35,10 +38,7 @@ the nut pocket, access window, bolt hole and plug.
 
 **B — Bolt from outside, loose or locking nut on the inside (alternative)**
 
-```text
-OUTSIDE                                    INSIDE
-bolt head  →  outer L bracket  →  plywood  →  M4 nut
-```
+![B — Bolt from outside, loose or locking nut on the inside (alternative)](figures/mounting-b-outside-in.svg)
 
 The bolt head would be visible on the outer bracket, or sit flush in a
 **90° countersink**. A nut on the inside can be held with a wrench while the
@@ -52,11 +52,7 @@ enough printed material around the head.
 
 **C — Two brackets: outside corner bracket plus inside counter-bracket**
 
-```text
-OUTSIDE                                                  INSIDE
-bolt head  →  outer L bracket  →  plywood  →  inner L bracket
-                                                   [nut / captive nut]
-```
+![C — Two brackets: outside corner bracket plus inside counter-bracket](figures/mounting-c-counter-outside-in.svg)
 
 A second L bracket on the **inside** can spread the clamping force over a
 larger section of plywood and help locate both panels during assembly.
@@ -72,6 +68,13 @@ inside plywood corner. This is a **future CAD design**, not part of v0.1.
 The direction can also be reversed, with bolt heads bearing on the inner
 counter-bracket and captured nuts in the outer bracket. That would keep
 the outside closed while offering a larger inside bearing surface.
+
+**D — Inside bolt with an inside counter-bracket and outer captive nut**
+
+![Inside head with counter-bracket and hidden captured nut](figures/mounting-d-counter-inside-out.svg)
+
+This option retains a closed exterior but requires additional room for
+the inside bracket and a matching bolt hole. It has **not been modeled**.
 
 ## Comparison
 
@@ -97,6 +100,13 @@ and how much threaded height is available.
 | Pocket shape | Hexagonal | Square |
 | Rotation prevention | Needs correctly oriented hexagonal pocket | Flat faces make a rectangular capture slot straightforward |
 | Main trade-off | More thread engagement height | Lower-profile pocket, **less thread engagement** |
+
+![Regular M4 hex nut compared with thin M4 square nut](figures/m4-nuts-hex-square.svg)
+
+The drawing shows the **head-on shape** and typical thickness difference.
+A square nut can sit in a simpler straight-sided slot, but the thinner
+DIN 562 nut has less thread engagement than a regular-height M4 hex nut.
+Verify the actual nut and pocket dimensions before printing.
 
 The thin square-nut dimensions are from the DIN 562 reference below; actual
 products must be measured. A square nut is not necessarily interchangeable

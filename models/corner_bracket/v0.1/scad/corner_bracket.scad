@@ -151,6 +151,13 @@ module side_chamfer_env() {
     }
 }
 
+// Plain extruded side profile before side chamfers or pockets.
+module profile_extrusion() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W, center = true)
+            profile();
+}
+
 module body() {
     intersection() {
         rotate([90, 0, 0]) linear_extrude(height = W, center = true) profile();
@@ -273,6 +280,13 @@ module plug_print() {
     translate([lip_l, D, (Wn - 2 * plug_clr) / 2]) rotate([90, 0, 0]) plug_local();
 }
 
+// Two separate plugs positioned for printing and documentation exports.
+module plugs_print_pair() {
+    for (i = [0, 1])
+        translate([i * (Lw + lip_l + 4), 0, 0])
+            plug_print();
+}
+
 // Show installed plugs in the access windows for visual inspection only.
 module plugs_in_place() {
     translate([tip_x, 0, 0]) plug_local();
@@ -283,7 +297,7 @@ module plugs_in_place() {
 if (part == "plug") {
     util_section_inspect(c_section_axis, c_section_position_mm, c_section_depth_mm, c_section_direction)
         color(plug_color)
-            for (i = [0, 1]) translate([i * (Lw + lip_l + 4), 0, 0]) plug_print();
+            plugs_print_pair();
 } else {
     util_section_inspect(c_section_axis, c_section_position_mm, c_section_depth_mm, c_section_direction)
         color(part_color) bracket();

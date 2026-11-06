@@ -11,7 +11,8 @@ an **inside-to-outside bolt** and a **captured nut inside the outer bracket**.
 Do not assume that another arrangement is already printable.
 
 The **cross-section drawings** below illustrate one arm of the outside
-L bracket. The second arm is perpendicular and uses the same bolt arrangement.
+L bracket. **All stacks run vertically: OUTSIDE at the top, INSIDE at the bottom.**
+The second arm is perpendicular and uses the same bolt arrangement.
 They are **concept sketches, not dimensioned manufacturing drawings**:
 the bracket thicknesses, head geometry and clearances are schematic.
 Blue is the outside bracket, orange is an optional inside counter-bracket,
@@ -19,10 +20,11 @@ beige is plywood and grey is M4 hardware.
 
 ![Overall L-joint with two perpendicular bolts and optional inner counter-bracket](figures/mounting-corner-overview.svg)
 
-The overview shows the **actual right-angle arrangement**: there is a
-fixing point on each arm of the outer L bracket. The optional inside
-counter-bracket is drawn in orange with a dashed outline because it is
-a **future concept**, not part of the existing CAD.
+The overview is an **unfolded section** of the two perpendicular
+mounting points in the L bracket. Both are shown from outside (top) to
+inside (bottom), for easy comparison; the actual bolts are at right
+angles in the assembled corner. The orange counter-bracket is
+**optional concept geometry**, not part of the current model.
 
 ## Which side receives the bolt?
 
@@ -47,10 +49,12 @@ the nut pocket, access window, bolt hole and plug.
 
 ![B — Bolt from outside, loose or locking nut on the inside (alternative)](figures/mounting-b-outside-in.svg)
 
-The bolt head would be visible on the outer bracket, or sit flush in a
-**90° countersink**. A nut on the inside can be held with a wrench while the
-bolt is tightened. An optional **flanged locking nut** spreads contact over
-more area than an ordinary hex nut and helps resist loosening.
+This is the **bolt-from-outside, nut-on-inside** option: the bolt enters
+through a **90° countersink** in the outer bracket (a DIN 7991 socket
+head), crosses the 10 mm plywood, and is secured by an **accessible M4
+flanged nut on the inside**. The flange faces *toward the plywood* so
+it bears against the clamped material, never away from it. The nut is
+held with a wrench while the bolt is tightened.
 
 This needs a **new CAD variant**: the current outer bracket has a closed
 outside skin and a blind bolt-tip hole, not a clearance hole and countersink
@@ -61,8 +65,12 @@ enough printed material around the head.
 
 ![C — Two brackets: outside corner bracket plus inside counter-bracket](figures/mounting-c-counter-outside-in.svg)
 
-A second L bracket on the **inside** can spread the clamping force over a
-larger section of plywood and help locate both panels during assembly.
+This option also has the **bolt head outside and nut inside**,
+but now the M4 locking flange nut bears on a **second printed L bracket**
+instead of directly on the plywood. The flange faces *upwards*
+toward the inner bracket in the vertical section. An inner bracket may
+spread the clamping force over a larger section of plywood and help
+locate both panels during assembly.
 It could use either loose hex/flange nuts or captured hex/square nuts. The
 two bracket parts and their bolt holes must line up.
 
@@ -133,6 +141,28 @@ It makes most sense as an **accessible nut on the inside**.
 
 ## Bolt heads: countersunk or projecting?
 
+![Two M4 bolt head styles in cross-section: flush DIN 7991 and projecting socket/button head](figures/m4-bolt-head-types.svg)
+
+**Two different head styles** are relevant, and their seats are not
+interchangeable:
+
+- **DIN 7991 / 90° countersunk socket head:** sits flush when a matching
+  countersink is modeled in the *outer bracket* (outside-in) or plywood /
+  inside counter-bracket (inside-out). This matches the supplied **RVS A2
+  Dresselhaus** reference. A head recess removes material, so check the
+  remaining wall before using one in a printed part.
+- **Projecting socket/button head:** requires a bolt clearance hole
+  rather than a deep countersink. It remains visible on the side where
+  the bolt enters; using a washer or larger bearing face can help reduce
+  pressure on plywood. This is a **head-shape alternative**, not one of
+  the linked purchased products.
+
+The diagrams A and D use a projecting head on the **inside** to keep the
+outside free of heads. Diagrams B and C show the DIN 7991-style
+**countersunk head on the outside**, with the **flanged nut on the inside**
+and its flange pressed against the wood or the inside counter-bracket.
+
+
 A **countersunk socket-head bolt** (DIN 7991, related to ISO 10642) is useful
 when a flush surface matters. It requires a matching **90° countersink**.
 For an M4 DIN 7991 head, a useful nominal reference is **8 mm head diameter**
@@ -171,31 +201,48 @@ bracket as well. These alternatives need a **fresh bolt-length calculation**
 from the final CAD cross-section and a physical fit test; do not reuse the
 10 mm bolt just because it is the convenient catalogue example.
 
-## Product references
+## Product references and photos
 
-The following links are **candidate components**, not a validated bill of
-materials. Material and size are taken from their listing titles or the
-standards linked below. Check pack size, stock, dimensions and tolerances
-at ordering time.
+These are **candidate hardware components**, not a validated bill of
+materials. The photos link directly to the retailers' product pages and
+remain hosted by Amazon/Hornbach. They are illustrative: the model has
+**not** been adapted for every listed fastener. Verify dimensions and
+available pack sizes when ordering.
 
-- **Square nuts:** [PRORAJE square stainless nuts, Amazon NL (ASIN
-  B0F412QQ32)](https://www.amazon.nl/dp/B0F412QQ32). The listing could
-  not be read automatically, so its exact dimensions and available size
-  selection still need checking. A third-party project references this
-  ASIN for **M4 A2/304, approximately 7 × 7 × 2.2 mm**; that does not
-  substitute for measuring the purchased nuts.
-- **Preferred countersunk bolt material:** [Dresselhaus M4×10 DIN 7991,
-  stainless steel A2, Hornbach](https://www.hornbach.nl/p/dresselhaus-metaalschroef-verzonken-kop-binnenzeskant-4x10-mm-din-7991-rvs-a2-100-stuks/6834946/).
-  **Length is a component example only**; it is too short for the
-  current 10 mm plywood joint.
-- **Alternative, galvanized:** [Dresselhaus M4×10 DIN 7991 zinc-plated,
-  Hornbach](https://www.hornbach.nl/p/dresselhaus-binnenzeskantbout-verzonken-kop-4x10-mm-din-7991-galv-verzinkt-100-stuks/7662372/).
-  The stainless A2 option is the more interesting starting point.
-- **Inside nut candidate:** [Marinetech M4 A2-70 locking flange nut,
-  Hornbach](https://www.hornbach.nl/p/marinetech-flensmoer-borg-zeskant-m4-rvs-a2-70-500-stuks/12120010/).
-  It is a possible **accessible inside nut**, not a drop-in captive nut.
-  The supplied product URL describes a pack of **500**; dimensions and
-  current availability require checking.
+### 1. PRORAJE stainless steel square nuts — Amazon NL
+
+<a href="https://www.amazon.nl/dp/B0F412QQ32"><img class="hardware-product-photo" width="185" loading="lazy" referrerpolicy="no-referrer" src="https://m.media-amazon.com/images/I/71+MwJjWJ+L._SL1500_.jpg" alt="PRORAJE square stainless steel nuts — product photograph provided by user"></a>
+
+[PRORAJE square nuts (ASIN B0F412QQ32)](https://www.amazon.nl/dp/B0F412QQ32).
+The exact size selection, thickness and tolerances have **not been
+verified** from the listing. A third-party source associates this ASIN
+with thin M4 nuts; measure the purchased nuts before changing the
+pocket in OpenSCAD.
+
+### 2. Dresselhaus M4×10 DIN 7991 countersunk socket bolt — Hornbach, RVS A2
+
+<a href="https://www.hornbach.nl/p/dresselhaus-metaalschroef-verzonken-kop-binnenzeskant-4x10-mm-din-7991-rvs-a2-100-stuks/6834946/"><img class="hardware-product-photo" width="185" loading="lazy" referrerpolicy="no-referrer" src="https://media.hornbach.nl/hb/packshot/as.46905981.jpg?dvid=8" alt="Dresselhaus stainless DIN 7991 M4 countersunk socket screw, Hornbach photograph"></a>
+
+[Preferred **RVS A2** variant](https://www.hornbach.nl/p/dresselhaus-metaalschroef-verzonken-kop-binnenzeskant-4x10-mm-din-7991-rvs-a2-100-stuks/6834946/),
+DIN 7991, 90° countersunk socket head. Hornbach specifies an M4×10
+screw with an **8 mm head diameter**, **2.3 mm nominal head height**
+and **2.5 mm hex key**. It illustrates the *head type*,
+**not a proven usable bolt length** for the bracket.
+
+A lower-priority alternative is the
+[galvanized Dresselhaus M4×10 DIN 7991 version](https://www.hornbach.nl/p/dresselhaus-binnenzeskantbout-verzonken-kop-4x10-mm-din-7991-galv-verzinkt-100-stuks/7662372/).
+The RVS A2 version is preferred for comparison.
+
+### 3. Marinetech M4 A2-70 locking flange nut — Hornbach
+
+<a href="https://www.hornbach.nl/p/marinetech-flensmoer-borg-zeskant-m4-rvs-a2-70-500-stuks/12120010/"><img class="hardware-product-photo" width="185" loading="lazy" referrerpolicy="no-referrer" src="https://media.hornbach.nl/hb/packshot/as.89415265.jpg?dvid=8" alt="Marinetech M4 stainless locking flange nut, Hornbach photograph"></a>
+
+[Marinetech locking flange nut M4, RVS A2-70](https://www.hornbach.nl/p/marinetech-flensmoer-borg-zeskant-m4-rvs-a2-70-500-stuks/12120010/).
+This is a candidate for **outside-to-inside assembly**, with the nut
+accessible from the inside. Its **flange must bear against the material
+being clamped** (plywood, washer or printed counter-bracket), not point
+away from it. It does **not** fit the existing captive nut pocket.
+The linked Hornbach product is listed in a 500-piece pack.
 
 Useful technical references:
 [DIN 562 thin M4 square-nut dimensions (Reyher)](https://www.reyher.de/fileadmin/user_upload/Downloadbereich/Reyher_2019-EN_Technische_Informationen_ks.pdf);

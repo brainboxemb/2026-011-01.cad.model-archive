@@ -61,6 +61,35 @@ outside skin and a blind bolt-tip hole, not a clearance hole and countersink
 for a bolt entering from the outside. Also verify that a countersink leaves
 enough printed material around the head.
 
+**E — Bolt from outside into an M4 inslagmoer in the plywood (alternative)**
+
+![Outside-in countersunk M4 bolt with an inslagmoer fitted from the inside of plywood](figures/mounting-e-pronged-t-nut.svg)
+
+A **pronged T-nut** (Dutch: *inslagmoer*) is another way to avoid a loose
+hex or flange nut on the inside. Drill a suitable hole through the plywood
+and install the T-nut **from the inside**: its **flange lies against the
+inside face of the plywood**, while its **prongs point into the wood**.
+The threaded barrel extends into the drilled hole. The M4 bolt enters
+**from outside**, through a new hole/countersink in the outer bracket,
+and engages the T-nut in the plywood.
+
+**Why consider it?** Once correctly seated, the prongs resist rotation,
+so a separate wrench may be unnecessary. The inside remains relatively
+flat, apart from the nut's flange.
+
+**Main risks:** This is a different joint design from a captured nut in
+the outer bracket. With only **10 mm plywood**, the T-nut barrel and
+prongs must actually fit and have enough material around the hole.
+Plywood veneer splitting, nut pull-out or the T-nut being pushed out
+while tightening are possible failure modes, especially near panel
+edges. A countersunk bolt still needs suitable head support in the
+printed bracket. Test with the real plywood and M4 T-nut first.
+
+The illustrated candidate is an **M4 × 7 mm RVS A2 inslagmoer**.
+This option is **not included in v0.1 OpenSCAD geometry**; the model
+would need a new through-hole, outside bolt-head seat, and a matching
+plywood hole. It does **not** use the existing captive nut pocket.
+
 **C — Two brackets: outside corner bracket plus inside counter-bracket**
 
 ![C — Two brackets: outside corner bracket plus inside counter-bracket](figures/mounting-c-counter-outside-in.svg)
@@ -98,6 +127,7 @@ the inside bracket and a matching bolt hole. It has **not been modeled**.
 | Inside → outside | Captured **hex nut** in outer bracket | Smooth bracket | **Implemented** (v0.1 default) |
 | Inside → outside | Captured **square nut** in outer bracket | Smooth bracket | **Selector present**, test fit required |
 | Outside → inside | Loose hex nut or **locking flange nut** inside | Screw head, possibly countersunk | **New geometry required** |
+| Outside → inside | **Pronged M4 inslagmoer in plywood** (flange on inside face) | Countersunk head outside | **New through-hole/countersink and plywood preparation** |
 | Outside → inside, two brackets | Nut in / behind inner counter-bracket | Screw head, possibly countersunk | **New inner + outer designs required** |
 | Inside → outside, two brackets | Captured nut in outer bracket | Smooth bracket | **New inner counter-bracket required** |
 
@@ -161,6 +191,8 @@ The diagrams A and D use a projecting head on the **inside** to keep the
 outside free of heads. Diagrams B and C show the DIN 7991-style
 **countersunk head on the outside**, with the **flanged nut on the inside**
 and its flange pressed against the wood or the inside counter-bracket.
+Diagram E also shows a **countersunk outside head**, but threads into a
+pronged **T-nut embedded in the plywood**, instead of a loose inside nut.
 
 
 A **countersunk socket-head bolt** (DIN 7991, related to ISO 10642) is useful
@@ -197,7 +229,9 @@ the outer surface is deliberately closed.
 
 For an outside-in arrangement, the bolt might have to span the **outer
 bracket, 10 mm plywood and nut**. A two-bracket sandwich adds the inner
-bracket as well. These alternatives need a **fresh bolt-length calculation**
+bracket as well. A **T-nut in plywood** changes where the threaded section
+begins, but still requires sufficient bolt reach and engagement **without
+bottoming out**. These alternatives need a **fresh bolt-length calculation**
 from the final CAD cross-section and a physical fit test; do not reuse the
 10 mm bolt just because it is the convenient catalogue example.
 
@@ -244,6 +278,18 @@ being clamped** (plywood, washer or printed counter-bracket), not point
 away from it. It does **not** fit the existing captive nut pocket.
 The linked Hornbach product is listed in a 500-piece pack.
 
+### 4. MARINETECH M4 × 7 mm stainless pronged T-nut — Hornbach
+
+<a href="https://www.hornbach.nl/p/marinetech-inslagmoer-m4x7-mm-rvs-a2-100-stuks/12120360/"><img class="hardware-product-photo" width="185" loading="lazy" referrerpolicy="no-referrer" src="https://media.hornbach.nl/hb/packshot/as.89415179.jpg?dvid=8" alt="Marinetech M4 stainless steel pronged T-nuts (inslagmoeren), Hornbach product photograph"></a>
+
+[MARINETECH inslagmoer M4 × 7 mm, RVS A2 — 100 pieces](https://www.hornbach.nl/p/marinetech-inslagmoer-m4x7-mm-rvs-a2-100-stuks/12120360/).
+Hornbach lists this M4 stainless A2 version under its
+[inslagmoeren range](https://www.hornbach.nl/c/ijzerwaren/bevestigingsmateriaal/moeren/inslagmoeren/S4697/).
+This is a **hammer-in nut for wood**, not a nut captured in the 3D-printed
+outer bracket. Confirm flange diameter, prong projection, actual barrel
+length and fit in the 10 mm plywood before choosing this option.
+Availability and price are not guaranteed.
+
 Useful technical references:
 [DIN 562 thin M4 square-nut dimensions (Reyher)](https://www.reyher.de/fileadmin/user_upload/Downloadbereich/Reyher_2019-EN_Technische_Informationen_ks.pdf);
 [M4 countersunk screw dimensions (DIN 7991, Fuller Fasteners)](https://fullerfasteners.com/tech/din-7991-specifications-hex-socket-countersunk-head-cap-screws/).
@@ -259,7 +305,11 @@ Useful technical references:
 4. If the joint needs more clamping area, make a **separate inside
    counter-bracket prototype**, aligning both bolts and avoiding interference
    with the plywood corner.
-5. Compare assembly time, repeatability, crushing of plywood, print-layer
+5. Test the **pronged M4 T-nut in a 10 mm plywood offcut**: pre-drill
+   the correct hole, drive it from the inside, confirm the prongs do not
+   split the plies, and check whether tightening pulls it securely into
+   the wood instead of loosening it.
+6. Compare assembly time, repeatability, crushing of plywood, print-layer
    direction and joint movement under real use. Do not infer a load rating
    from CAD alone.
 

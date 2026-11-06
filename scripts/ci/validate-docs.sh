@@ -30,7 +30,7 @@ for page in mounting-options hull-guide; do
 done
 
 # Mounting diagrams are editable SVG files. The generated HTML must link to them.
-for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out m4-nuts-hex-square; do
+for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out mounting-e-pronged-t-nut m4-nuts-hex-square; do
   test -s "$bracket/figures/$svg.svg"
   grep -Fq "figures/$svg.svg" "$bracket/mounting-options.md"
   grep -Fq "figures/$svg.svg" "$bracket/mounting-options.html"
@@ -39,15 +39,17 @@ grep -Fq 'counter-bracket' "$bracket/mounting-options.html"
 grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
 grep -Fq '6834946' "$bracket/mounting-options.html"
 grep -Fq '12120010' "$bracket/mounting-options.html"
+grep -Fq '12120360' "$bracket/mounting-options.html"
+grep -Fq 'Prongs point INTO plywood' "$bracket/figures/mounting-e-pronged-t-nut.svg"
 grep -Fq '<table>' "$bracket/mounting-options.html"
 # Explicit product photo URLs supplied for these three candidate components.
-for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg'; do
+for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg' 'as.89415179.jpg'; do
   grep -Fq "$photo" "$bracket/mounting-options.md"
   grep -Fq "$photo" "$bracket/mounting-options.html"
 done
 grep -Fq 'figures/m4-bolt-head-types.svg' "$bracket/mounting-options.html"
 test -s "$bracket/figures/m4-bolt-head-types.svg"
-for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out; do
+for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out e-pronged-t-nut; do
   file="$bracket/figures/mounting-$section.svg"
   grep -Fq 'OUTSIDE' "$file"
   grep -Fq 'INSIDE' "$file"

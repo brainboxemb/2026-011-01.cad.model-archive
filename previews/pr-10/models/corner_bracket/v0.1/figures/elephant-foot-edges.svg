@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 385" role="img" aria-label="Side view of the corner bracket with wood-facing relief edges highlighted">
+<rect width="960" height="385" fill="white"/><rect width="960" height="8" fill="#335f85"/>
+<text x="36" y="42" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#203246">Where is the relief cut on the bracket?</text>
+<text x="36" y="68" font-family="Arial,sans-serif" font-size="14" fill="#6b7c8e">Side view of the L profile. Highlighted lines show the wood-facing edge family, not a dimensioned technical drawing.</text>
+<path d="M304 160 H695 V97 L678 80 H254 L220 114 V300 L238 320 H285 V180 Q285 160 304 160 Z" fill="#a8c7df" stroke="#335f85" stroke-width="3"/>
+<path d="M305 160 H695 M285 180 V318" stroke="#e58a28" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M285 180 Q285 160 305 160" stroke="#e58a28" stroke-width="7" fill="none"/>
+<path d="M305 164 H695 M289 180 V317" stroke="#f8cc87" stroke-width="2" fill="none" stroke-dasharray="6 7"/>
+<text x="468" y="124" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#214c6c">Printed bracket</text>
+<text x="450" y="217" font-family="Arial,sans-serif" font-size="15" fill="#b56812">1 · Straight top contact edge</text>
+<path d="M516 202 L514 164" stroke="#b56812" stroke-width="2"/>
+<text x="353" y="297" font-family="Arial,sans-serif" font-size="15" fill="#b56812">2 · Straight vertical edge</text>
+<path d="M348 277 L288 278" stroke="#b56812" stroke-width="2"/>
+<text x="40" y="344" font-family="Arial,sans-serif" font-size="15" fill="#b56812">3 · Rounded inside corner</text>
+<path d="M244 332 L297 171" stroke="#b56812" stroke-width="2"/>
+<rect x="727" y="108" width="192" height="185" rx="12" fill="#f6f9fc" stroke="#dce5ed"/>
+<text x="744" y="140" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#203246">In the actual 3D part</text>
+<text x="744" y="168" font-family="Arial,sans-serif" font-size="13" fill="#203246">The wedge cuts run</text>
+<text x="744" y="189" font-family="Arial,sans-serif" font-size="13" fill="#203246">along BOTH side faces</text>
+<text x="744" y="210" font-family="Arial,sans-serif" font-size="13" fill="#203246">(Y = +W/2 and -W/2).</text>
+<text x="744" y="238" font-family="Arial,sans-serif" font-size="13" fill="#203246">ef = 0.6 mm default</text>
+<text x="744" y="262" font-family="Arial,sans-serif" font-size="13" fill="#6b7c8e">Enlarged conceptual view</text>
+</svg>

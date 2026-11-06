@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Generated documentation</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header><a href="../../../">← Model archive</a></header>
+  <main>
+<h1>OpenSCAD polygons and rounded inside corners</h1>
+<p>A small L bracket is a useful way to learn the difference between <strong>drawing a
+shape in 2D</strong> and <strong>building a solid in 3D</strong>. This article uses ordinary
+OpenSCAD primitives—<code>polygon()</code>, <code>square()</code>, <code>circle()</code>, <code>cube()</code>, and
+<code>cylinder()</code>—to make the <strong>same rounded concave corner</strong> in two ways.</p>
+<p><strong>Preferred approach for this bracket: start in 2D, then extrude.</strong> It is
+easier to see the intended side profile and keeps the boolean construction
+separate from thickness, nut pockets, and other 3D details. The 3D method
+is included to show how exactly the same idea works with solids.</p>
+<p>The illustrations come from the standalone, editable
+<a href="scad/inside_corner_methods.scad">inside_corner_methods.scad</a>. Select
+<code>demo_stage</code> in the OpenSCAD Customizer to view each construction step.</p>
+<blockquote>
+<p>These are <strong>teaching alternatives</strong>, not a silent replacement of the
+printable v0.1 corner bracket. That model currently constructs its
+<code>corner_arc</code> from calculated <code>polygon()</code> points. Its outside chamfers,
+nut pockets, and elephant-foot relief are separate operations.</p>
+</blockquote>
+<h2>First: draw a simple L with polygon()</h2>
+<p><code>polygon()</code> needs a list of coordinates. OpenSCAD joins them in order
+and closes the outline. The inside corner is sharp at <code>(0, 0)</code>.</p>
+<p><img alt="Plain L-profile in 2D" src="design/corner_01_sharp_2d.png" /></p>
+<p><code>openscad
+module sharp_L_2d() {
+    polygon([
+        [0, 0], [armH, 0], [armH, wall],
+        [-wall, wall], [-wall, -armV], [0, -armV]
+    ]);
+}</code></p>
+<p>Here, the demo uses <code>wall = 18</code>, <code>armH = armV = 70</code> and <code>radius = 12</code>
+millimetres, so the curved area is visible. The actual bracket defaults
+to an <strong>inside radius of 2 mm</strong>.</p>
+<h2>Method A (recommended): ordinary 2D shapes, then extrude</h2>
+<h3>A1. Place a square and a circle</h3>
+<p>The corner needs a little extra material in the empty quadrant next to
+<code>(0, 0)</code>. Place a <code>radius × radius</code> square at <code>(0, -radius)</code>.
+Place a circle with the <strong>same radius</strong> at <code>(radius, -radius)</code>.</p>
+<p><img alt="2D square and circle, before subtracting" src="design/corner_02_square_circle_2d.png" /></p>
+<p>```openscad
+module corner_square_2d() {
+    translate([0, -radius])
+        square([radius, radius]);
+}</p>
+<p>module corner_circle_2d() {
+    translate([radius, -radius])
+        circle(r = radius);
+}
+```</p>
+<p>Notice the difference between <strong>a quarter-circle</strong> and <strong>the material
+we actually need</strong>: the quarter-circle itself covers the wrong side of
+the curve. What we want to add is the <em>small area in the square that
+lies outside the circle</em>.</p>
+<h3>A2. Subtract the circle from the square</h3>
+<p><code>difference()</code> keeps the square and removes anything the circle overlaps.
+The result is a small curved triangular-looking piece.</p>
+<p><img alt="Remaining 2D curved corner piece" src="design/corner_03_piece_2d.png" /></p>
+<p><code>openscad
+module corner_piece_2d() {
+    difference() {
+        corner_square_2d();
+        corner_circle_2d();
+    }
+}</code></p>
+<h3>A3. Add that piece to the L</h3>
+<p><code>union()</code> combines the two filled 2D shapes. Only the inside corner
+changes; the rest of the original L outline stays where it is.</p>
+<p><img alt="The L profile and the added rounded inside-corner piece" src="design/corner_04_rounded_2d.png" /></p>
+<p><code>openscad
+module rounded_L_2d() {
+    union() {
+        sharp_L_2d();
+        corner_piece_2d();
+    }
+}</code></p>
+<h3>A4. Give the 2D shape thickness</h3>
+<p>Once the 2D profile is correct, a <strong>single</strong> <code>linear_extrude()</code> turns
+the complete outline into a 3D bracket-like solid.</p>
+<p><img alt="The rounded 2D L extruded into 3D" src="design/corner_05_extruded_2d.png" /></p>
+<p><code>openscad
+module extruded_from_2d() {
+    linear_extrude(height = depth)
+        rounded_L_2d();
+}</code></p>
+<p>This is the approach I would choose when the goal is a <strong>clear,
+maintainable model</strong>: finish the side view first, then add depth.</p>
+<h2>Method B: build the same corner from 3D solids</h2>
+<p>The same construction works one dimension higher:</p>
+<table>
+<thead>
+<tr>
+<th>2D operation</th>
+<th>Corresponding 3D operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>square([r, r])</code></td>
+<td><code>cube([r, r, depth])</code></td>
+</tr>
+<tr>
+<td><code>circle(r = r)</code></td>
+<td><code>cylinder(r = r, h = depth)</code></td>
+</tr>
+<tr>
+<td><code>difference()</code> in the plane</td>
+<td><code>difference()</code> between solids</td>
+</tr>
+<tr>
+<td><code>union()</code> of 2D areas</td>
+<td><code>union()</code> of solids</td>
+</tr>
+<tr>
+<td><code>linear_extrude()</code> once at the end</td>
+<td>Already working in 3D</td>
+</tr>
+</tbody>
+</table>
+<h3>B1. Position a cube and a cylinder</h3>
+<p>The cube is placed where the 2D square was, and the cylinder is
+positioned at the circle's centre. Both cover the <strong>full intended
+depth</strong> of the bracket.</p>
+<p><img alt="3D cube and cylinder before subtraction" src="design/corner_06_cube_cylinder_3d.png" /></p>
+<p>```openscad
+module corner_cube_3d() {
+    translate([0, -radius, 0])
+        cube([radius, radius, depth]);
+}</p>
+<p>module corner_cylinder_3d() {
+    translate([radius, -radius, -epsilon])
+        cylinder(r = radius, h = depth + 2 * epsilon);
+}
+```</p>
+<p>The small <code>epsilon</code> extends the cutter beyond the cube at either end.
+It prevents coincident top and bottom faces during the boolean operation;
+it <strong>does not</strong> make the finished part thicker.</p>
+<h3>B2. Subtract the cylinder</h3>
+<p><img alt="Small 3D corner piece after subtracting the cylinder" src="design/corner_07_piece_3d.png" /></p>
+<p><code>openscad
+module corner_piece_3d() {
+    difference() {
+        corner_cube_3d();
+        corner_cylinder_3d();
+    }
+}</code></p>
+<h3>B3. Add the result to an extruded L</h3>
+<p><img alt="Complete L solid with an inside radius, constructed in 3D" src="design/corner_08_rounded_3d.png" /></p>
+<p><code>openscad
+module rounded_L_3d() {
+    union() {
+        linear_extrude(height = depth)
+            sharp_L_2d();
+        corner_piece_3d();
+    }
+}</code></p>
+<p>Both methods are intended to produce the <strong>same solid</strong>, with the same
+radius, depth and circle segmentation. Method A is shorter to reason
+about because the round corner is settled <strong>before</strong> anything becomes 3D.</p>
+<h2>What does polygon() have to do with the original bracket?</h2>
+<p>The v0.1 bracket does not use either separate corner piece above. It
+calculates <strong>19 points</strong> along a quarter-circle and puts those points
+directly into its one <code>polygon()</code> outline.</p>
+<p><img alt="L profile built directly from sampled arc points" src="design/corner_09_polygon_points_2d.png" /></p>
+<p>```openscad
+corner_arc = (r_in &gt; 0)
+    ? [for (a = [180 : -5 : 90])
+        [r_in + r_in * cos(a),
+         -r_in + r_in * sin(a)]]
+    : [[0, 0]];</p>
+<p>// The actual profile() joins the arm points and corner_arc
+// in one polygon(concat(...)).
+```</p>
+<p>This approach is <strong>not wrong</strong>. It is especially useful when a profile
+must be expressed as a single ordered list of vertices, or when control
+over the individual segments matters. But for learning and for this
+local rounded corner, <strong><code>square() - circle() + union()</code> is easier
+to understand and modify</strong>.</p>
+<p>The shape comparison depends on segment resolution. Here <code>$fn = 72</code>
+gives circle segments every 5°, matching the existing angular step.
+That makes results closely comparable but is <strong>not proof that all the
+other bracket details remain identical</strong>.</p>
+<h2>A third compact option: two offsets</h2>
+<p>A 2D <code>offset()</code> pair can round concave corners too:</p>
+<p><code>openscad
+offset(r = -radius)
+    offset(r = radius)
+        sharp_L_2d();</code></p>
+<p>It is short, but operates on the <strong>whole outline</strong>. It can therefore
+affect other narrow details or chamfered ends. The square-minus-circle
+method changes <strong>only the chosen corner</strong>, which is why it is the
+clearer demonstration for the existing corner bracket.</p>
+<h2>2D first or 3D first?</h2>
+<p>Use <strong>2D first</strong> when the cross-section can be drawn with rectangles,
+circles and polygons, and remains the same along the thickness.
+Use <strong>3D first</strong> when depth changes locally or a hole, recess or other
+feature needs a genuine volume subtraction. For this model, it is
+reasonable to combine them: make the L and the inside radius in 2D,
+extrude, then subtract the 3D nut pockets and print-relief cutters.</p>
+<p>The existing printable corner bracket stays unchanged while these
+alternatives are being studied. Before replacing its <code>corner_arc</code>,
+compare the generated solid, exact boundary positions, mating fit,
+STL output and print-compensation details.</p>
+</main></body></html>

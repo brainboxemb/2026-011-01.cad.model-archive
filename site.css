@@ -10,4 +10,8 @@ a{color:#155b9c}img{max-width:100%;height:auto}
 table{border-collapse:collapse;display:block;overflow-x:auto}
 th,td{border:1px solid #e2e8f0;padding:.3rem .65rem;text-align:left}
 code{font-family:ui-monospace,Consolas,monospace}
+pre{background:#f1f5f9;border:1px solid #dae3ec;border-radius:8px;
+    padding:1rem;max-width:100%;overflow-x:auto;font-size:.88rem;
+    line-height:1.5;tab-size:4}
+pre code{white-space:pre;word-break:normal}
 @media(max-width:640px){body{padding:.5rem}main{padding:1rem}}

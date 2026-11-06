@@ -2,6 +2,7 @@
 # Fail the build if generated documentation, STL files, or tutorial
 # illustrations are absent from NopSCADlib outputs.
 set -euo pipefail
+trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"

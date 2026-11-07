@@ -106,14 +106,14 @@ PY
 
 # Elephant-foot compensation has its own illustrated explanation in the manual.
 for svg in elephant-foot-section elephant-foot-edges; do
-  test -s "$bracket/figures/$svg.svg"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.md"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.html"
+  test -s "$bracket/figures/$svg.svg" || { echo "Missing SVG: $svg" >&2; exit 1; }
+  require_text "figures/$svg.svg" "$bracket/readme.md"
+  require_text "figures/$svg.svg" "$bracket/readme.html"
 done
 for svg in elephant-foot-hull-explained elephant-foot-junction; do
-  test -s "$bracket/figures/$svg.svg"
-  grep -Fq "../figures/$svg.svg" "$bracket/docs/chamfer-guide.md"
-  grep -Fq "../figures/$svg.svg" "$bracket/docs/chamfer-guide.html"
+  test -s "$bracket/figures/$svg.svg" || { echo "Missing SVG: $svg" >&2; exit 1; }
+  require_text "../figures/$svg.svg" "$bracket/docs/chamfer-guide.md"
+  require_text "../figures/$svg.svg" "$bracket/docs/chamfer-guide.html"
 done
 if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; then
   echo "Unreadable corner fragment illustration reintroduced" >&2

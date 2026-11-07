@@ -18,7 +18,7 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
-  chamfer_explained.scad   Eight actual chamfer construction stages
+  chamfer_explained.scad   Nine actual chamfer construction stages
   combined_chamfer_hull.scad  Straight-arm single-hull experiment
   *.png                     CI-generated tutorial images (not committed)
 docs/

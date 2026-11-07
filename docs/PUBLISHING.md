@@ -76,3 +76,20 @@ written as `index.html`.
 Publishing runs after successful output validation on pushes to `main`.
 Verify the GitHub Pages deployment run before assuming the public page
 has refreshed.
+
+### Branch previews on the main homepage
+
+The **public site's front page** automatically lists active pull-request
+previews under **Branch previews**. Each entry links to the preview homepage
+(`previews/pr-<number>/`) and the corresponding GitHub PR; when available,
+it also displays the source branch name. Previews are separate from the
+published models and are removed automatically after the PR closes.
+
+`publish-pages.sh` updates this section whenever a preview is added,
+refreshed, or removed. `update-preview-index.py` scans the existing
+`gh-pages/previews/pr-*/index.html` directories; no PR number or preview
+URL is hard-coded in `site/index.html`. Preview metadata is stored in
+`preview.json` next to each preview homepage and is HTML-escaped when
+displayed. **A PR publication does not overwrite the main homepage**:
+the script changes only the generated preview-navigation region.
+`test-preview-index.py` verifies links, ordering and deletion.

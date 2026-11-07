@@ -9,38 +9,39 @@
 <body>
   <header><a href="../../../../">← Model archive</a></header>
   <main>
-<h1>Corner Bracket: the beam construction on the real L</h1>
-<p>The L is shown in print orientation and the elephant-foot step now uses the
-<strong>same two kinds of input as the beam demo</strong>.</p>
-<p>The starting L contains the normal <code>c</code>, <code>ce</code> and <code>cs</code> chamfers, but no
-<code>ef</code> yet.</p>
-<h2>0. Clean L with <code>cs</code> only</h2>
+<h1>Corner Bracket: same construction as the beam</h1>
+<p>This walkthrough now checks the two <code>ef</code> inputs <strong>separately first</strong>.</p>
+<p>That is deliberate: before looking at <code>hull()</code>, the lower input must clearly
+be a flat L-shaped plate, just like the plate under the beam.</p>
+<p>The clean starting L contains <code>c</code>, <code>ce</code> and <code>cs</code>, but no <code>ef</code>.</p>
+<h2>0. Clean L with <code>cs</code></h2>
 <p><img alt="Clean L with cs" src="../design/junction_00_l_with_cs.png" /></p>
-<p>There is no elephant-foot correction in this scene.</p>
-<h2>1. The two <code>ef</code> inputs</h2>
-<p><img alt="Two ef inputs" src="../design/junction_01_ef_inputs.png" /></p>
-<p>This should now read exactly like the beam.</p>
-<p>For this illustration only, the two inputs are shown as an <strong>exploded view</strong> so
-the lower plate cannot disappear behind the upper volume:</p>
+<p>No elephant-foot geometry is present yet.</p>
+<h2>1. Lower <code>ef</code> input only</h2>
+<p><img alt="Lower L plate" src="../design/junction_01_lower_plate.png" /></p>
+<p>This image shows <strong>nothing except the lower input</strong>.</p>
+<p>It must look like one flat L-shaped plate. For visibility only, it is rendered
+2 mm thick; the real hull input remains an almost-zero-thickness layer.</p>
+<p>The plate is taken from the already-<code>cs</code>-chamfered footprint and then inset by
+<code>ef</code>.</p>
+<h2>2. Upper <code>ef</code> input only</h2>
+<p><img alt="Upper L volume" src="../design/junction_02_upper_volume.png" /></p>
+<p>This is the complete already-<code>cs</code>-chamfered L from height <code>ef</code> upward.</p>
+<h2>3. Both inputs, exploded</h2>
+<p><img alt="Exploded inputs" src="../design/junction_03_ef_inputs.png" /></p>
+<p>Now the same two inputs are shown together:</p>
 <ul>
-<li><strong>blue:</strong> one thin <strong>L-shaped bottom plate</strong>. It is derived from the
-  already-<code>cs</code>-chamfered footprint and then made <code>ef</code> smaller;</li>
-<li><strong>orange:</strong> the complete already-<code>cs</code>-chamfered <strong>L volume from height
-  <code>ef</code> upward</strong>.</li>
+<li>blue lower L plate;</li>
+<li>orange upper L volume.</li>
 </ul>
-<p>The exploded spacing is visual only. The actual <code>hull()</code> uses both inputs at
-their real positions.</p>
-<h2>2. Hull result</h2>
-<p><img alt="Hull result" src="../design/junction_02_ef_hull.png" /></p>
-<p>A single global hull of a concave L would fill its inside corner. Therefore the
-implementation hulls the horizontal and vertical arm separately and unions the
-two results.</p>
-<p>That split is only an internal implementation detail. The inputs shown in the
-previous image are still one bottom L plate and one upper L volume.</p>
-<h2>3. Resulting L</h2>
-<p><img alt="Resulting L" src="../design/junction_03_result.png" /></p>
-<p>The result is the upper clean <code>cs</code> L plus the two local hull transitions down
-to the smaller bottom plate.</p>
+<p>They are moved apart only for this illustration.</p>
+<h2>4. Hull result</h2>
+<p><img alt="Hull result" src="../design/junction_04_ef_hull.png" /></p>
+<p>Because a global hull would fill the concave inside corner, the two arms are
+hulled separately internally and then united.</p>
+<h2>5. Resulting L</h2>
+<p><img alt="Resulting L" src="../design/junction_05_result.png" /></p>
+<p>This is the resulting one-sided elephant-foot experiment.</p>
 <h2>Interactive source</h2>
 <p>Open
 <a href="../design/ef_cs_junction_explained.scad"><code>design/ef_cs_junction_explained.scad</code></a>

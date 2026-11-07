@@ -102,6 +102,15 @@ for svg in elephant-foot-section elephant-foot-edges; do
   grep -Fq "figures/$svg.svg" "$bracket/readme.md"
   grep -Fq "figures/$svg.svg" "$bracket/readme.html"
 done
+for svg in elephant-foot-hull-explained elephant-foot-junction; do
+  test -s "$bracket/figures/$svg.svg"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/chamfer-guide.md"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/chamfer-guide.html"
+done
+if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; then
+  echo "Unreadable corner fragment illustration reintroduced" >&2
+  exit 1
+fi
 grep -Fq 'Y = +W/2' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 grep -Fq '## Printing and assembly' "$bracket/readme.md"
@@ -129,11 +138,12 @@ if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
 fi
 
 # The hull guide now progresses from a simple bar to the real bracket.
-for source_module in 'module sloped_hull()' 'module side_chamfer_env()' 'module body()'; do
+for source_module in 'module sloped_hull()'; do
   grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
   grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq '## 2. How the real corner bracket uses hull' "$bracket/docs/hull-guide.md"
+grep -Fq '## 2. Where does this appear in the real bracket?' "$bracket/docs/hull-guide.md"
+grep -Fq 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
@@ -157,7 +167,7 @@ done
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+for stage in 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

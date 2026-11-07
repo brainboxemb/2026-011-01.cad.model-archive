@@ -1,17 +1,19 @@
-// Corner Bracket: beam-style elephant-foot experiment on the real L.
+// Corner Bracket: beam-style elephant-foot experiment on a clean L.
 //
-// The L is shown in PRINT ORIENTATION: one printed side lies horizontally.
-// This makes the construction directly comparable to the beam demo.
+// IMPORTANT:
+// The production body() cannot be used as the "cs only" starting point because
+// corner_bracket.scad already folds ef into tip_top/tip_vert before body().
+//
+// This demo therefore rebuilds ONLY the clean L profile + cs side chamfer,
+// with NO elephant-foot geometry at the arm tips.
 //
 // Four scenes only:
-//   0. L with cs
-//   1. two transparent ef input shapes
-//   2. hull result
-//   3. final L result
+//   0. clean L with cs only
+//   1. two transparent ef input L-shapes
+//   2. local hull result
+//   3. resulting L
 //
-// Important:
-// The L is split internally into its horizontal and vertical arms so each arm
-// gets its own local hull. Their union preserves the concave inside corner.
+// The L is shown in print orientation.
 
 /* [Illustration] */
 junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
@@ -23,27 +25,95 @@ $fn = 48;
 eps = 0.02;
 display_thickness = 0.35;
 
+// Same production defaults, copied here so the baseline is explicit.
 armH = 40;
 armV = 40;
 t = 10;
 W = 20;
+ce = 6;
+c = 3;
+cs = 2;
 ef = 0.6;
+r_in = 2.0;
 
 // -----------------------------------------------------------------------------
-// Actual cs-aware cross-section of body() at a chosen Y.
-// Returned as ordinary X/Z 2D geometry.
+// 0. CLEAN BASELINE: L + cs, NO ef
 // -----------------------------------------------------------------------------
 
-module body_section_2d(y) {
+// Same production side profile, except the two end/contact points are sharp:
+// [armH,0] and [0,-armV]. No tip_top/tip_vert elephant-foot adjustment.
+module clean_sharp_profile() {
+    polygon([
+        [armH, 0],
+        [armH, t - c],
+        [armH - c, t],
+        [-t + ce, t],
+        [-t, t - ce],
+        [-t, -armV + c],
+        [-t + c, -armV],
+        [0, -armV],
+        [0, 0]
+    ]);
+}
+
+module clean_profile() {
+    union() {
+        clean_sharp_profile();
+
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
+}
+
+// Same convex helper used for cs. It contains no ef.
+module clean_outer_shape() {
+    polygon([
+        [armH, -armV],
+        [armH, t - c],
+        [armH - c, t],
+        [-t + ce, t],
+        [-t, t - ce],
+        [-t, -armV + c],
+        [-t + c, -armV]
+    ]);
+}
+
+module clean_cs_envelope() {
+    rotate([90, 0, 0])
+        hull() {
+            linear_extrude(height = W - 2 * cs, center = true)
+                clean_outer_shape();
+
+            linear_extrude(height = W, center = true)
+                offset(delta = -cs)
+                    clean_outer_shape();
+        }
+}
+
+module clean_body() {
+    intersection() {
+        rotate([90, 0, 0])
+            linear_extrude(height = W, center = true)
+                clean_profile();
+
+        clean_cs_envelope();
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Actual cs-aware X/Z section from the CLEAN body at a chosen Y.
+// -----------------------------------------------------------------------------
+
+module clean_body_section_2d(y) {
     mirror([0, 1, 0])
         projection(cut = true)
             rotate([90, 0, 0])
                 translate([0, -y, 0])
-                    body();
+                    clean_body();
 }
 
-// Two overlapping masks split the concave L into two convex-ish arm regions.
-// This lets us hull each arm locally instead of globally hulling the whole L.
+// Split the concave L into its two arms only for the local hull operation.
+// Visually the two parts are still shown together as one L.
 module horizontal_arm_mask_2d() {
     translate([-t - 2, -2])
         square([armH + t + 4, t + 4]);
@@ -57,7 +127,7 @@ module vertical_arm_mask_2d() {
 module arm_section_2d(y, which = "horizontal", shrink = 0) {
     offset(delta = -shrink)
         intersection() {
-            body_section_2d(y);
+            clean_body_section_2d(y);
 
             if (which == "horizontal")
                 horizontal_arm_mask_2d();
@@ -67,12 +137,7 @@ module arm_section_2d(y, which = "horizontal", shrink = 0) {
 }
 
 // -----------------------------------------------------------------------------
-// Two ef inputs.
-//
-// Inner input: actual cs body one ef inward from the printed face.
-// Outer input: actual cs body AT the printed face, then inset by ef.
-//
-// These are the direct L equivalents of the two successful beam inputs.
+// 1. TWO EF INPUTS — BOTH START FROM THE ALREADY-cs CLEAN L
 // -----------------------------------------------------------------------------
 
 module input_layer(y, which, shrink = 0, thickness = eps) {
@@ -82,6 +147,7 @@ module input_layer(y, which, shrink = 0, thickness = eps) {
                 arm_section_2d(y, which, shrink);
 }
 
+// Inner input: normal cs-aware L, one ef inward from the print face.
 module inner_input(which, display = false) {
     input_layer(
         W / 2 - ef,
@@ -91,6 +157,8 @@ module inner_input(which, display = false) {
     );
 }
 
+// Outer input: cs-aware L at the print face, made ef smaller.
+// This is where the elephant-foot correction is introduced for the FIRST time.
 module outer_input(which, display = false) {
     input_layer(
         W / 2,
@@ -107,8 +175,6 @@ module arm_ef_hull(which) {
     }
 }
 
-// The two local hulls together form one L-shaped transition without a global
-// hull across the concave inside corner.
 module l_ef_hulls() {
     union() {
         arm_ef_hull("horizontal");
@@ -116,27 +182,24 @@ module l_ef_hulls() {
     }
 }
 
-// Keep the existing cs body and replace only the outer ef-deep printed-side
-// layer by the new beam-style transition.
+// Keep the clean cs body inward of the ef transition and replace only the
+// outer +Y printed-side layer by the new local hulls.
 module result_body_one_side() {
     union() {
-        // Everything inward of the transition remains the real body().
         intersection() {
-            body();
+            clean_body();
+
+            // Keep y <= W/2-ef.
             translate([-100, -100, -100])
                 cube([200, 100 + W / 2 - ef, 200]);
         }
 
-        // New local transition at the +Y printed side.
         l_ef_hulls();
     }
 }
 
 // -----------------------------------------------------------------------------
-// Display in print orientation.
-//
-// rotate([-90,0,0]) maps +Y to downward Z. Translate by W/2 so the +Y printed
-// face lands on Z=0, just like the bottom of the beam demo.
+// Print orientation: +Y printed face becomes Z=0.
 // -----------------------------------------------------------------------------
 
 module print_orientation() {
@@ -145,24 +208,26 @@ module print_orientation() {
             children();
 }
 
+// -----------------------------------------------------------------------------
+// Four explanatory scenes
+// -----------------------------------------------------------------------------
+
 if (junction_step == "00_l_with_cs") {
     print_orientation()
         color("SteelBlue")
-            body();
+            clean_body();
 }
 
 else if (junction_step == "01_ef_inputs") {
     print_orientation() {
         color("SteelBlue", 0.12)
-            body();
+            clean_body();
 
-        // BLUE = inner cs-aware L input.
         color("DeepSkyBlue", 0.50) {
             inner_input("horizontal", true);
             inner_input("vertical", true);
         }
 
-        // ORANGE = outer cs-aware L input, additionally inset by ef.
         color("DarkOrange", 0.50) {
             outer_input("horizontal", true);
             outer_input("vertical", true);
@@ -173,7 +238,7 @@ else if (junction_step == "01_ef_inputs") {
 else if (junction_step == "02_ef_hull") {
     print_orientation() {
         color("SteelBlue", 0.12)
-            body();
+            clean_body();
 
         color("SeaGreen", 0.58)
             l_ef_hulls();

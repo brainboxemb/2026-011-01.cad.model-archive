@@ -38,6 +38,6 @@ done
 
 
 # Detailed cs/ef junction experiment on the real bracket.
-for stage in 00_cs_body 01_current_inputs 02_current_hull 03_current_problem 04_inner_cs_section 05_outer_cs_section 06_proposed_inputs 07_proposed_hull 08_proposed_result 09_compare; do
+for stage in 00_l_with_cs 01_current_inputs 02_current_hull 03_current_result 04_proposed_inputs 05_proposed_hull 06_proposed_result; do
   render ef_cs_junction_explained.scad junction_step "$stage" "junction_$stage" "800,520"
 done

@@ -195,8 +195,8 @@ and plywood-facing surfaces remain governed by the original profile.</p>
 </tr>
 <tr>
 <td><code>ef</code></td>
-<td>Printed-side contact edges, the inner radius, and arm-tip junctions</td>
-<td>Two opening hulls plus local miter hulls, removed with <code>difference()</code></td>
+<td>Edges where printed sides meet plywood-facing surfaces, including the curved inside corner</td>
+<td>Separate cutters in <code>ef_cuts()</code></td>
 </tr>
 </tbody>
 </table>
@@ -219,9 +219,6 @@ Here is the actual approach:</p>
 <li>A separate <code>hull()</code> on <strong>each side</strong> joins the expanded and
    unexpanded opening. <code>difference()</code> subtracts both local transition
    volumes from the actual L bracket.</li>
-<li>At each arm-tip diagonal where the <code>cs</code> bevel and <code>ef</code> bevel meet,
-   <code>relief_corner_miters()</code> creates another short <strong>triangular miter hull</strong>.
-   This prevents a flat unfinished end at that small corner.</li>
 <li>The outer <code>cs</code> bevel still comes from <code>side_chamfer_env()</code>,
    using the hull and intersection described in Section 2.</li>
 </ol>
@@ -239,7 +236,7 @@ module inside_relief_envelope() {
             }
 }</code></p>
 <p>The <a href="chamfer-guide.html">Chamfer Guide</a> shows this on the actual bracket,
-including a close-up of the miter cutter before and after subtraction. The old straight, diagonal and circular
+before and after the relief. The old straight, diagonal and circular
 elephant-foot cutters are kept <em>only in the regression fixture</em>.
 For supported configurations, CI compares the full old and new solids,
 including nut pockets and bolt holes. This is a near-equivalence test:
@@ -261,8 +258,7 @@ segments as an equivalent straight-bar reference.</p>
 <p><img alt="Combined hull versus sectional reference" src="../design/combined_chamfer_comparison.png" /></p>
 <p>This example remains useful to understand <strong>why</strong> two bevels can be
 combined for a convex solid. For the concave full L, the production
-implementation instead uses an outer hull, two local inner-opening hulls
-and additional short miter hulls at the arm tips.</p>
+implementation instead uses an outer hull and two local inner hulls.</p>
 <h2>Where to read next</h2>
 <p>For the rounded inside corner, the previous <code>sin()/cos()</code>
 point-list method and the current <code>square() - circle()</code> method,

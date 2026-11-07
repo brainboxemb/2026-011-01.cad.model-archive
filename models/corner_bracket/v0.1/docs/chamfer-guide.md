@@ -1,6 +1,6 @@
 # Chamfers on the Corner Bracket — from 2D vertices to 3D relief
 
-This guide follows the **actual v0.1 model**, with nine illustrations
+This guide follows the **actual v0.1 model**, with ten illustrations
 generated from [chamfer_explained.scad](../design/chamfer_explained.scad).
 You can open that file in OpenSCAD and select `chamfer_step` to inspect
 each stage. The examples use the real model modules whenever possible.
@@ -12,7 +12,7 @@ Three different features are easily confused:
 | `c` | 3 mm | Ends of both arms | Coordinates in the **2D polygon** |
 | `ce` | 6 mm | Large outside corner joining the arms | Coordinates in the **2D polygon** |
 | `cs` | 2 mm | Long outside edges of the printed *side faces* | `offset()` + `hull()` + `intersection()` |
-| `ef` | 0.6 mm | Edges where the printed side meets the *plywood contact faces* | Small subtractive cutters |
+| `ef` | 0.6 mm | Printed-side contact edges and junctions with the outer bevel | Two local opening hulls, plus corner-miter hulls |
 
 These operations run at different stages. `c` and `ce` are part of
 the initial **profile**, `cs` changes the **3D side edges**, and
@@ -170,8 +170,11 @@ revolving another cutter around the arc, the production code:
 2. At `Y = ±9.4`, uses that original 2D opening; at `Y = ±10`,
    expands it by 0.6 mm with `offset(delta=ef)`.
 3. Uses **one local hull per side** to connect those two profiles.
-4. Subtracts the resulting relief volumes from the already outer-
-   chamfered body using `difference()`.
+4. Adds **two more short hulls per printed side** where the relief meets
+   the diagonal `cs` bevels at the arm ends. Those junctions otherwise
+   leave a visible flat termination at the corner.
+5. Subtracts the opening and miter hulls from the outside-chamfered
+   body with `difference()`.
 
 Why not just one hull from one printed side to the other? A global
 convex hull would bridge **both expanded ends**, enlarging the opening
@@ -182,10 +185,33 @@ module chamfered_body() {
     difference() {
         body();                      // outside: cs hull bevel
         if (ef > 0)
-            inside_relief_envelope(); // inside: two local hull reliefs
+            inside_relief_envelope(); // inside: two local opening hulls
+            relief_corner_miters();    // tip junctions: local miter hulls
+        }
     }
 }
 ```
+
+### Close-up: the corner where two chamfers meet
+
+The broad inner-opening hulls by themselves leave a small unwanted
+termination where the elephant-foot allowance meets a diagonal outer
+side-edge bevel. This is hard to see in a full model view and barely
+changes the overall mesh volume. A separate **small triangular profile**
+gets swept along each local diagonal with `hull()`.
+
+![Before, small diagonal hull cutter and completed tip junction](../design/chamfer_10_corner_junction.png)
+
+**Left:** inner-opening hulls only. **Middle:** isolated diagonal miter
+cutting hull. **Right:** both opening and miter hulls applied. The
+figure crops the horizontal arm-tip corner for inspection; the production
+model also handles the opposite side and the other arm.
+
+A dedicated CI test clips the **symmetric difference** with the former
+model to just these four junctions. It verifies that adding the
+miter hulls removes at least 90% of the local defect volume across the
+supported nonzero `cs`/`ef` combinations. This supplements the
+whole-model 0.1% volume tolerance.
 
 The diagrams locate the small 45-degree contact-edge relief:
 

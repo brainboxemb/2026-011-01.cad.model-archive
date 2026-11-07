@@ -105,110 +105,43 @@ side-edge bevels remains.
 
 ![Actual body after the outside side-edge hull and intersection](../design/chamfer_07_intersection.png)
 
-## 3. Elephant-foot relief: the second hull construction
+## 3. Elephant-foot relief: `ef`
 
-The bracket is printed on a broad Y-facing side. With the defaults,
-`W=20` and `ef=0.6`, each print side gets its own local transition
-between **Y=9.4 mm** and **Y=10.0 mm** (and mirrored at negative Y).
+The elephant-foot relief is the **second hull-based operation** in the
+bracket, but its construction is now documented in one dedicated place:
 
-This section deliberately follows the **same five-step pattern** as the
-outside `cs` hull above.
+[**Elephant-foot relief — complete step-by-step guide**](ef-hull-experiment.html)
 
-### A. First hull surface — unchanged relief profile
+That page deliberately uses a fixed whole-bracket view and contains two
+parallel sequences:
 
-The elephant-foot operation does not hull the L-shaped bracket itself.
-It hulls a **relief profile beside the two wood-contact faces of the L**.
+- **A:** the two main EF hulls without the arm-tip correction;
+- **B:** the same steps again, followed by the small working arm-tip
+  correction.
 
-In X/Z, `inside_opening_2d()` occupies the area at **x ≥ 0 and z ≤ 0**,
-so its boundary lies directly against both wood-contact faces: `z=0` for
-the horizontal arm and `x=0` for the vertical arm. At the inside corner,
-the relief-profile boundary follows the same `r_in` curve as the bracket.
+Only after A and B are established does that page zoom into one tip and
+test whether the correction can be absorbed into the original two hull
+surfaces.
 
-The first thin copy of that relief profile is placed at Y=9.4 mm without an
-offset:
-
-![First elephant-foot hull surface](../design/efh_02_inner_main_input.png)
-
-```openscad
-opening_layer(W/2 - ef);
-```
-
-### B. Second hull surface — expanded opening
-
-At the actual print face, Y=10.0 mm, the same opening is expanded by
-`ef=0.6`:
-
-![Second elephant-foot hull surface](../design/efh_03_outer_main_input.png)
-
-```openscad
-opening_layer(W/2, ef);
-```
-
-### C. Both hull surfaces together
-
-These are the two children passed to `hull()` for the +Y print side:
-
-![Both elephant-foot hull surfaces](../design/efh_04_both_main_inputs.png)
-
-The −Y side uses the mirrored pair.
-
-### D. Resulting hull volume
-
-`hull()` connects the two surfaces with the 45° transition:
-
-![Elephant-foot hull volume](../design/efh_05_main_hull.png)
-
-```openscad
-module inside_relief_envelope() {
-    if (ef > 0)
-        for (side=[-1,1])
-            hull() {
-                opening_layer(side*(W/2-ef));
-                opening_layer(side*W/2, ef);
-            }
-}
-```
-
-### E. Subtract the hull from the real body
-
-Subtracting both local hulls from `body()` gives the main
-elephant-foot relief along the straight plywood-contact faces and the
-rounded inside corner:
-
-![Bracket after the two main elephant-foot hulls](../design/efh_06_main_result.png)
-
-That is the complete **second hull walkthrough**: input A, input B,
-both inputs, hull, subtraction result.
-
-## 4. Arm-tip junction
-
-At the arm end, the main elephant-foot hull meets the existing diagonal
-`cs` side bevel. The two main hulls leave a small local mismatch:
-
-![Exact missing arm-tip relief volume](../design/efh_07_missing_tip_volume.png)
-
-The current production model adds a short local miter hull at that
-junction. This gives the working reference result:
-
-![Working arm-tip result](../design/efh_09_reference_result.png)
+The production model itself remains simple:
 
 ```openscad
 module chamfered_body() {
     difference() {
         body();
+
         if (ef > 0) {
             inside_relief_envelope();
-            relief_corner_miters();
+
+            if (ef_corner_correction)
+                relief_corner_miters();
         }
     }
 }
 ```
 
-Whether that local correction can be folded back into **only the two
-main hull surfaces** is deliberately kept out of this construction
-guide. It is tested step by step, including the exact input surfaces,
-candidate hull, XOR, overcut and undercut, in the
-[Elephant-foot Hull Experiment](ef-hull-experiment.html).
+Use `ef_corner_correction = false` to inspect the model with only the
+two main EF hulls. Use `true` for the current working geometry.
 
 ## 5. What is checked, and what is not
 

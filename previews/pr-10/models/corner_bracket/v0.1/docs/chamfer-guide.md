@@ -184,9 +184,9 @@ through the whole central width. Two local hulls avoid that mistake.
 module chamfered_body() {
     difference() {
         body();                      // outside: cs hull bevel
-        if (ef > 0)
-            inside_relief_envelope(); // inside: two local opening hulls
-            relief_corner_miters();    // tip junctions: local miter hulls
+        if (ef > 0) {
+            inside_relief_envelope(); // inner plywood-facing edges
+            relief_corner_miters();  // diagonal arm-tip junctions
         }
     }
 }

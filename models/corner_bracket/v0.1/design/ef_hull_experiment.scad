@@ -232,9 +232,12 @@ module whole_working() {
 // two main hulls are used, but are removed by the working corner correction.
 // On the whole bracket this reveals all four problematic arm-tip junctions.
 module whole_missing_corner_material() {
-    difference() {
+    // Material that still exists in the main-only bracket and is touched by
+    // the four local correction cutters. This is exactly what the corner
+    // correction removes from the real bracket.
+    intersection() {
         whole_main_only();
-        whole_working();
+        relief_corner_miters();
     }
 }
 

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Model guides</title>
+  <link rel="stylesheet" href="../../../../site.css">
+</head>
+<body>
+  <header><a href="../../../../">← Model archive</a></header>
+  <main>
+<h1>Understanding <code>hull()</code> — a simple introduction</h1>
+<p><strong>This page teaches only the basic <code>hull()</code> operation.</strong> The
+<a href="chamfer-guide.html">Chamfer Guide</a> is the <strong>single detailed explanation</strong>
+of the actual Corner Bracket: its already-chamfered polygon, outside
+edge bevels, elephant-foot relief and arm-tip junctions.</p>
+<p>For the separate 2D construction of the rounded inside corner, see the
+<a href="polygon-guide.html">Polygon Guide</a>.</p>
+<p>In OpenSCAD, <code>hull()</code> creates the <strong>smallest convex shape containing
+all its children</strong>. It connects shapes smoothly in the geometric sense
+of <em>straight, sloping connecting surfaces</em>; it does not automatically
+make rounded curves or preserve concave openings.</p>
+<h2>1. Connect two differently sized layers</h2>
+<p>This demonstration uses an ordinary rectangular block, <strong>not the
+production bracket</strong>. Its purpose is to make the hull operation easy to
+recognise before the more complicated L-shaped model.</p>
+<h3>A. A bar with square edges</h3>
+<p><img alt="Rectangular bar before any bevel" src="../design/hull_01_original_bar.png" /></p>
+<p><code>openscad
+module original_bar() {
+    translate([0, 0, height/2])
+        cube([length, width, height], center=true);
+}</code></p>
+<h3>B. First input: a full-size, thin base layer</h3>
+<p><img alt="First, full-size layer" src="../design/hull_02_wide_layer.png" /></p>
+<p><code>openscad
+module wide_layer() {
+    translate([0, 0, slice_thickness/2])
+        cube([length, width, slice_thickness], center=true);
+}</code></p>
+<h3>C. Second input: a smaller layer at the top</h3>
+<p>The second layer is inset by <code>chamfer</code> on all four sides.</p>
+<p><img alt="Wide and narrow layers, not yet connected" src="../design/hull_03_two_layers.png" /></p>
+<p><code>openscad
+module narrow_layer() {
+    translate([0, 0, height - slice_thickness/2])
+        cube([length-2*chamfer, width-2*chamfer,
+              slice_thickness], center=true);
+}</code></p>
+<h3>D. Hull: the smallest convex solid around both layers</h3>
+<p><img alt="Hull connecting the two layers" src="../design/hull_04_hull.png" /></p>
+<p><code>openscad
+module sloped_hull() {
+    hull() {
+        wide_layer();
+        narrow_layer();
+    }
+}</code></p>
+<p>The visible slope comes from the <strong>size difference and distance</strong>
+between the two inputs. Nothing is rounded by <code>hull()</code> here.</p>
+<h3>E. Optional: clip with the original bar</h3>
+<p><img alt="The result after clipping to the bar" src="../design/hull_05_result.png" /></p>
+<p><code>openscad
+intersection() {
+    original_bar();
+    sloped_hull();
+}</code></p>
+<p>In this simple example, the hull already stays inside the original
+bar, so clipping barely changes the result. For the <strong>real L bracket</strong>
+it matters much more: an outside convex hull temporarily fills the
+concave opening between the arms. Intersecting it with the original L
+preserves that opening.</p>
+<h2>2. Where does this appear in the real bracket?</h2>
+<p>The bracket uses two different <em>roles</em> for hulls:</p>
+<ul>
+<li><strong>Outside bevel <code>cs</code>:</strong> connect a full outside outline with a
+  smaller outline. This hull is used as a <em>limiting envelope</em> and
+  intersected with the actual L.</li>
+<li><strong>Elephant-foot relief <code>ef</code>:</strong> connect two profiles of the <em>empty
+  space between the arms</em>, one expanded by 0.6 mm. The hull becomes a
+  <em>cutting volume</em> and is subtracted from the solid. There is one
+  per printed side; the current model also has small junction hulls
+  where the relief meets the outside bevel.</li>
+</ul>
+<p>These are different applications of the <strong>same <code>hull()</code> principle</strong>.
+For the actual input geometry, code and the reason the arm-tip junction
+needs its own small 3D hulls, <strong>continue to the
+<a href="chamfer-guide.html">Chamfer Guide</a></strong>.</p>
+<h2>3. Optional experiment: a single hull for two bevels</h2>
+<p>For a <strong>straight convex bar</strong>, four layers can be enclosed in one
+<code>hull()</code>: inset at the bottom, full-size in the centre and inset at
+the top. This forms both a bottom print allowance and a top bevel.</p>
+<p><img alt="Four outlines for the optional bar experiment" src="../design/combined_chamfer_layers.png" /></p>
+<p><img alt="One hull compared with three separate hull sections" src="../design/combined_chamfer_comparison.png" /></p>
+<p>The editable
+<a href="../design/combined_chamfer_hull.scad">combined-chamfer prototype</a>
+demonstrates this for a <strong>straight convex bar only</strong>. At the Corner
+Bracket arm tip, the required EF cutter plus its <code>cs</code> junction is
+non-convex. Putting both into one <code>hull()</code> fills the convex envelope
+between them and removes too much material. See
+<a href="chamfer-guide.html">Section 4 of the Chamfer Guide</a>.</p>
+</main></body></html>

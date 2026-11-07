@@ -36,6 +36,7 @@ test -s "$bracket/tests/elephant-foot-equivalence.scad"
 grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module inside_relief_envelope()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module relief_corner_miters()' "$bracket/scad/corner_bracket.scad"
 if grep -Fq 'module ef_cuts()' "$bracket/scad/corner_bracket.scad"; then
   echo "Obsolete per-edge elephant-foot cutters still in production model" >&2
   exit 1
@@ -156,7 +157,7 @@ done
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

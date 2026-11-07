@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 385" role="img" aria-label="Elephant foot cross section before and after a small chamfer relief">
+<rect width="960" height="385" fill="white"/><rect width="960" height="8" fill="#335f85"/>
+<text x="36" y="41" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#203246">Elephant-foot compensation: one edge in section</text>
+<text x="36" y="66" font-family="Arial,sans-serif" font-size="14" fill="#6b7c8e">Schematic, enlarged for clarity — actual relief parameter ef = 0.6 mm.</text>
+<rect x="34" y="83" width="432" height="266" rx="13" fill="#f6f9fc" stroke="#dce5ed"/>
+<rect x="494" y="83" width="432" height="266" rx="13" fill="#f6f9fc" stroke="#dce5ed"/>
+<text x="58" y="113" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#203246">Without relief</text>
+<text x="518" y="113" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#203246">With a small 45° relief</text>
+<!-- plywood to left of both bracket edges -->
+<rect x="95" y="146" width="83" height="159" fill="#eed4aa" stroke="#bd9064" stroke-width="1.5"/>
+<rect x="556" y="146" width="83" height="159" fill="#eed4aa" stroke="#bd9064" stroke-width="1.5"/>
+<text x="101" y="135" font-family="Arial,sans-serif" font-size="13" fill="#735638">Plywood</text>
+<text x="562" y="135" font-family="Arial,sans-serif" font-size="13" fill="#735638">Plywood</text>
+<!-- unwanted bulge at the lower-left corner -->
+<path d="M183 146 H394 V305 H176 Q161 303 165 290 L183 284 Z" fill="#335f85" stroke="#214c6c" stroke-width="2"/>
+<path d="M645 146 H856 V305 H668 L645 282 Z" fill="#335f85" stroke="#214c6c" stroke-width="2"/>
+<!-- triangle that was intentionally removed -->
+<path d="M645 282 L645 305 L668 305 Z" fill="#ffffff" stroke="#e28b33" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="278" y="222" fill="white" font-family="Arial,sans-serif" font-size="16" text-anchor="middle">Printed bracket</text>
+<text x="756" y="222" fill="white" font-family="Arial,sans-serif" font-size="16" text-anchor="middle">Printed bracket</text>
+<!-- print bed -->
+<path d="M67 308 H438 M524 308 H898" stroke="#657889" stroke-width="5"/>
+<text x="280" y="334" font-family="Arial,sans-serif" font-size="13" fill="#657889">Print bed</text>
+<text x="758" y="334" font-family="Arial,sans-serif" font-size="13" fill="#657889">Print bed</text>
+<!-- callout arrows -->
+<path d="M147 250 L164 290" stroke="#d16a4b" stroke-width="2" fill="none" />
+<text x="56" y="251" font-family="Arial,sans-serif" font-size="12" fill="#ba5c45">First-layer bulge</text>
+<path d="M717 261 L667 292" stroke="#e28b33" stroke-width="2" fill="none"/>
+<text x="710" y="263" font-family="Arial,sans-serif" font-size="12" fill="#ac6625">Relief triangle</text>
+<text x="40" y="373" font-family="Arial,sans-serif" font-size="13" fill="#6b7c8e">The notch is designed into the bracket so a small first-layer bulge does not interfere with the mating surface.</text>
+</svg>

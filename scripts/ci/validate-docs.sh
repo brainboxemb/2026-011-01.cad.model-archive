@@ -99,7 +99,9 @@ grep -Fq 'Y = +W/2' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 grep -Fq '## Printing and assembly' "$bracket/readme.md"
 grep -Fq '## Further reading' "$bracket/readme.md"
-# The hull primer is linked at Step 2 and in Further reading.\ngrep -Fq 'New to `hull()`?' "$bracket/readme.md"\ntest "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
+# The hull primer is linked at Step 2 and in Further reading.
+grep -Fq 'New to `hull()`?' "$bracket/readme.md"
+test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
   exit 1
@@ -162,7 +164,8 @@ for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner
   grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
   grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
 done
-grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"\ngrep -Fq 'chamfer-guide.html' "$bracket/readme.html"
+grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
+grep -Fq 'chamfer-guide.html' "$bracket/readme.html"
 grep -Fq 'polygon-guide.html' "$bracket/readme.html"
 if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   echo "General polygon tutorial leaked into the bracket walkthrough" >&2

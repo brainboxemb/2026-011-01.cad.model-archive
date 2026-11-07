@@ -1,23 +1,16 @@
-// Corner Bracket: beam-style cs/ef experiment in the ORIGINAL bracket coordinates.
+// Corner Bracket: minimal cs/ef input experiment.
 //
-// The important correction in this version:
+// STOP HERE until these two L-shaped input layers are visually correct.
 //
-//   * the bracket is NOT rebuilt on an XY print bed;
-//   * the real print-facing side is the L-shaped X/Z face at Y = +W/2;
-//   * the blue ef input is therefore a complete thin L plate ON that side;
-//   * the orange input is the already-cs-chamfered body starting ef inward.
+// Original bracket coordinates:
+//   X/Z = the L side profile
+//   Y   = bracket width
 //
-// This is the direct equivalent of the beam:
-//   beam   : bottom plate at Z=0        + upper cs body from Z=ef
-//   bracket: side L plate at Y=+W/2     + upper cs body from Y=W/2-ef inward
-//
-// Only the final hull operation is split internally per arm so a global convex
-// hull cannot close the concave inside corner.
-//
-// The production corner_bracket.scad is NOT changed by this experiment.
+// The print-facing L side is Y = +W/2.
+// No XY "print bed" conversion is used.
 
 /* [Illustration] */
-junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
+junction_step = "00_cs_body"; // [00_cs_body, 01_outer_L, 02_inner_L, 03_both_Ls]
 
 /* [Geometry] */
 armH = 40;
@@ -32,21 +25,15 @@ r_in = 2.0;
 
 /* [Hidden] */
 $fn = 48;
-$vpr = [75, 0, 180];
 eps = 0.02;
 display_thickness = 0.35;
 
-// -----------------------------------------------------------------------------
-// Clean L side profile: production geometry with c / ce / r_in, but NO ef.
-// -----------------------------------------------------------------------------
+// ---------- clean L profile: c/ce/r_in, but NO ef ----------
 
 module inside_corner_2d(r) {
     difference() {
-        translate([0, -r])
-            square([r, r]);
-
-        translate([r, -r])
-            circle(r = r, $fn = 72);
+        translate([0, -r]) square([r, r]);
+        translate([r, -r]) circle(r = r, $fn = 72);
     }
 }
 
@@ -67,14 +54,11 @@ module clean_sharp_profile() {
 module clean_profile() {
     union() {
         clean_sharp_profile();
-
-        if (r_in > 0)
-            inside_corner_2d(r_in);
+        if (r_in > 0) inside_corner_2d(r_in);
     }
 }
 
-// Convex helper used only for the existing cs side chamfer.
-module clean_outer_shape() {
+module outer_shape() {
     polygon([
         [armH, -armV],
         [armH, t - c],
@@ -86,16 +70,17 @@ module clean_outer_shape() {
     ]);
 }
 
-// Same cs envelope construction as the production bracket.
+// ---------- normal cs body, same principle as production ----------
+
 module cs_envelope() {
     rotate([90, 0, 0])
         hull() {
             linear_extrude(height = W - 2 * cs, center = true)
-                clean_outer_shape();
+                outer_shape();
 
             linear_extrude(height = W, center = true)
                 offset(delta = -cs)
-                    clean_outer_shape();
+                    outer_shape();
         }
 }
 
@@ -109,143 +94,75 @@ module clean_body() {
     }
 }
 
-// -----------------------------------------------------------------------------
-// ef INPUT 1: complete L plate on the REAL print-facing side Y=+W/2.
-// -----------------------------------------------------------------------------
+// ---------- the TWO L layers we need to understand first ----------
 
-// At the outer side face the cs envelope is exactly the -cs inset of the
-// convex outer helper, intersected with the actual concave L profile.
-module side_face_with_cs_2d() {
+// Actual cs-aware L shape on the OUTER print-facing side Y=+W/2.
+// At that side the cs envelope uses offset(-cs).
+module outer_side_L_2d() {
     intersection() {
         clean_profile();
-
         offset(delta = -cs)
-            clean_outer_shape();
+            outer_shape();
     }
 }
 
-// The elephant-foot plate is that complete cs-aware L face, then inset by ef.
-module ef_side_plate_2d() {
+// The outer ef input: same complete L side, then ef smaller.
+module outer_ef_L_2d() {
     offset(delta = -ef)
-        side_face_with_cs_2d();
+        outer_side_L_2d();
 }
 
-module ef_input_side_plate(thickness = eps) {
-    translate([0, W / 2, 0])
+// The inner ef input at Y=W/2-ef.
+// This is still a COMPLETE L profile. The cs inset is slightly smaller here
+// than at the outer face because we are ef inward along the 45-degree cs ramp.
+module inner_side_L_2d() {
+    intersection() {
+        clean_profile();
+        offset(delta = -(cs - ef))
+            outer_shape();
+    }
+}
+
+// Thin X/Z layer at a chosen Y. This is deliberately a side layer, not a
+// horizontal footprint.
+module xz_layer(profile = "outer", y = W/2, thickness = eps) {
+    translate([0, y, 0])
         rotate([90, 0, 0])
             linear_extrude(height = thickness, center = true)
-                ef_side_plate_2d();
+                if (profile == "outer")
+                    outer_ef_L_2d();
+                else
+                    inner_side_L_2d();
 }
 
-// -----------------------------------------------------------------------------
-// ef INPUT 2: complete already-cs-chamfered body starting ef inward.
-// -----------------------------------------------------------------------------
+// ---------- scenes ----------
 
-module ef_input_inner_body() {
-    intersection() {
-        clean_body();
+// Camera: almost straight onto the +Y side, but with enough perspective to
+// distinguish the two Y positions when both are shown.
+$vpr = [82, 0, 0];
 
-        // Keep everything from the opposite side up to Y=W/2-ef.
-        translate([-100, -100, -100])
-            cube([
-                200,
-                100 + W / 2 - ef,
-                200
-            ]);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Local arm hulls.
-//
-// The visible inputs remain:
-//   one complete blue L plate;
-//   one complete orange cs body.
-//
-// Internally only, split the concave L into its two arms before hull().
-// -----------------------------------------------------------------------------
-
-module horizontal_arm_mask_2d() {
-    translate([-t - 2, -2])
-        square([armH + t + 4, t + 4]);
-}
-
-module vertical_arm_mask_2d() {
-    translate([-t - 2, -armV - 2])
-        square([t + 4, armV + t + 4]);
-}
-
-module arm_mask_3d(which) {
-    rotate([90, 0, 0])
-        linear_extrude(height = 2 * W, center = true)
-            if (which == "horizontal")
-                horizontal_arm_mask_2d();
-            else
-                vertical_arm_mask_2d();
-}
-
-module side_plate_arm(which) {
-    intersection() {
-        ef_input_side_plate();
-        arm_mask_3d(which);
-    }
-}
-
-module inner_body_arm(which) {
-    intersection() {
-        ef_input_inner_body();
-        arm_mask_3d(which);
-    }
-}
-
-module arm_ef_hull(which) {
-    hull() {
-        side_plate_arm(which);
-        inner_body_arm(which);
-    }
-}
-
-module ef_hulls() {
-    union() {
-        arm_ef_hull("horizontal");
-        arm_ef_hull("vertical");
-    }
-}
-
-module result_body() {
-    union() {
-        ef_input_inner_body();
-        ef_hulls();
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Four scenes.
-// The camera looks almost straight at the +Y L side, matching the face the
-// user marked in red, while still showing a little part thickness.
-// -----------------------------------------------------------------------------
-
-if (junction_step == "00_l_with_cs") {
+if (junction_step == "00_cs_body") {
     color("SteelBlue")
         clean_body();
 }
 
-else if (junction_step == "01_ef_inputs") {
-    // BLUE: the complete L-shaped plate on Y=+W/2.
-    color("DeepSkyBlue", 0.85)
-        ef_input_side_plate(display_thickness);
-
-    // ORANGE: the complete cs body beginning ef inward behind that plate.
-    color("DarkOrange", 0.30)
-        ef_input_inner_body();
+else if (junction_step == "01_outer_L") {
+    // This MUST be the complete L face the user marked in red.
+    color("DeepSkyBlue")
+        xz_layer("outer", W/2, display_thickness);
 }
 
-else if (junction_step == "02_ef_hull") {
-    color("SeaGreen", 0.75)
-        ef_hulls();
+else if (junction_step == "02_inner_L") {
+    // Complete L one ef inward.
+    color("DarkOrange")
+        xz_layer("inner", W/2 - ef, display_thickness);
 }
 
 else {
-    color("SeaGreen")
-        result_body();
+    // Both complete L inputs in their real Y positions.
+    color("DeepSkyBlue", 0.65)
+        xz_layer("outer", W/2, display_thickness);
+
+    color("DarkOrange", 0.45)
+        xz_layer("inner", W/2 - ef, display_thickness);
 }

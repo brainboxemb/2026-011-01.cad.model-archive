@@ -185,6 +185,10 @@ resulting hull and subtraction result.</p>
 <a href="docs/ef-hull-experiment.html">Elephant-foot Hull Experiment</a>, where
 the current two-surface hull, the working reference, the strongest
 two-surface candidate and its XOR/overcut/undercut are shown individually.</p>
+<p>For a direct visual comparison in the <strong>real model</strong>, use the OpenSCAD
+Customizer option <code>ef_corner_correction</code>. Leave it <code>true</code> for the
+normal model or set it to <code>false</code> to disable only the four small
+arm-tip corrections while keeping the two main EF hulls active.</p>
 <p><img alt="Bracket after print relief" src="design/04_print_relief.png" /></p>
 <h3>5. Access-window plugs</h3>
 <p><strong>The nut windows need covers.</strong> Each plug starts as a small side-view drawing made with <code>polygon()</code>. The shape includes a hook that slips under the lip inside the bracket. <code>linear_extrude()</code> gives the plug its width; <code>plug_clr</code> leaves a little space around it so it can fit.</p>

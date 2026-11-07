@@ -1,60 +1,76 @@
-# Hull operations on one simple beam
+# Beam: normal chamfer first, elephant-foot relief second
 
-This page deliberately starts with **one rectangular beam**. The purpose is to
-understand the two operations before looking at the Corner Bracket.
+This example reduces the Corner Bracket idea to **one rectangular beam**.
 
-The camera, beam dimensions and orientation stay the same in every image.
+The beam has four long edges. The important rule is simple:
 
-## 0. Start: unchanged beam
+- the **two upper long edges** get the normal chamfer `cs`;
+- the **two lower long edges** are left sharp during that operation;
+- those lower edges are the print-bed edges and get the separate, smaller
+  elephant-foot relief `ef` afterwards.
+
+The two end faces stay square on purpose. They are not part of this explanation.
+
+The camera, dimensions and orientation remain the same in every image.
+
+## 0. Start with the plain beam
 
 ![Plain rectangular beam](renders/00_plain_beam.png)
 
-There is no chamfer and no elephant-foot correction yet.
+All four long edges are sharp.
 
-## 1. Operation A: side chamfer `cs`
+This is the reference object for the next steps.
 
-![Beam with side chamfer only](renders/01_side_chamfer.png)
+## 1. Apply the normal chamfer `cs`
 
-Only the long outside edges change.
+![Beam with normal chamfer, bottom left sharp](renders/01_side_chamfer.png)
 
-The construction is easiest to read as three cross-sections:
+The normal chamfer is applied to the **two upper long edges**.
 
-1. a narrower section at the outer face;
-2. the normal full section farther inward;
-3. `hull()` connects those sections.
+The two lower edges are deliberately **not** chamfered here. They still form the
+sharp print-bed boundary.
 
-So the important sequence is:
+So after this step the cross-section is conceptually:
 
-**beam → hull between two sections → beveled outside edge**
+- top-left: `cs`;
+- top-right: `cs`;
+- bottom-left: sharp;
+- bottom-right: sharp.
 
-Nothing about the elephant-foot correction is involved yet.
+That missing bottom chamfer is intentional, because the print-bed correction
+uses a different value.
 
-## 2. Operation B: elephant-foot relief `ef`
+## 2. Isolate the elephant-foot relief `ef`
 
-![Beam with elephant-foot relief only](renders/02_elephant_foot.png)
+![Plain beam with elephant-foot relief only](renders/02_elephant_foot.png)
 
-Now return to the original beam and ignore `cs`.
+For comparison, this image returns to the plain beam and shows only `ef`.
 
-The correction acts only in the small region at the print-bed edge. A short
-`hull()` defines the relief volume between the original edge and an inset
-section. That small volume is then removed from the beam.
+The smaller relief is applied to the **two lower long edges** — exactly the
+edges that were left untouched by `cs`.
 
-Read this operation as:
+This makes the roles of the two parameters visible without mixing them:
 
-**beam → make small relief volume → subtract it → corrected bottom edge**
+**`cs` = normal edge treatment**
 
-## 3. Both operations on the same beam
+**`ef` = print-bed edge treatment**
 
-![Beam with both operations](renders/03_combined.png)
+## 3. Combine them
 
-Only after the two operations are clear separately are they combined:
+![Beam with normal chamfer and elephant-foot relief](renders/03_combined.png)
 
-1. start with the same beam;
-2. apply the side chamfer `cs`;
-3. apply the elephant-foot relief `ef`.
+Now both operations are present on the same beam:
 
-This is the geometry relationship that should later be translated back to the
-real L-shaped Corner Bracket.
+1. start with the rectangular beam;
+2. chamfer the two upper long edges with `cs`;
+3. keep the bottom edges out of that operation;
+4. apply the smaller `ef` relief to those two bottom edges.
+
+The resulting cross-section therefore has two different bevel sizes for two
+different purposes.
+
+This is the concept that should then be mapped back onto the real Corner
+Bracket.
 
 ## Source
 

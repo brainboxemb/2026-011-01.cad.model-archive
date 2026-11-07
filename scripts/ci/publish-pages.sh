@@ -53,7 +53,7 @@ else
   cp -a "$bracket/figures" "$target/$bracket/"
   mkdir -p "$target/$bracket/docs"
   cp "$bracket/docs/"*.md "$bracket/docs/documentation.scad" "$target/$bracket/docs/"
-  for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+  for page in mounting-options hull-guide polygon-guide chamfer-guide ef-cs-junction-guide; do
     cat site/guide-header.html "$bracket/docs/$page.html" > "$target/$bracket/docs/$page.html"
     printf '\n</main></body></html>\n' >> "$target/$bracket/docs/$page.html"
     test -s "$target/$bracket/docs/$page.html"

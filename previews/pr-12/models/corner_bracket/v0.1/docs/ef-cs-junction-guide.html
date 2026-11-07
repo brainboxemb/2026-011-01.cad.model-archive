@@ -9,49 +9,36 @@
 <body>
   <header><a href="../../../../">← Model archive</a></header>
   <main>
-<h1>Corner Bracket: cs/ef junction on the real L</h1>
-<p>This walkthrough now keeps the picture as simple as possible:</p>
-<ul>
-<li>the <strong>real L-shaped bracket</strong> stays in the same place;</li>
-<li>no detached section planes are shown;</li>
-<li>the proposed elephant-foot step is visualized with <strong>two full 3D arm volumes</strong>,
-  just like the beam example.</li>
-</ul>
-<p>The production model is still unchanged.</p>
-<h2>0. L with the existing <code>cs</code> chamfer</h2>
+<h1>Corner Bracket: same idea as the beam, now on the L</h1>
+<p>The L is now shown <strong>lying on its printed side</strong>, so the pictures read the same
+way as the beam experiment.</p>
+<p>There are only four steps.</p>
+<h2>0. L with the normal <code>cs</code> chamfer</h2>
 <p><img alt="L with cs" src="../design/junction_00_l_with_cs.png" /></p>
-<p>This is the real <code>body()</code>.</p>
-<h2>1. Current result before the extra corner correction</h2>
-<p><img alt="Current result" src="../design/junction_01_current_result.png" /></p>
-<p>This is the current broad elephant-foot relief before
-<code>relief_corner_miters()</code>.</p>
-<p>The only point of interest is the small arm-tip junction.</p>
-<h2>2. Proposed inputs: two real 3D arm volumes</h2>
-<p><img alt="Proposed full-volume inputs" src="../design/junction_02_proposed_inputs.png" /></p>
-<p>The whole L stays faintly visible.</p>
-<p>The colored shapes are no longer thin vertical profile planes:</p>
+<p>This is the real bracket <code>body()</code>, already including the normal side chamfer.</p>
+<h2>1. The two <code>ef</code> inputs</h2>
+<p><img alt="Two transparent ef inputs on the L" src="../design/junction_01_ef_inputs.png" /></p>
+<p>The complete L stays faintly visible underneath.</p>
+<p>The colored shapes are the two real inputs to the elephant-foot transition:</p>
 <ul>
-<li>blue: the lower horizontal-arm volume, already carrying the <code>cs</code> geometry;</li>
-<li>orange: the upper horizontal-arm volume, also already carrying the same
-  <code>cs</code> geometry.</li>
+<li>blue: the already-<code>cs</code>-chamfered L one <code>ef</code> inward from the print face;</li>
+<li>orange: the already-<code>cs</code>-chamfered L at the print face, then made
+  <code>ef</code> smaller.</li>
 </ul>
-<p>The lower volume is the smaller <code>ef</code> input. The upper volume is the normal
-already-chamfered arm.</p>
-<p>So this is the direct Corner Bracket equivalent of the successful beam test:
-<strong>both hull inputs already contain the side chamfer before <code>hull()</code>.</strong></p>
-<h2>3. Hull those two arm volumes</h2>
-<p><img alt="Proposed local arm hull" src="../design/junction_03_proposed_hull.png" /></p>
-<p>Only the local horizontal arm is hulled.</p>
-<p>The complete L is <strong>not</strong> put into one global <code>hull()</code>, so the concave inside
-corner cannot be filled in.</p>
-<h2>4. Proposed L result</h2>
-<p><img alt="Proposed L result" src="../design/junction_04_proposed_result.png" /></p>
-<p>The proposed local arm hull is placed back into the unchanged L.</p>
-<p>This page is only meant to make the geometry understandable. Once this view is
-visually correct, the next step is to express the same minimal idea cleanly in
-the production model.</p>
+<p>Both inputs therefore already contain the <code>cs</code> geometry before any new
+<code>hull()</code> is made.</p>
+<p>Internally the horizontal and vertical arms are hulled separately. That avoids
+a global hull filling the concave inside corner, but visually they remain one L.</p>
+<h2>2. Hull result</h2>
+<p><img alt="Hull result on the L" src="../design/junction_02_ef_hull.png" /></p>
+<p>The green volume is the union of those two local arm hulls.</p>
+<p>This is the direct L-shaped equivalent of the successful beam construction.</p>
+<h2>3. Resulting L</h2>
+<p><img alt="Resulting L" src="../design/junction_03_result.png" /></p>
+<p>The new transition replaces only the outer <code>ef</code>-deep printed-side layer.
+Everything farther inward remains the original <code>body()</code>.</p>
 <h2>Interactive source</h2>
 <p>Open
 <a href="../design/ef_cs_junction_explained.scad"><code>design/ef_cs_junction_explained.scad</code></a>
-and use the <code>junction_step</code> dropdown.</p>
+and switch the <code>junction_step</code> dropdown through the same four stages.</p>
 </main></body></html>

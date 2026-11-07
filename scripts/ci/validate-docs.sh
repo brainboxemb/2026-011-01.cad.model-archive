@@ -45,6 +45,8 @@ grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module inside_relief_envelope()' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module relief_corner_miters()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'ef_corner_correction = true' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'if (ef_corner_correction)' "$bracket/scad/corner_bracket.scad"
 if grep -Fq 'module ef_cuts()' "$bracket/scad/corner_bracket.scad"; then
   echo "Obsolete per-edge elephant-foot cutters still in production model" >&2
   exit 1

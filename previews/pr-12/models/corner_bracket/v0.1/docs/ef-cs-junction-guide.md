@@ -1,81 +1,111 @@
-# Corner Bracket: cs/ef hull experiment on one L-shape
+# Corner Bracket: minimal cs/ef hull experiment
 
-This page deliberately keeps the geometry simple to follow:
+This page applies the successful beam idea to the **real Corner Bracket**
+without redesigning the whole model.
 
-**the same L-shaped bracket body stays in the same place in every image.**
+The production model already has two local elephant-foot hulls: one for each
+printed side. The experiment keeps that structure and asks one narrow question:
 
-Nothing is moved beside the bracket. There are no separate section drawings in
-the walkthrough. When a hull is explained, its two input volumes are simply
-shown transparently on the L itself.
+> Can we keep the same two hulls, but derive their input profiles from the
+> already-`cs`-chamfered `body()`?
 
-The production model is not changed by this experiment.
+The production file is **not changed** by this experiment.
 
-## 0. L-shape with the existing `cs` chamfer
+## 0. Start from the existing `body()`
 
-![L-shaped body with cs](../design/junction_00_l_with_cs.png)
+![Existing body with cs chamfer](../design/junction_00_cs_body.png)
 
-This is the real `body()`: the L-shaped bracket after the normal side-edge
-chamfer `cs`, before the elephant-foot relief.
+This is the real bracket body after the existing side-edge chamfer `cs`, but
+before the broad elephant-foot hull is subtracted.
 
-## 1. Current `ef` inputs on the same L
+## 1. Current elephant-foot hull inputs
 
-![Current transparent ef inputs on the L](../design/junction_01_current_inputs.png)
+![Current transparent ef inputs](../design/junction_01_current_inputs.png)
 
-The L stays faintly visible.
+The current construction uses two thin opening profiles on each printed side:
 
-The two colored objects are the current inputs to one of the two local
-elephant-foot hulls:
+- blue: the normal inside opening at `Y = W/2-ef`;
+- orange: the same abstract opening expanded by `ef` at `Y = W/2`.
 
-- blue: inner input at `Y = W/2-ef`;
-- orange: outer input at `Y = W/2`, expanded by `ef`.
+The orange profile is **not derived from the actual `cs`-chamfered body**.
+That is the same mismatch the beam experiment exposed.
 
-## 2. Current `ef` hull on the L
+## 2. Current local hull
 
-![Current ef hull on the L](../design/junction_02_current_hull.png)
+![Current local ef hull](../design/junction_02_current_hull.png)
 
-The red volume is the hull made from those two inputs.
+The existing hull is perfectly sensible along most of the contact edge.
 
-## 3. Current result
+## 3. Current result before the special corner correction
 
-![Current result before corner miter](../design/junction_03_current_result.png)
+![Current arm-tip defect](../design/junction_03_current_problem.png)
 
-This is the L after the two existing broad elephant-foot hulls are subtracted,
-but **before** `relief_corner_miters()`.
+This is the isolated problem: the broad `ef` hull reaches the diagonal
+`cs` side bevel at the arm tip with the small unwanted termination.
 
-The small arm-tip defect is the only issue we are trying to solve.
+The production model currently fixes this afterward with
+`relief_corner_miters()`.
 
-## 4. Proposed inputs on the same L
+## 4. Actual `cs` section one `ef` inward
 
-![Proposed transparent cs-aware inputs on the L](../design/junction_04_proposed_inputs.png)
+![Inner actual cs section](../design/junction_04_inner_cs_section.png)
 
-The structure is unchanged: still two inputs, at the same two Y positions.
+Instead of assuming an abstract opening shape, the experiment takes a real
+cross-section of `body()` at `Y = W/2-ef`.
 
-The only difference is that these input profiles are derived from the
-already-`cs`-chamfered `body()`. Therefore the outer input already contains
-the arm-tip side chamfer before `hull()` is called.
+## 5. Actual `cs` section at the printed side
 
-## 5. Proposed hull on the L
+![Outer actual cs section](../design/junction_05_outer_cs_section.png)
 
-![Proposed cs-aware hull on the L](../design/junction_05_proposed_hull.png)
+The outer section already contains the diagonal geometry produced by `cs` at
+the arm tip. This is the information missing from the current outer `ef`
+input.
 
-Again: one local hull, shown in place on the same L.
+## 6. Proposed inputs: same two positions, cs-aware geometry
 
-No new global construction is introduced.
+![Proposed transparent inputs](../design/junction_06_proposed_inputs.png)
 
-## 6. Proposed result
+The experiment keeps the same two Y positions and the same one-hull-per-side
+structure.
 
-![Proposed result](../design/junction_06_proposed_result.png)
+The only conceptual change is how the profiles are obtained:
 
-This result uses the same two local elephant-foot hulls, but with the cs-aware
-inputs.
+- blue: opening next to the **actual cs body** at `Y = W/2-ef`;
+- orange: opening next to the **actual cs body** at `Y = W/2`, then expanded
+  by `ef`.
 
-No separate `relief_corner_miters()` is applied here. The purpose of the
-experiment is to see whether the minimal input change is sufficient.
+So the outer input already knows about the side chamfer before the elephant-foot
+hull is made.
+
+## 7. Proposed local hull
+
+![Proposed cs-aware local hull](../design/junction_07_proposed_hull.png)
+
+This is still one local `hull()` on one printed side. The experiment is not
+introducing a new global hull or changing the concave L construction.
+
+## 8. Proposed result
+
+![Proposed bracket result](../design/junction_08_proposed_result.png)
+
+The result is the real `body()` minus the same two local relief hulls, but with
+the cs-aware inputs.
+
+No separate `relief_corner_miters()` is applied in this experimental result.
+
+## 9. Direct comparison
+
+![Current and proposed arm-tip result](../design/junction_09_compare.png)
+
+Left: current broad elephant-foot hulls before the extra miter correction.
+
+Right: the minimal cs-aware-input experiment.
+
+The purpose of this file is to decide whether the production change can really
+be limited to **how the two existing hull inputs are constructed**.
 
 ## Interactive source
 
 Open
 [`design/ef_cs_junction_explained.scad`](../design/ef_cs_junction_explained.scad)
-and select `junction_step`.
-
-The dropdown follows exactly the seven images above.
+and use the `junction_step` Customizer dropdown to inspect every stage.

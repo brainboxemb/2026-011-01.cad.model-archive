@@ -182,95 +182,47 @@ module body() {
     }
 }
 
-// ---------- Unified hull-based side chamfers and print relief ----------
-// The broad outside edges are controlled by side_chamfer_env() above.
-// For the *concave*, wood-facing edges, use the complement: the open
-// quadrant between the two arms, less the small rounded corner fill.
-// Its boundary includes both straight contact faces and the inner arc.
-// We extend the quadrant beyond the arm ends so the bevel is not clipped.
-module inside_opening_2d() {
-    reach = max(5, cs + ef + 1);
-    difference() {
-        translate([0, -armV - reach])
-            square([armH + reach, armV + reach]);
-        if (r_in > 0)
-            inside_corner_2d(r_in);
-    }
-}
-
-// A thin 3D slice of the open space at one position across the Y width.
-// A larger 2D opening at the printed side removes an ef-sized amount
-// from the wood-contact boundary without changing the middle of the part.
-module opening_layer(y, expansion = 0) {
+// ---------- Hull-based elephant-foot relief ----------
+// Keep the complete L profile unchanged through the middle of the part.
+// On each printed side, hull() connects that full profile to a copy inset
+// by ef. Because body() already has the larger outer side chamfer cs, the
+// cs envelope remains dominant on outside edges; this envelope only adds
+// the smaller print relief where body() still reaches the wood-facing edges.
+//
+// Using the complete profile here means the arm-end chamfers and rounded
+// inside corner are part of the hull input itself. No separate corner-miter
+// cutters are required.
+module profile_layer(y, inset = 0) {
     translate([0, y, 0])
         rotate([90, 0, 0])
             linear_extrude(height = 0.002, center = true)
-                offset(delta = expansion)
-                    inside_opening_2d();
+                if (inset > 0)
+                    offset(delta = -inset) profile();
+                else
+                    profile();
 }
 
-// Why TWO hulls? A single convex hull joining expanded openings at BOTH
-// outside Y faces would also enlarge the opening all through the middle.
-// Each side must have its own local transition from normal to expanded.
-module inside_relief_envelope() {
-    if (ef > 0)
+module print_relief_env() {
+    if (ef > 0) {
+        // Unchanged central width.
+        rotate([90, 0, 0])
+            linear_extrude(height = W - 2 * ef, center = true)
+                profile();
+
+        // Same construction on both printed side faces.
         for (side = [-1, 1])
             hull() {
-                opening_layer(side * (W / 2 - ef));
-                opening_layer(side * W / 2, ef);
+                profile_layer(side * (W / 2 - ef));
+                profile_layer(side * W / 2, ef);
             }
+    } else
+        profile_extrusion();
 }
 
-// At each arm tip the EF chamfer meets the *diagonal* cs side chamfer.
-// The opening hull above follows the straight plywood faces and the inside
-// radius, but does not provide this third diagonal miter. This leaves a
-// short, flat termination (visible at the corner in the 3D preview).
-// Connect a triangular relief profile at BOTH ends of each diagonal edge
-// with another local hull(), so the bevel continues through the junction.
-// A profile is only 0.001 mm thick; the hull supplies the swept volume.
-module relief_miter_hull(A, U, V, D, len) {
-    module triangle_at(distance) {
-        multmatrix([[U[0], V[0], D[0], A[0]],
-                    [U[1], V[1], D[1], A[1]],
-                    [U[2], V[2], D[2], A[2]],
-                    [0, 0, 0, 1]])
-            translate([0, 0, distance])
-                linear_extrude(height = 0.001)
-                    polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
-    }
-    hull() {
-        triangle_at(0);
-        triangle_at(len);
-    }
-}
-
-// One diagonal junction at each end of each arm, repeated on both print
-// faces. The rest of the elephant-foot relief still uses the two opening
-// hulls, including the curved inside corner.
-module relief_corner_miters() {
-    s2 = sqrt(2) / 2;
-    if (ef > 0 && cs > 0)
-        for (m = [0, 1]) mirror([0, m, 0]) {
-            // Horizontal arm: diagonal across the side bevel near x=armH.
-            relief_miter_hull([armH - cs - s2, W / 2 + s2, 0],
-                              [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                              cs * sqrt(2) + 2);
-            // Upright arm: equivalent junction near z=-armV.
-            relief_miter_hull([0, W / 2 - cs - s2, -armV - s2],
-                              [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                              cs * sqrt(2) + 2);
-        }
-}
-
-// Keep the two broad inside-opening hulls and add local hulls at the
-// arm-tip/side-chamfer junctions. No per-edge wedge extrusions are needed.
 module chamfered_body() {
-    difference() {
+    intersection() {
         body();
-        if (ef > 0) {
-            inside_relief_envelope();
-            relief_corner_miters();
-        }
+        print_relief_env();
     }
 }
 

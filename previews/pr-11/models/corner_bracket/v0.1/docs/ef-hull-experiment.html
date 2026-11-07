@@ -9,227 +9,189 @@
 <body>
   <header><a href="../../../../">← Model archive</a></header>
   <main>
-<h1>Elephant-foot hull experiment</h1>
-<p>This page starts with the <strong>complete Corner Bracket</strong>. Only after the
-problem is visible on the real model do we zoom into one arm tip and inspect
-the two elephant-foot hull surfaces.</p>
-<p>The question is:</p>
-<blockquote>
-<p>Can the four small arm-tip corrections be absorbed into the same two
-hull surfaces that already create the main elephant-foot relief?</p>
-</blockquote>
-<p>The production model can be tested directly with:</p>
+<h1>Elephant-foot relief on the Corner Bracket</h1>
+<p>This page explains the elephant-foot geometry in <strong>three separate blocks</strong>.</p>
+<ol>
+<li>First build the normal elephant-foot relief using only the two main hulls.</li>
+<li>Repeat the same steps and then add the small arm-tip correction.</li>
+<li>Only after those two constructions are clear, test whether the correction
+   can be absorbed into the original two hull surfaces.</li>
+</ol>
+<p>The images in blocks A and B use the <strong>same complete bracket, camera angle
+and scale</strong>. Blue/orange/red therefore always refer to geometry at the same
+physical location.</p>
+<p>The real model exposes:</p>
 <p><code>openscad
 ef_corner_correction = true;</code></p>
-<p>Set it to <code>false</code> to disable <strong>only</strong> the four small arm-tip corrections.
-The two main <code>inside_relief_envelope()</code> hulls remain active.</p>
-<h2>1. First verify the complete bracket</h2>
-<p>Before looking at hull input surfaces, establish exactly what already works.</p>
-<h3>1A. Complete bracket — only the two main EF hulls</h3>
-<p>This is the real printable bracket with:</p>
+<p>Set it to <code>false</code> to compare the model with only the two main EF hulls.</p>
+<hr />
+<h1>A. Elephant foot with the two main hulls</h1>
+<p>This first sequence deliberately contains <strong>no arm-tip correction</strong>.</p>
+<h2>A1. Start with the complete bracket</h2>
+<p>The bracket already has its normal 2D profile, the outside <code>cs</code> side
+chamfers, bolt holes and nut pockets. No elephant-foot relief has been
+subtracted yet.</p>
+<p><img alt="A1 — complete bracket before elephant-foot relief" src="../design/efh_A01_before_ef.png" /></p>
+<p>This complete bracket stays visible throughout the next steps so the hull
+surfaces never lose their relationship to the model.</p>
+<h2>A2. First hull surface</h2>
+<p>The first thin surface is placed <strong>0.6 mm inside the print face</strong>, at
+Y = 9.4 mm.</p>
+<p><img alt="A2 — first hull surface in position on the bracket" src="../design/efh_A02_surface_a.png" /></p>
+<p>It follows the two wood-contact edges of the L and the rounded inside
+corner.</p>
+<p><code>openscad
+opening_layer(W/2 - ef);</code></p>
+<p>With <code>W = 20</code> and <code>ef = 0.6</code>, this means Y = 9.4 mm.</p>
+<h2>A3. Second hull surface</h2>
+<p>The second surface is on the actual print face, Y = 10.0 mm. Its profile
+is expanded outward by <code>ef = 0.6</code>.</p>
+<p><img alt="A3 — second hull surface in position on the bracket" src="../design/efh_A03_surface_b.png" /></p>
+<p><code>openscad
+opening_layer(W/2, ef);</code></p>
+<h2>A4. Both hull surfaces</h2>
+<p>Now show the two surfaces together:</p>
+<p><img alt="A4 — both elephant-foot hull surfaces" src="../design/efh_A04_both_surfaces.png" /></p>
 <ul>
-<li>the normal L profile;</li>
-<li>the outside <code>cs</code> side chamfers;</li>
-<li>nut pockets and bolt holes;</li>
-<li>both main <code>inside_relief_envelope()</code> hulls;</li>
-<li><strong>no</strong> <code>relief_corner_miters()</code>.</li>
+<li><strong>Blue:</strong> unchanged profile at Y = 9.4 mm.</li>
+<li><strong>Orange:</strong> expanded profile at Y = 10.0 mm.</li>
 </ul>
-<p><img alt="Complete bracket with only the two main elephant-foot hulls" src="../design/efh_00_whole_main_only.png" /></p>
-<p>This is also what you get in the real model when:</p>
+<p>These are the two children of one <code>hull()</code> on this print side. The
+opposite Y side uses the mirrored pair.</p>
+<h2>A5. Hull between those two surfaces</h2>
+<p><code>hull()</code> fills the volume between the blue and orange surfaces:</p>
+<p><img alt="A5 — main elephant-foot hull volume" src="../design/efh_A05_main_hull.png" /></p>
+<p><code>openscad
+hull() {
+    opening_layer(W/2 - ef);
+    opening_layer(W/2, ef);
+}</code></p>
+<p>This is the main 45° elephant-foot relief for one print side.</p>
+<h2>A6. Subtract the main hulls</h2>
+<p>The same construction is mirrored on the other print side and both hull
+volumes are subtracted from the bracket.</p>
+<p><img alt="A6 — complete bracket with only the two main EF hulls" src="../design/efh_A06_main_result.png" /></p>
+<p>This corresponds to:</p>
 <p><code>openscad
 ef_corner_correction = false;</code></p>
-<p>Most of the elephant-foot relief is already correct. The remaining problem
-is local to the places where the EF relief reaches an arm end.</p>
-<h3>1B. The four problem locations on the complete bracket</h3>
-<p>The same bracket is shown again with <strong>four red location markers</strong>:</p>
-<p><img alt="Complete bracket with the four problem locations marked" src="../design/efh_00_whole_problem_points.png" /></p>
-<p>The red spheres are deliberately just markers, <strong>not the correction
-geometry itself</strong>. Their only purpose is to make the four tiny junctions
-visible at whole-bracket scale.</p>
-<p>There are four because the bracket has:</p>
-<ul>
-<li>two arm ends; and</li>
-<li>two print-facing Y sides.</li>
-</ul>
-<p>So this establishes the starting point:</p>
-<blockquote>
-<p>The main two-hull elephant-foot construction works over the long contact
-edges and inside radius. The unresolved geometry is concentrated at the
-four arm-tip / side-chamfer junctions.</p>
-</blockquote>
-<p>The <strong>exact missing relief volume</strong> is shown later in section 3A, after
-we zoom into one of these marked locations.</p>
-<h3>1C. Complete working bracket — correction enabled</h3>
-<p>Now enable the current correction:</p>
-<p><code>openscad
-ef_corner_correction = true;</code></p>
-<p><img alt="Complete working bracket with the corner correction enabled" src="../design/efh_00_whole_working.png" /></p>
-<p>This is the production reference. The rest of this page asks whether the
-difference between 1A and 1C can be generated by reshaping only the two
-existing EF hull surfaces.</p>
-<h2>2. How one main EF hull is built</h2>
-<p>Now zoom into <strong>one horizontal arm end on the +Y print side</strong>.</p>
-<p>The sequence deliberately mirrors the outside <code>cs</code> hull walkthrough:</p>
-<p><strong>source profile → surface A → surface B → both surfaces → hull → result</strong></p>
-<h3>2A. Source relief profile</h3>
-<p>The elephant-foot relief is made by <strong>subtracting material from the two
-wood-contact faces</strong> of the bracket. We therefore do not hull the bracket
-itself. We first make a 2D <strong>relief profile</strong> on the wood side of those
-faces.</p>
-<p>In the X/Z side view:</p>
-<ul>
-<li>the horizontal wood-contact face lies along <code>z = 0</code>;</li>
-<li>the vertical wood-contact face lies along <code>x = 0</code>;</li>
-<li>the relief profile occupies the open area at <strong>x ≥ 0 and z ≤ 0</strong>;</li>
-<li>at the inside corner, its boundary follows the same <code>r_in</code> curve as the
-  bracket.</li>
-</ul>
-<p>So <code>inside_opening_2d()</code> is simply the large 2D shape immediately
-<strong>inside the L</strong>, touching both wood-contact edges. It extends beyond the
-arm ends on purpose; only the part that overlaps the bracket can remove
-material.</p>
-<p><img alt="2D relief profile beside the two wood-contact faces" src="../design/efh_01_opening_profile.png" /></p>
+<p>Most of the relief is now correct.</p>
+<h2>A7. Where is the remaining problem?</h2>
+<p>The four red markers show the only places still under discussion:</p>
+<p><img alt="A7 — four arm-tip locations that still need attention" src="../design/efh_A07_problem_locations.png" /></p>
+<p>There are four locations because there are two arm ends on two print-facing
+Y sides.</p>
+<p>This is the important baseline: <strong>the main elephant-foot hull works; the
+remaining issue is local to those four arm-tip junctions.</strong></p>
+<hr />
+<h1>B. Repeat the same construction with the working correction</h1>
+<p>This sequence repeats A using the <strong>same camera, same scale and same bracket</strong>.
+The first five steps are intentionally almost identical. Only then is the
+small arm-tip correction added.</p>
+<h2>B1. Same starting bracket</h2>
+<p><img alt="B1 — same complete bracket before EF relief" src="../design/efh_B01_before_ef.png" /></p>
+<h2>B2. Same first hull surface</h2>
+<p><img alt="B2 — same first hull surface" src="../design/efh_B02_surface_a.png" /></p>
+<h2>B3. Same second hull surface</h2>
+<p><img alt="B3 — same second hull surface" src="../design/efh_B03_surface_b.png" /></p>
+<h2>B4. Same two hull surfaces together</h2>
+<p><img alt="B4 — same two hull surfaces" src="../design/efh_B04_both_surfaces.png" /></p>
+<h2>B5. Same main hull</h2>
+<p><img alt="B5 — same main elephant-foot hull" src="../design/efh_B05_main_hull.png" /></p>
+<p>Up to this point, B is geometrically identical to A.</p>
+<h2>B6. Add only the small arm-tip correction</h2>
+<p>Now the four local correction volumes are added. The red geometry shows
+only the material affected by those corrections.</p>
+<p><img alt="B6 — local arm-tip correction added to the main result" src="../design/efh_B06_corner_correction.png" /></p>
+<p>This is what <code>relief_corner_miters()</code> contributes.</p>
+<h2>B7. Main relief plus corner correction</h2>
+<p>The orange geometry is the main elephant-foot relief. The red geometry is
+the additional arm-tip correction.</p>
+<p><img alt="B7 — combined working relief geometry" src="../design/efh_B07_combined_relief.png" /></p>
+<p>So the working construction is conceptually:</p>
 <p>```openscad
-module inside_opening_2d() {
-    reach = max(5, cs + ef + 1);</p>
-<pre><code>difference() {
-    translate([0, -armV - reach])
-        square([armH + reach, armV + reach]);
-
-    if (r_in &gt; 0)
-        inside_corner_2d(r_in);
-}
+difference() {
+    body();</p>
+<pre><code>inside_relief_envelope(); // main EF hulls
+relief_corner_miters();   // four small arm-tip corrections
 </code></pre>
 <p>}
 ```</p>
-<p>The important point is: <strong>this blue shape is the relief profile used to build the hull; it is not part of the bracket</strong>.</p>
-<h3>2B. First hull surface — Y = 9.4 mm</h3>
-<p>The first thin surface uses the unchanged opening:</p>
-<p><img alt="First EF hull surface" src="../design/efh_02_inner_main_input.png" /></p>
+<h2>B8. Working bracket</h2>
+<p>Subtracting both gives the current working model:</p>
+<p><img alt="B8 — complete working bracket" src="../design/efh_B08_working_result.png" /></p>
+<p>This corresponds to:</p>
 <p><code>openscad
-opening_layer(W/2 - ef);</code></p>
-<p>With the defaults <code>W=20</code> and <code>ef=0.6</code>, this is Y=9.4 mm.</p>
-<h3>2C. Second hull surface — Y = 10.0 mm</h3>
-<p>The second surface lies on the print face and expands the opening by
-<code>ef=0.6</code>:</p>
-<p><img alt="Second EF hull surface" src="../design/efh_03_outer_main_input.png" /></p>
-<p><code>openscad
-opening_layer(W/2, ef);</code></p>
-<h3>2D. Both hull surfaces together</h3>
-<p>These are the only two children passed to the main <code>hull()</code> on this side:</p>
-<p><img alt="Both EF hull surfaces" src="../design/efh_04_both_main_inputs.png" /></p>
-<p>Blue is the unchanged opening at Y=9.4; orange is the expanded opening at
-Y=10.0.</p>
-<h3>2E. Resulting hull</h3>
-<p><img alt="Main EF hull" src="../design/efh_05_main_hull.png" /></p>
-<p><code>hull()</code> connects those two surfaces with the sloping EF transition.</p>
-<h3>2F. Result after subtracting the main hull</h3>
-<p><img alt="Result with only the main EF hull" src="../design/efh_06_main_result.png" /></p>
-<p>This local view is the same geometry as the complete bracket in <strong>1A</strong>.
-The small arm-tip problem is now large enough to inspect.</p>
-<h2>3. What exactly is missing at the arm tip?</h2>
-<h3>3A. Exact missing relief volume</h3>
-<p>Subtract the main relief hull from the working reference relief volume:</p>
-<p><img alt="Exact missing arm-tip relief volume" src="../design/efh_07_missing_tip_volume.png" /></p>
-<p>The red solid is the exact extra relief volume that turns the main-hull
-result into the working result at this one arm tip.</p>
-<h3>3B. Working relief volume</h3>
-<p>The current reference relief volume is:</p>
-<ul>
-<li>the same main EF hull; plus</li>
-<li>the local arm-tip miter hull.</li>
-</ul>
-<p><img alt="Working EF relief volume" src="../design/efh_08_reference_relief_volume.png" /></p>
-<h3>3C. Working local result</h3>
-<p><img alt="Working arm-tip result" src="../design/efh_09_reference_result.png" /></p>
-<p>This is the local form of the complete working bracket shown in <strong>1C</strong>.</p>
-<h2>4. Test the strongest two-surface version</h2>
-<p>Instead of guessing a new tip polygon, take the <strong>exact cross-sections of
-the working relief volume itself</strong> at the same two Y positions.</p>
-<p>That gives the proposed two-surface method the best possible input shapes
-at Y=9.4 and Y=10.0.</p>
-<h3>4A. Exact reference surfaces</h3>
-<p><img alt="Exact reference cross-sections used as hull inputs" src="../design/efh_10_exact_reference_inputs.png" /></p>
-<p>These shapes are obtained with <code>projection(cut=true)</code> from the working
-relief volume. No hand-calculated <code>cs</code> point is used.</p>
-<h3>4B. Hull of those exact two surfaces</h3>
-<p><img alt="Hull of the exact reference surfaces" src="../design/efh_11_exact_two_surface_hull.png" /></p>
-<h3>4C. Candidate bracket result</h3>
-<p><img alt="Result of the exact two-surface candidate" src="../design/efh_12_exact_candidate_result.png" /></p>
-<h3>4D. XOR against the working reference</h3>
-<p><img alt="XOR between exact two-surface candidate and reference" src="../design/efh_13_exact_candidate_xor.png" /></p>
-<p>An empty XOR would mean equivalence. Visible material means the candidate
-does not reproduce the reference.</p>
-<h3>4E. Overcut</h3>
-<p><img alt="Overcut caused by the exact two-surface candidate" src="../design/efh_14_exact_candidate_overcut.png" /></p>
-<p>This is material removed by the candidate but not by the working reference.</p>
-<h3>4F. Undercut</h3>
-<p><img alt="Undercut left by the exact two-surface candidate" src="../design/efh_15_exact_candidate_undercut.png" /></p>
-<p>This is material removed by the working reference but missed by the
-candidate.</p>
-<h2>5. Measured result</h2>
-<p>CI renders the same local experiment as STL and measures the relief
-volumes:</p>
+ef_corner_correction = true;</code></p>
+<p>Blocks A and B now establish exactly what changes: <strong>only the four small
+arm-tip corrections.</strong></p>
+<hr />
+<h1>C. Can the correction be absorbed into the original two hull surfaces?</h1>
+<p>Only now do we zoom into one horizontal arm end on the +Y print side.</p>
+<p>The question is not whether the current model works; block B already shows
+that. The question is whether we can simplify B so that the corrected result
+comes from only two improved hull surfaces.</p>
+<h2>C1. Exact missing relief at one arm tip</h2>
+<p>The red volume is the local difference between A and B at one marked arm tip:</p>
+<p><img alt="C1 — exact missing local relief volume" src="../design/efh_07_missing_tip_volume.png" /></p>
+<h2>C2. Exact two surfaces taken from the working relief</h2>
+<p>Rather than guessing how the profiles should change, take exact
+<code>projection(cut=true)</code> cross-sections of the working B relief at the same
+two Y positions:</p>
+<p><img alt="C2 — exact working cross-sections at Y=9.4 and Y=10" src="../design/efh_10_exact_reference_inputs.png" /></p>
+<h2>C3. Hull those exact two surfaces</h2>
+<p><img alt="C3 — hull of the exact working cross-sections" src="../design/efh_11_exact_two_surface_hull.png" /></p>
+<h2>C4. Result of that two-surface candidate</h2>
+<p><img alt="C4 — bracket result from the exact two-surface candidate" src="../design/efh_12_exact_candidate_result.png" /></p>
+<h2>C5. Compare with the working B result</h2>
+<p>The XOR is not empty:</p>
+<p><img alt="C5 — XOR between two-surface candidate and working result" src="../design/efh_13_exact_candidate_xor.png" /></p>
+<p>Split into:</p>
+<p><img alt="C6 — candidate overcut" src="../design/efh_14_exact_candidate_overcut.png" /></p>
+<p><img alt="C7 — candidate undercut" src="../design/efh_15_exact_candidate_undercut.png" /></p>
+<p>For the default <code>cs=2</code>, <code>ef=0.6</code> case:</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: right;"><code>cs</code></th>
-<th style="text-align: right;"><code>ef</code></th>
-<th style="text-align: right;">Reference</th>
-<th style="text-align: right;">Two-surface candidate</th>
-<th style="text-align: right;">XOR</th>
-<th style="text-align: right;">Overcut</th>
-<th style="text-align: right;">Undercut</th>
-<th style="text-align: right;">Missing tip before correction</th>
+<th>Local arm-tip volume</th>
+<th style="text-align: right;">mm³</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">2.0</td>
-<td style="text-align: right;">0.6</td>
+<td>Working reference</td>
 <td style="text-align: right;">1.2433</td>
+</tr>
+<tr>
+<td>Exact two-surface candidate</td>
 <td style="text-align: right;">2.4922</td>
+</tr>
+<tr>
+<td>XOR</td>
 <td style="text-align: right;">1.9006</td>
+</tr>
+<tr>
+<td>Overcut</td>
 <td style="text-align: right;">1.5743</td>
+</tr>
+<tr>
+<td>Undercut</td>
 <td style="text-align: right;">0.3263</td>
-<td style="text-align: right;">0.3772</td>
-</tr>
-<tr>
-<td style="text-align: right;">3.0</td>
-<td style="text-align: right;">1.2</td>
-<td style="text-align: right;">6.0395</td>
-<td style="text-align: right;">9.1928</td>
-<td style="text-align: right;">6.3398</td>
-<td style="text-align: right;">4.7466</td>
-<td style="text-align: right;">1.5932</td>
-<td style="text-align: right;">2.0005</td>
-</tr>
-<tr>
-<td style="text-align: right;">2.0</td>
-<td style="text-align: right;">0.3</td>
-<td style="text-align: right;">0.3101</td>
-<td style="text-align: right;">0.8152</td>
-<td style="text-align: right;">0.7139</td>
-<td style="text-align: right;">0.6095</td>
-<td style="text-align: right;">0.1044</td>
-<td style="text-align: right;">0.1108</td>
 </tr>
 </tbody>
 </table>
-<p>Volumes are mm³ and apply only to the cropped horizontal arm-tip region.</p>
-<p>The test therefore says something narrower than “a hull solution is
-impossible”:</p>
+<p>So the current test says only this:</p>
 <blockquote>
-<p><strong>Using only two hull surfaces at the existing Y positions does not
-reproduce the current working arm-tip geometry, even when those two
-surfaces are exact sections of the working relief volume.</strong></p>
+<p>Two surfaces at the existing Y = 9.4 and Y = 10.0 positions do not
+reproduce the working B geometry, even when those two surfaces are exact
+sections of the working relief.</p>
 </blockquote>
-<p>A different construction with more Y sections or a different decomposition
-would be a different experiment.</p>
+<p>That does <strong>not</strong> rule out a different construction using additional
+sections or another decomposition.</p>
 <h2>Related pages</h2>
 <ul>
-<li><a href="chamfer-guide.html">Chamfer Guide</a> — actual bracket construction only.</li>
-<li><a href="hull-guide.html">Hull Guide</a> — general <code>hull()</code> introduction.</li>
-<li><a href="polygon-guide.html">Polygon Guide</a> — 2D inside-radius construction.</li>
+<li><a href="chamfer-guide.html">Chamfer Guide</a> — the normal bracket construction.</li>
+<li><a href="hull-guide.html">Hull Guide</a> — basic <code>hull()</code> operation.</li>
+<li><a href="polygon-guide.html">Polygon Guide</a> — the separate 2D inside-radius
+  construction.</li>
 </ul>
 </main></body></html>

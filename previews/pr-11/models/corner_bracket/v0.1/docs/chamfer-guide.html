@@ -133,75 +133,37 @@ faces. The resulting helper is still convex and fills the L opening.</p>
 the unwanted convex fill. Only the real L with its outside
 side-edge bevels remains.</p>
 <p><img alt="Actual body after the outside side-edge hull and intersection" src="../design/chamfer_07_intersection.png" /></p>
-<h2>3. Elephant-foot relief: the second hull construction</h2>
-<p>The bracket is printed on a broad Y-facing side. With the defaults,
-<code>W=20</code> and <code>ef=0.6</code>, each print side gets its own local transition
-between <strong>Y=9.4 mm</strong> and <strong>Y=10.0 mm</strong> (and mirrored at negative Y).</p>
-<p>This section deliberately follows the <strong>same five-step pattern</strong> as the
-outside <code>cs</code> hull above.</p>
-<h3>A. First hull surface — unchanged relief profile</h3>
-<p>The elephant-foot operation does not hull the L-shaped bracket itself.
-It hulls a <strong>relief profile beside the two wood-contact faces of the L</strong>.</p>
-<p>In X/Z, <code>inside_opening_2d()</code> occupies the area at <strong>x ≥ 0 and z ≤ 0</strong>,
-so its boundary lies directly against both wood-contact faces: <code>z=0</code> for
-the horizontal arm and <code>x=0</code> for the vertical arm. At the inside corner,
-the relief-profile boundary follows the same <code>r_in</code> curve as the bracket.</p>
-<p>The first thin copy of that relief profile is placed at Y=9.4 mm without an
-offset:</p>
-<p><img alt="First elephant-foot hull surface" src="../design/efh_02_inner_main_input.png" /></p>
-<p><code>openscad
-opening_layer(W/2 - ef);</code></p>
-<h3>B. Second hull surface — expanded opening</h3>
-<p>At the actual print face, Y=10.0 mm, the same opening is expanded by
-<code>ef=0.6</code>:</p>
-<p><img alt="Second elephant-foot hull surface" src="../design/efh_03_outer_main_input.png" /></p>
-<p><code>openscad
-opening_layer(W/2, ef);</code></p>
-<h3>C. Both hull surfaces together</h3>
-<p>These are the two children passed to <code>hull()</code> for the +Y print side:</p>
-<p><img alt="Both elephant-foot hull surfaces" src="../design/efh_04_both_main_inputs.png" /></p>
-<p>The −Y side uses the mirrored pair.</p>
-<h3>D. Resulting hull volume</h3>
-<p><code>hull()</code> connects the two surfaces with the 45° transition:</p>
-<p><img alt="Elephant-foot hull volume" src="../design/efh_05_main_hull.png" /></p>
-<p><code>openscad
-module inside_relief_envelope() {
-    if (ef &gt; 0)
-        for (side=[-1,1])
-            hull() {
-                opening_layer(side*(W/2-ef));
-                opening_layer(side*W/2, ef);
-            }
-}</code></p>
-<h3>E. Subtract the hull from the real body</h3>
-<p>Subtracting both local hulls from <code>body()</code> gives the main
-elephant-foot relief along the straight plywood-contact faces and the
-rounded inside corner:</p>
-<p><img alt="Bracket after the two main elephant-foot hulls" src="../design/efh_06_main_result.png" /></p>
-<p>That is the complete <strong>second hull walkthrough</strong>: input A, input B,
-both inputs, hull, subtraction result.</p>
-<h2>4. Arm-tip junction</h2>
-<p>At the arm end, the main elephant-foot hull meets the existing diagonal
-<code>cs</code> side bevel. The two main hulls leave a small local mismatch:</p>
-<p><img alt="Exact missing arm-tip relief volume" src="../design/efh_07_missing_tip_volume.png" /></p>
-<p>The current production model adds a short local miter hull at that
-junction. This gives the working reference result:</p>
-<p><img alt="Working arm-tip result" src="../design/efh_09_reference_result.png" /></p>
-<p><code>openscad
+<h2>3. Elephant-foot relief: <code>ef</code></h2>
+<p>The elephant-foot relief is the <strong>second hull-based operation</strong> in the
+bracket, but its construction is now documented in one dedicated place:</p>
+<p><a href="ef-hull-experiment.html"><strong>Elephant-foot relief — complete step-by-step guide</strong></a></p>
+<p>That page deliberately uses a fixed whole-bracket view and contains two
+parallel sequences:</p>
+<ul>
+<li><strong>A:</strong> the two main EF hulls without the arm-tip correction;</li>
+<li><strong>B:</strong> the same steps again, followed by the small working arm-tip
+  correction.</li>
+</ul>
+<p>Only after A and B are established does that page zoom into one tip and
+test whether the correction can be absorbed into the original two hull
+surfaces.</p>
+<p>The production model itself remains simple:</p>
+<p>```openscad
 module chamfered_body() {
     difference() {
-        body();
-        if (ef &gt; 0) {
-            inside_relief_envelope();
+        body();</p>
+<pre><code>    if (ef &gt; 0) {
+        inside_relief_envelope();
+
+        if (ef_corner_correction)
             relief_corner_miters();
-        }
     }
-}</code></p>
-<p>Whether that local correction can be folded back into <strong>only the two
-main hull surfaces</strong> is deliberately kept out of this construction
-guide. It is tested step by step, including the exact input surfaces,
-candidate hull, XOR, overcut and undercut, in the
-<a href="ef-hull-experiment.html">Elephant-foot Hull Experiment</a>.</p>
+}
+</code></pre>
+<p>}
+```</p>
+<p>Use <code>ef_corner_correction = false</code> to inspect the model with only the
+two main EF hulls. Use <code>true</code> for the current working geometry.</p>
 <h2>5. What is checked, and what is not</h2>
 <p>The CI test <code>verify-elephant-foot-hull.sh</code> compares the
 complete bracket with the former per-edge relief implementation,

@@ -54,10 +54,29 @@ module former_bracket() {
         former_ef_cuts();
     }
 }
+// Isolate the four intersections between an arm end and a printed side
+// bevel. These local volumes catch visually conspicuous *flat miter ends*
+// that the whole-part XOR percentage can otherwise hide.
+module tip_regions() {
+    for (m=[0,1]) mirror([0,m,0]) {
+        translate([armH-cs-ef-3, W/2-cs-ef-3, -1])
+            cube([cs+ef+5, cs+ef+5, ef+2]);
+        translate([-1, W/2-cs-ef-3, -armV-1])
+            cube([ef+2, cs+ef+5, cs+ef+5]);
+    }
+}
+module bracket_xor() {
+    union() {
+        difference() { former_bracket(); bracket(); }
+        difference() { bracket(); former_bracket(); }
+    }
+}
+
 if(test_view=="old") former_bracket();
 else if(test_view=="new") bracket();
-else if(test_view=="xor")
-    union() {
-        difference() {former_bracket();bracket();}
-        difference() {bracket();former_bracket();}
+else if(test_view=="xor") bracket_xor();
+else if(test_view=="tip_xor")
+    intersection() {
+        bracket_xor();
+        tip_regions();
     }

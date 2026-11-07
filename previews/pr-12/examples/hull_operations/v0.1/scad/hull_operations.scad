@@ -91,10 +91,26 @@ module cs_body() {
 // ---------- ef hull built from the ALREADY chamfered body ----------
 
 // INPUT 1 for ef:
-// the bottom footprint is inset by ef around the complete perimeter.
+//
+// First take the actual bottom footprint of cs_body(). That footprint already
+// contains the cs chamfers at the end/side junctions. Only AFTER that do we
+// inset it by ef.
+//
+// So the lower ef plate is NOT a rectangular plate anymore: both ef inputs
+// already carry the cs geometry.
+module cs_bottom_footprint_2d() {
+    projection()
+        intersection() {
+            cs_body();
+            translate([-reach, -width, -eps / 2])
+                cube([length + 2 * reach, width * 2, eps]);
+        }
+}
+
 module ef_input_bottom() {
-    translate([ef, -width / 2 + ef, 0])
-        cube([length - 2 * ef, width - 2 * ef, eps]);
+    linear_extrude(height = eps)
+        offset(delta = -ef)
+            cs_bottom_footprint_2d();
 }
 
 // INPUT 2 for ef:
@@ -111,8 +127,8 @@ module ef_input_upper_chamfered() {
     }
 }
 
-// The final construction is now one hull from the ef-inset bottom footprint
-// to the already-chamfered upper body.
+// The final construction is now one hull between TWO already-cs-chamfered
+// inputs: the lower cs footprint inset by ef, and the upper cs body.
 module combined_hull() {
     hull() {
         ef_input_bottom();

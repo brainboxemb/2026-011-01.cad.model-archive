@@ -16,8 +16,9 @@
 //! - **This page:** short model walkthrough and assembly context.
 //! - [Chamfer Guide](docs/chamfer-guide.html): the actual `c`, `ce`,
 //!   `cs` and `ef` construction, step by step.
-//! - [Elephant-foot Hull Experiment](docs/ef-hull-experiment.html):
-//!   the separate two-surface experiment, with every input, result and XOR.
+//! - [Elephant-foot relief guide](docs/ef-hull-experiment.html):
+//!   the complete A/B construction walkthrough first, followed by the
+//!   separate two-surface simplification test and XOR.
 //! - [Hull Guide](docs/hull-guide.html): only the general `hull()` concept.
 //! - [Polygon Guide](docs/polygon-guide.html): only the 2D inside-radius method.
 //! - [Mounting Options](docs/mounting-options.html): bolts, nuts and alternatives.
@@ -195,10 +196,11 @@
 //! the outside `cs` hull: first surface, second surface, both surfaces,
 //! resulting hull and subtraction result.
 //!
-//! The remaining arm-tip question is kept separate in the
-//! [Elephant-foot Hull Experiment](docs/ef-hull-experiment.html), where
-//! the current two-surface hull, the working reference, the strongest
-//! two-surface candidate and its XOR/overcut/undercut are shown individually.
+//! The detailed elephant-foot construction lives in the
+//! [Elephant-foot relief guide](docs/ef-hull-experiment.html). It first
+//! shows the complete bracket step by step **without** the arm-tip correction,
+ //! then repeats the same fixed-view steps **with** the correction. Only after
+//! that does it zoom in for the two-surface simplification test.
 //!
 //! For a direct visual comparison in the **real model**, use the OpenSCAD
 //! Customizer option `ef_corner_correction`. Leave it `true` for the

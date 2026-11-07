@@ -1,68 +1,51 @@
-# Corner Bracket: cs/ef junction on the real L
+# Corner Bracket: same idea as the beam, now on the L
 
-This walkthrough now keeps the picture as simple as possible:
+The L is now shown **lying on its printed side**, so the pictures read the same
+way as the beam experiment.
 
-- the **real L-shaped bracket** stays in the same place;
-- no detached section planes are shown;
-- the proposed elephant-foot step is visualized with **two full 3D arm volumes**,
-  just like the beam example.
+There are only four steps.
 
-The production model is still unchanged.
-
-## 0. L with the existing `cs` chamfer
+## 0. L with the normal `cs` chamfer
 
 ![L with cs](../design/junction_00_l_with_cs.png)
 
-This is the real `body()`.
+This is the real bracket `body()`, already including the normal side chamfer.
 
-## 1. Current result before the extra corner correction
+## 1. The two `ef` inputs
 
-![Current result](../design/junction_01_current_result.png)
+![Two transparent ef inputs on the L](../design/junction_01_ef_inputs.png)
 
-This is the current broad elephant-foot relief before
-`relief_corner_miters()`.
+The complete L stays faintly visible underneath.
 
-The only point of interest is the small arm-tip junction.
+The colored shapes are the two real inputs to the elephant-foot transition:
 
-## 2. Proposed inputs: two real 3D arm volumes
+- blue: the already-`cs`-chamfered L one `ef` inward from the print face;
+- orange: the already-`cs`-chamfered L at the print face, then made
+  `ef` smaller.
 
-![Proposed full-volume inputs](../design/junction_02_proposed_inputs.png)
+Both inputs therefore already contain the `cs` geometry before any new
+`hull()` is made.
 
-The whole L stays faintly visible.
+Internally the horizontal and vertical arms are hulled separately. That avoids
+a global hull filling the concave inside corner, but visually they remain one L.
 
-The colored shapes are no longer thin vertical profile planes:
+## 2. Hull result
 
-- blue: the lower horizontal-arm volume, already carrying the `cs` geometry;
-- orange: the upper horizontal-arm volume, also already carrying the same
-  `cs` geometry.
+![Hull result on the L](../design/junction_02_ef_hull.png)
 
-The lower volume is the smaller `ef` input. The upper volume is the normal
-already-chamfered arm.
+The green volume is the union of those two local arm hulls.
 
-So this is the direct Corner Bracket equivalent of the successful beam test:
-**both hull inputs already contain the side chamfer before `hull()`.**
+This is the direct L-shaped equivalent of the successful beam construction.
 
-## 3. Hull those two arm volumes
+## 3. Resulting L
 
-![Proposed local arm hull](../design/junction_03_proposed_hull.png)
+![Resulting L](../design/junction_03_result.png)
 
-Only the local horizontal arm is hulled.
-
-The complete L is **not** put into one global `hull()`, so the concave inside
-corner cannot be filled in.
-
-## 4. Proposed L result
-
-![Proposed L result](../design/junction_04_proposed_result.png)
-
-The proposed local arm hull is placed back into the unchanged L.
-
-This page is only meant to make the geometry understandable. Once this view is
-visually correct, the next step is to express the same minimal idea cleanly in
-the production model.
+The new transition replaces only the outer `ef`-deep printed-side layer.
+Everything farther inward remains the original `body()`.
 
 ## Interactive source
 
 Open
 [`design/ef_cs_junction_explained.scad`](../design/ef_cs_junction_explained.scad)
-and use the `junction_step` dropdown.
+and switch the `junction_step` dropdown through the same four stages.

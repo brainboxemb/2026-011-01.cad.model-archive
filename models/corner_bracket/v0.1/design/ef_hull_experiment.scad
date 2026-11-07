@@ -17,7 +17,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Experiment] */
-experiment_step = "04_both_main_inputs"; // [01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_cutter, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut]
+experiment_step = "04_both_main_inputs"; // [01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_cutter, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
 
 /* [Hidden] */
 // Keep aligned with production defaults.
@@ -150,6 +150,13 @@ module exact_candidate_overcut() {
     }
 }
 
+module exact_candidate_undercut() {
+    difference() {
+        reference_effective_cut();
+        exact_effective_cut();
+    }
+}
+
 module main_result() {
     crop()
         difference() {
@@ -229,3 +236,6 @@ else if (experiment_step == "13_exact_candidate_xor")
 
 else if (experiment_step == "14_exact_candidate_overcut")
     color("Red") exact_candidate_overcut();
+
+else if (experiment_step == "15_exact_candidate_undercut")
+    color("Red") exact_candidate_undercut();

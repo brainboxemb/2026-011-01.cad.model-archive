@@ -9,59 +9,226 @@
 <body>
   <header><a href="../../../../">← Model archive</a></header>
   <main>
-<h1>Corner Bracket: the beam construction on an L</h1>
-<p>This experiment is now written directly in <strong>print coordinates</strong>, just like the
-beam demo.</p>
-<p>That means:</p>
-<ul>
-<li>X/Y is the footprint on the print bed;</li>
-<li>Z is the print height / bracket width;</li>
-<li>no rotation is used inside the elephant-foot construction.</li>
-</ul>
-<p>The production model is still unchanged.</p>
-<h2>0. L with <code>cs</code></h2>
-<p><img alt="L with cs" src="../design/junction_00_l_with_cs.png" /></p>
-<p>This is <code>cs_body()</code>.</p>
-<p>It is built from the clean L profile and the normal <code>cs</code> hull. There is no
-<code>ef</code> in the profile or at the arm tips.</p>
-<h2>1. The two <code>ef</code> inputs</h2>
-<p><img alt="Two ef inputs" src="../design/junction_01_ef_inputs.png" /></p>
-<p>This is now the same construction as the beam:</p>
-<p><strong>Blue — <code>ef_input_bottom()</code></strong></p>
-<p>The actual bottom footprint of <code>cs_body()</code> is taken at the print bed. That
-already contains the <code>cs</code> geometry. Only then is <code>offset(-ef)</code> applied.</p>
-<p>The result is one thin L-shaped plate at exactly the same X/Y position as the
-bracket.</p>
-<p><strong>Orange — <code>ef_input_upper()</code></strong></p>
-<p>This is the complete <code>cs_body()</code> from <code>Z = ef</code> upward.</p>
-<p>Both objects are shown at their <strong>real hull positions</strong>:</p>
-<ul>
-<li>the blue plate lies on the print bed at <code>Z=0</code>;</li>
-<li>the orange upper L starts at <code>Z=ef</code>.</li>
-</ul>
-<p>The orange L is made strongly transparent and the default camera is lower so
-the blue plate can actually be seen underneath it, just as in the beam demo.</p>
-<p>So both inputs already contain the normal chamfer before the elephant-foot hull
-is created.</p>
-<h2>2. Hull result</h2>
-<p><img alt="EF hull result" src="../design/junction_02_ef_hull.png" /></p>
-<p>The only L-specific complication is the concave inside corner.</p>
-<p>A single global <code>hull()</code> would close that corner. Therefore the horizontal
-and vertical arm are hulled separately and the two hull results are united.</p>
-<p>That split happens only inside the hull operation. The visible inputs in step 1
-remain one lower L plate and one complete upper L volume.</p>
-<h2>3. Result</h2>
-<p><img alt="Result" src="../design/junction_03_result.png" /></p>
-<p>This is the upper <code>cs</code> L plus the two local transitions down to the lower
-plate.</p>
-<p>The key comparison with the beam is therefore direct:</p>
+<h1>Corner Bracket: <code>cs</code> and <code>ef</code> — explained from the actual model</h1>
+<p>This page explains the <strong>current production solution</strong> in
+<a href="../scad/corner_bracket.scad"><code>corner_bracket.scad</code></a>.</p>
+<p>It is intentionally not another experiment. The goal is to make the existing
+geometry understandable before changing it again.</p>
+<h2>The short version</h2>
+<p>There are two different operations:</p>
+<ol>
+<li><strong><code>cs</code></strong> makes the long outside side-edge chamfers.</li>
+<li><strong><code>ef</code></strong> removes a small amount of material along the complete inside L:
+   horizontal contact face → rounded inside corner → vertical contact face.</li>
+</ol>
+<p>The normal <code>ef</code> relief already works along almost the complete L.</p>
+<p>There is only one awkward place: <strong>at each arm tip, the <code>ef</code> relief meets the
+diagonal <code>cs</code> chamfer</strong>. The production model adds a very small local
+<code>hull()</code> there to make that junction continue cleanly.</p>
+<p>That is why the current solution has two parts:</p>
 <p><code>text
-beam:    cs_body -&gt; bottom footprint -&gt; offset(-ef) -&gt; upper cs body -&gt; hull
-bracket: cs_body -&gt; bottom footprint -&gt; offset(-ef) -&gt; upper cs L    -&gt; hull</code></p>
-<p>The shape changes from a straight beam to an L; the construction order does
-not.</p>
-<h2>Interactive source</h2>
+main ef relief along the complete inside L
+                    +
+small local correction at the cs/ef arm-tip junctions</code></p>
+<h2>1. Start with the real L-shaped bracket</h2>
+<p>The bracket is defined as an L profile in the <strong>X/Z plane</strong> and extruded over
+its width <code>W</code> in <strong>Y</strong>.</p>
+<p>The important point is simply this:</p>
+<p><code>text
+X/Z : shape of the L
+Y   : width of the bracket</code></p>
+<p>The rounded inside corner is part of the L profile itself.</p>
+<p>The model first creates the plain extrusion and then applies <code>cs</code>.</p>
+<p><img alt="Bracket after the normal cs operation" src="../design/chamfer_07_intersection.png" /></p>
+<h2>2. What <code>cs</code> does</h2>
+<p><code>cs = 2</code> creates the long chamfers at the two outside side faces.</p>
+<p>The model does this with two temporary shapes:</p>
+<ul>
+<li>the full outside outline, but narrower in Y;</li>
+<li>the same outside outline inset by <code>cs</code>, but at full width.</li>
+</ul>
+<p>A <code>hull()</code> connects those two shapes.</p>
+<p>That hull is deliberately <strong>convex</strong> and therefore fills the open part of the L.
+That looks wrong by itself, but it is only a helper envelope.</p>
+<p>The real L is recovered with:</p>
+<p><code>openscad
+intersection() {
+    profile_extrusion();
+    side_chamfer_env();
+}</code></p>
+<p>The result is <code>body()</code>: the real L bracket with the outside <code>cs</code> chamfers.</p>
+<h2>3. What <code>ef</code> has to follow</h2>
+<p>The elephant-foot compensation is not a new side profile and it does not need a
+special "print coordinate system".</p>
+<p>It follows the <strong>inside boundary of the L</strong>:</p>
+<p><code>text
+horizontal inside face
+        ────────────────┐
+                        )
+                       )   rounded inside corner r_in
+                      )
+                      │
+                      │ vertical inside face
+                      │</code></p>
+<p>The production code describes the empty space between the two arms with
+<code>inside_opening_2d()</code>.</p>
+<p>That opening has exactly the boundary we need:</p>
+<ul>
+<li>the horizontal inside face;</li>
+<li>the rounded <code>r_in</code> corner;</li>
+<li>the vertical inside face.</li>
+</ul>
+<p>So we can modify the opening instead of constructing separate cutters for every
+straight edge and for the radius.</p>
+<h2>4. The main <code>ef</code> relief</h2>
+<p>For one Y side, the model creates two very thin opening layers:</p>
+<p><code>text
+Y = W/2 - ef        normal opening
+Y = W/2             opening expanded by ef</code></p>
+<p>Then it hulls those two layers:</p>
+<p><code>openscad
+hull() {
+    opening_layer(W / 2 - ef);
+    opening_layer(W / 2, ef);
+}</code></p>
+<p>Because the two layers are only <code>ef</code> apart, this makes a short 45-degree
+transition near that side of the bracket.</p>
+<p>The same operation is repeated at the other Y side.</p>
+<p>This is important: <strong>there is not one global hull from one side of the bracket
+to the other</strong>. Each side gets its own short local hull.</p>
+<p>The result follows the complete inside L automatically, including the rounded
+corner.</p>
+<p><img alt="Before and after the main print-relief operation" src="../design/chamfer_08_print_relief.png" /></p>
+<p>The orange/right-hand example includes the relief; the blue/left-hand example
+shows the body before it is removed.</p>
+<h2>5. Why the main <code>ef</code> hull is almost, but not completely, enough</h2>
+<p>Along the straight inside faces and around <code>r_in</code>, the opening hull works
+cleanly.</p>
+<p>At an <strong>arm tip</strong>, however, three pieces of geometry meet:</p>
+<p><code>text
+inside ef relief
+      +
+arm-end geometry
+      +
+diagonal cs side chamfer</code></p>
+<p>The broad opening hull knows about the inside L boundary. It does <strong>not</strong>
+explicitly create the tiny diagonal miter where that relief reaches the
+<code>cs</code> bevel.</p>
+<p>Without an extra correction, the relief ends with a short flat termination at
+that junction.</p>
+<p>This is the small defect we were investigating. It is not a failure of the
+whole <code>ef</code> construction.</p>
+<h2>6. The local arm-tip correction</h2>
+<p>The production solution is <code>relief_corner_miters()</code>.</p>
+<p>It creates a <strong>small triangular relief profile</strong> at one end of the diagonal
+<code>cs</code> edge and the same profile at the other end. A local <code>hull()</code> joins
+those two triangles.</p>
+<p>That produces only the little swept volume needed at the junction.</p>
+<p>The operation is repeated for:</p>
+<ul>
+<li>the horizontal arm tip;</li>
+<li>the vertical arm tip;</li>
+<li>both Y sides of the bracket.</li>
+</ul>
+<p>Nothing else in the bracket is changed.</p>
+<p><img alt="The local cs/ef junction correction" src="../design/chamfer_10_corner_junction.png" /></p>
+<p>The three cropped examples are:</p>
+<p><strong>Left — before the local correction</strong></p>
+<p>Only the normal inside-opening relief has been applied. The small flat
+termination is still present.</p>
+<p><strong>Middle — correction volume only</strong></p>
+<p>This is the tiny triangular <code>hull()</code> made by
+<code>relief_corner_miters()</code>. It is a cutter, not part of the bracket.</p>
+<p><strong>Right — final junction</strong></p>
+<p>The main <code>ef</code> relief and the local miter correction have both been removed
+from the <code>cs</code> body.</p>
+<h2>7. The complete production operation</h2>
+<p>The actual structure is therefore straightforward:</p>
+<p>```openscad
+module chamfered_body() {
+    difference() {
+        body();                       // real L with cs</p>
+<pre><code>    if (ef &gt; 0) {
+        inside_relief_envelope(); // main ef relief along the complete L
+        relief_corner_miters();   // tiny corrections at the arm tips
+    }
+}
+</code></pre>
+<p>}
+```</p>
+<p>Or as a diagram:</p>
+<p><code>text
+L profile
+   ↓
+extrude over W
+   ↓
+cs hull
+   ↓
+intersection with real L
+   ↓
+body()
+   ↓
+subtract main ef opening hulls
+   ↓
+subtract four tiny cs/ef junction corrections
+   ↓
+chamfered_body()</code></p>
+<h2>8. Why not replace this with one giant hull?</h2>
+<p>A global <code>hull()</code> around the complete L is tempting because the straight beam
+example works so nicely.</p>
+<p>The problem is that an L is <strong>concave</strong>.</p>
+<p>A global hull always returns a convex envelope, so it bridges across the open
+inside corner. You can intersect that helper with other geometry afterwards,
+but it does not remove the need to handle the local <code>cs</code> / <code>ef</code> junction
+correctly.</p>
+<p>The current production approach therefore stays deliberately local:</p>
+<ul>
+<li>one short opening hull per Y side for the main <code>ef</code> relief;</li>
+<li>one small miter hull per arm tip and Y side for the junction.</li>
+</ul>
+<p>That is less elegant than a single universal hull, but it matches the geometry
+we actually need and keeps the correction confined to the problem area.</p>
+<h2>9. How to inspect it yourself</h2>
 <p>Open
-<a href="../design/ef_cs_junction_explained.scad"><code>design/ef_cs_junction_explained.scad</code></a>
-and use the <code>junction_step</code> dropdown.</p>
+<a href="../design/chamfer_explained.scad"><code>design/chamfer_explained.scad</code></a>
+in OpenSCAD.</p>
+<p>The most useful Customizer stages are:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What to look at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>07_intersection</code></td>
+<td>L bracket after <code>cs</code>, before <code>ef</code></td>
+</tr>
+<tr>
+<td><code>08_print_relief</code></td>
+<td>before/after the main <code>ef</code> relief</td>
+</tr>
+<tr>
+<td><code>10_corner_junction</code></td>
+<td>before correction → correction volume → final junction</td>
+</tr>
+<tr>
+<td><code>09_final</code></td>
+<td>complete bracket with pockets and holes</td>
+</tr>
+</tbody>
+</table>
+<p>For the simpler rectangular explanation of how <code>hull()</code> can join two
+chamfered inputs, see the
+<a href="../../../../examples/hull_operations/v0.1/">beam hull example</a>.</p>
+<h2>10. What should be changed in the future?</h2>
+<p>Treat the current geometry as the baseline.</p>
+<p>If the arm-tip correction is changed later, test only this question first:</p>
+<blockquote>
+<p>Does the new method produce the same clean <code>cs</code> / <code>ef</code> junction without
+changing the rest of the L?</p>
+</blockquote>
+<p>Do not redesign the complete elephant-foot relief merely to change that small
+junction.</p>
 </main></body></html>

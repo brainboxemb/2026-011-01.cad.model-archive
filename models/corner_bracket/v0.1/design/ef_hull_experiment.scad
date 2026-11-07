@@ -20,7 +20,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Experiment] */
-experiment_step = "00_whole_main_only"; // [00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_relief_volume, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
+experiment_step = "A01_before_ef"; // [A01_before_ef, A02_surface_a, A03_surface_b, A04_both_surfaces, A05_main_hull, A06_main_result, A07_problem_locations, B01_before_ef, B02_surface_a, B03_surface_b, B04_both_surfaces, B05_main_hull, B06_corner_correction, B07_combined_relief, B08_working_result, 00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_relief_volume, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
 
 /* [Hidden] */
 // Keep aligned with production defaults.
@@ -275,9 +275,141 @@ module bracket_context() {
         whole_before_ef();
 }
 
+
+// ---------- Whole-bracket walkthrough helpers ----------
+// The whole bracket is kept in every image so all A/B stages have the same
+// spatial reference and therefore a consistent camera/scale with --viewall.
+
+module display_bounds() {
+    translate([-t - 2, -W/2 - 2, -armV - 2])
+        cube([armH + t + 4, W + 4, armV + t + 4]);
+}
+
+module display_surface_a() {
+    intersection() {
+        opening_layer(W/2 - ef);
+        display_bounds();
+    }
+}
+
+module display_surface_b() {
+    intersection() {
+        opening_layer(W/2, ef);
+        display_bounds();
+    }
+}
+
+module display_main_hull() {
+    intersection() {
+        main_positive_hull();
+        display_bounds();
+    }
+}
+
+// Show only the material-changing part of the four local correction volumes.
+// This keeps the visual overlay inside the bracket outline and avoids changing
+// the whole-bracket camera bounds.
+module display_corner_correction() {
+    intersection() {
+        whole_main_only();
+        relief_corner_miters();
+    }
+}
+
+// Effective main EF relief volume over both print sides, clipped to the real body.
+module display_main_relief_both_sides() {
+    intersection() {
+        whole_before_ef();
+        inside_relief_envelope();
+    }
+}
+
+// Combined working EF relief: main hulls plus the local corner correction.
+module display_combined_relief() {
+    intersection() {
+        whole_before_ef();
+        union() {
+            inside_relief_envelope();
+            relief_corner_miters();
+        }
+    }
+}
+
+module whole_context_solid() {
+    color("SteelBlue") whole_before_ef();
+}
+
+module whole_context_ghost() {
+    color([0.72, 0.72, 0.72, 0.30]) whole_before_ef();
+}
+
 // -------- visual stages --------
 
-if (experiment_step == "00_whole_main_only")
+// Sequence A — current main elephant-foot hulls WITHOUT the small corner correction.
+// Every image keeps the complete bracket as the reference.
+if (experiment_step == "A01_before_ef")
+    whole_context_solid();
+
+else if (experiment_step == "A02_surface_a") {
+    whole_context_ghost();
+    color("SteelBlue") display_surface_a();
+}
+else if (experiment_step == "A03_surface_b") {
+    whole_context_ghost();
+    color("DarkOrange") display_surface_b();
+}
+else if (experiment_step == "A04_both_surfaces") {
+    whole_context_ghost();
+    color("SteelBlue") display_surface_a();
+    color("DarkOrange") display_surface_b();
+}
+else if (experiment_step == "A05_main_hull") {
+    whole_context_ghost();
+    color("DarkOrange", 0.82) display_main_hull();
+}
+else if (experiment_step == "A06_main_result")
+    color("SteelBlue") whole_main_only();
+
+else if (experiment_step == "A07_problem_locations") {
+    color("SteelBlue") whole_main_only();
+    color("Red") whole_problem_markers();
+}
+
+// Sequence B — repeat the same steps, then add the working corner correction.
+else if (experiment_step == "B01_before_ef")
+    whole_context_solid();
+
+else if (experiment_step == "B02_surface_a") {
+    whole_context_ghost();
+    color("SteelBlue") display_surface_a();
+}
+else if (experiment_step == "B03_surface_b") {
+    whole_context_ghost();
+    color("DarkOrange") display_surface_b();
+}
+else if (experiment_step == "B04_both_surfaces") {
+    whole_context_ghost();
+    color("SteelBlue") display_surface_a();
+    color("DarkOrange") display_surface_b();
+}
+else if (experiment_step == "B05_main_hull") {
+    whole_context_ghost();
+    color("DarkOrange", 0.82) display_main_hull();
+}
+else if (experiment_step == "B06_corner_correction") {
+    color([0.72, 0.72, 0.72, 0.30]) whole_main_only();
+    color("Red") display_corner_correction();
+}
+else if (experiment_step == "B07_combined_relief") {
+    whole_context_ghost();
+    color("DarkOrange", 0.78) display_main_relief_both_sides();
+    color("Red", 0.95) display_corner_correction();
+}
+else if (experiment_step == "B08_working_result")
+    color("SteelBlue") whole_working();
+
+// Existing overview/local experiment views retained below.
+else if (experiment_step == "00_whole_main_only")
     color("SteelBlue") whole_main_only();
 
 else if (experiment_step == "00_whole_problem_points") {

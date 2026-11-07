@@ -69,6 +69,8 @@ The model constructs a temporary **convex outer envelope**,
 `outer_shape()`. It *deliberately fills the open inside of the L*,
 because this is only a helper for the outside edges.
 
+![Convex outside helper used for the side chamfer](../design/chamfer_04_convex_outline.png)
+
 Two overlapping solids form the input to `hull()`:
 
 | First input | Second input |
@@ -93,6 +95,8 @@ module side_chamfer_env() {
 The outer boundary moves inward by **2 mm** between Y = ±8
 and Y = ±10. `hull()` joins these boundaries with sloping
 faces. The resulting helper is still convex and fills the L opening.
+
+![Convex hull envelope before clipping back to the real L](../design/chamfer_06_hull_envelope.png)
 
 The **next operation is essential**:
 `intersection()` with the true extruded `profile()` removes
@@ -169,6 +173,8 @@ both enlarged outside outlines in a *single convex envelope* and
 enlarge the opening throughout the width, including the
 undisturbed middle. Thus, the model uses **one local hull per side**.
 
+![Bracket after the two main elephant-foot hulls are applied](../design/chamfer_08_print_relief.png)
+
 ## 4. Where the two kinds of bevel meet
 
 The two main `inside_relief_envelope()` hulls correctly create the
@@ -236,6 +242,8 @@ The focused regression test compares the arm-tip region before and after
 these local hulls. With the standard geometry, adding them removes more
 than 99% of the former local mismatch while leaving the rest of the
 elephant-foot construction unchanged.
+
+![Final bracket geometry](../design/chamfer_09_final.png)
 
 ## 5. What is checked, and what is not
 

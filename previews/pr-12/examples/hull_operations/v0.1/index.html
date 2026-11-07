@@ -9,57 +9,69 @@
 <body>
   <header><a href="../../../">← Model archive</a></header>
   <main>
-<h1>Beam demo: where <code>ef</code> meets the chamfered side</h1>
-<p>This example is a <strong>single straight arm</strong> of the Corner Bracket.</p>
-<p>The point is not merely to show two different bevel sizes. The actual problem
-is the small corner where the elephant-foot relief <code>ef</code> reaches an already
-chamfered side edge <code>cs</code>.</p>
-<p>The beam removes the L shape, holes, nuts and inside radius so that this one
-junction is visible.</p>
-<h2>0. Start with a plain beam</h2>
+<h1>Beam demo: the corner where the chamfers meet</h1>
+<p>This example represents <strong>one straight arm tip</strong> of the Corner Bracket.</p>
+<p>The important point is that the <strong>kopse kant is part of the geometry too</strong>.
+The previous beam version only showed the long edges and was therefore still
+missing part of the real situation.</p>
+<p>There are three relevant edge treatments:</p>
+<ul>
+<li><code>c</code>: the normal upper chamfer in the end profile;</li>
+<li><code>cs</code>: the chamfer around the printed side faces;</li>
+<li><code>ef</code>: the elephant-foot relief at the bottom, both along the long contact
+  edges <strong>and across the lower end profile</strong>.</li>
+</ul>
+<p>The problem appears at the lower corner where those surfaces meet.</p>
+<h2>0. Plain beam</h2>
 <p><img alt="Plain beam" src="renders/00_plain_beam.png" /></p>
-<p>The beam has square side faces and a sharp bottom contact edge.</p>
-<h2>1. Apply the normal side chamfer <code>cs</code></h2>
-<p><img alt="Beam with side-face chamfer" src="renders/01_cs_side_bevel.png" /></p>
-<p>The same idea as the real bracket is used here:</p>
+<p>Nothing is chamfered yet.</p>
+<h2>1. Normal chamfers, including the end face</h2>
+<p><img alt="Beam with normal end and side chamfers" src="renders/01_normal_chamfers.png" /></p>
+<p>This step now includes both parts that belong to the normal geometry:</p>
+<ol>
+<li>the upper corner of each <strong>kopse kant</strong> is chamfered with <code>c</code>;</li>
+<li>the printed side faces are chamfered with <code>cs</code>.</li>
+</ol>
+<p>The lower edge is still left for the elephant-foot correction.</p>
+<p>This is important because the beam end must not remain a square block while we
+try to explain the real bracket arm.</p>
+<h2>2. Add the complete elephant-foot relief</h2>
+<p>The elephant-foot treatment is also not limited to the two long bottom edges.</p>
+<p>It consists of both:</p>
 <ul>
-<li>the broad printed side faces are chamfered around their <strong>outside</strong> edges;</li>
-<li>the bottom contact edge itself is deliberately not part of that outer
-  chamfer operation.</li>
+<li>the <code>ef</code> relief along the long lower contact edges;</li>
+<li>the <code>ef</code> chamfer across the <strong>lower kopse kant</strong>.</li>
 </ul>
-<p>At the beam end this creates a <strong>diagonal <code>cs</code> bevel</strong> that runs down to the
-bottom contact plane.</p>
-<p>That lower end corner is the location we care about.</p>
-<h2>2. Add the broad elephant-foot relief <code>ef</code></h2>
-<p>The elephant-foot operation now runs along the long bottom contact edge.</p>
-<p>Most of that edge is straightforward. The difficult part is the endpoint,
-because the <code>ef</code> relief reaches the diagonal <code>cs</code> side bevel there.</p>
-<p>The image below is deliberately cropped to that one junction.</p>
+<p>That means the bottom correction now wraps through the end of the beam instead
+of stopping before it.</p>
+<p>The image below crops the lower end corner where the complete <code>ef</code> geometry
+meets the diagonal <code>cs</code> side bevel.</p>
 <p><img alt="Junction before the local correction" src="renders/02_junction_problem.png" /></p>
-<p>This is the problem the extra correction is intended to solve: the broad
-bottom-edge relief does not naturally finish as the desired continuous miter
-against the diagonal side bevel.</p>
-<h2>3. Add a small local miter hull</h2>
-<p>Instead of changing the whole beam or replacing the broad <code>ef</code> hull, a small
-additional triangular cutting profile is swept along the diagonal junction.</p>
+<p>This is the junction we actually want to understand.</p>
+<h2>3. The local miter correction</h2>
+<p>The broad <code>ef</code> construction by itself does not give the desired transition at
+that 3D meeting point. A small triangular cutter is therefore swept along the
+diagonal junction.</p>
 <p><img alt="Isolated local miter cutter" src="renders/03_miter_cutter.png" /></p>
-<p>This is a <strong>local correction only</strong>. It exists because two otherwise sensible
-operations meet at an awkward 3D corner:</p>
-<ul>
-<li><code>cs</code>: diagonal side-face bevel;</li>
-<li><code>ef</code>: bottom contact-edge relief.</li>
-</ul>
-<h2>4. The corrected junction</h2>
+<p>The correction is local. It does not redefine the normal chamfers or the broad
+elephant-foot relief.</p>
+<h2>4. Corrected lower corner</h2>
 <p><img alt="Junction after the miter correction" src="renders/04_junction_fixed.png" /></p>
-<p>The same cropped corner now shows the relief continuing through the meeting
-point rather than ending with the unwanted flat termination.</p>
-<h2>5. Final beam</h2>
+<p>The cropped view now contains all relevant surfaces:</p>
+<ul>
+<li>the end-face <code>ef</code> chamfer;</li>
+<li>the long bottom <code>ef</code> relief;</li>
+<li>the diagonal <code>cs</code> side bevel;</li>
+<li>the small miter correction between them.</li>
+</ul>
+<h2>5. Complete beam</h2>
 <p><img alt="Complete corrected beam" src="renders/05_final_beam.png" /></p>
-<p>The full beam is shown again only after the local issue is understood.</p>
-<p>The direct mapping back to the Corner Bracket is:</p>
-<p><strong>straight beam end ↔ arm tip</strong></p>
-<p><strong>bottom contact edge ↔ plywood-facing contact edge</strong></p>
-<p><strong>diagonal <code>cs</code> bevel ↔ side-edge bevel at the arm tip</strong></p>
+<p>Only after the junction is clear do we return to the full beam.</p>
+<p>The mapping back to the real Corner Bracket is now direct:</p>
+<p><strong>beam kopse kant ↔ arm tip</strong></p>
+<p><strong>upper end chamfer <code>c</code> ↔ existing arm-end chamfer</strong></p>
+<p><strong>side-face chamfer <code>cs</code> ↔ side-edge bevel</strong></p>
+<p><strong>lower end + long-edge <code>ef</code> ↔ elephant-foot relief</strong></p>
 <p><strong>small miter hull ↔ <code>relief_corner_miters()</code></strong></p>
 <h2>Source</h2>
 <p>The complete demonstration is in
@@ -67,7 +79,7 @@ point rather than ending with the unwanted flat termination.</p>
 <p>The scenes are:</p>
 <ul>
 <li><code>00_plain</code></li>
-<li><code>01_cs</code></li>
+<li><code>01_normal_chamfers</code></li>
 <li><code>02_problem</code></li>
 <li><code>03_miter</code></li>
 <li><code>04_fixed</code></li>

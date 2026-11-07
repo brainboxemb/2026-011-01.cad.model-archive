@@ -2,8 +2,7 @@
 
 The bracket has been refactored in two stages: the inside radius uses 2D
 `square()` and `circle()` operations instead of sampled arc points; the
-wood-contact elephant-foot relief now uses two local hull transitions
-instead of individual straight, diagonal and circular cutting wedges.
+wood-contact elephant-foot relief now uses two local opening hulls and short diagonal miter hulls\ninstead of individual straight, diagonal and circular cutting wedges.
 The original mounting and captive-nut system is unchanged.
 The bracket is a prototype; print tolerances and strength have not been physically verified.
 

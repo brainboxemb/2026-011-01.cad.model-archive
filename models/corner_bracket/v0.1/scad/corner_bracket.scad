@@ -198,15 +198,37 @@ module inside_opening_2d() {
     }
 }
 
-// A thin 3D slice of the open space at one position across the Y width.
-// A larger 2D opening at the printed side removes an ef-sized amount
-// from the wood-contact boundary without changing the middle of the part.
+// Exact X/Z cross-section of the already side-chamfered bracket at Y=y.
+// This reuses body(), and therefore the same side_chamfer_env() hull that
+// defines cs on the printable model.
+module body_slice_2d(y) {
+    projection(cut = true)
+        rotate([-90, 0, 0])
+            translate([0, -y, 0])
+                body();
+}
+
+// Empty space next to the wood-contact edges, but now bounded by the actual
+// body cross-section at this Y position. Around the arm tips this automatically
+// follows the cs bevel instead of assuming the unchamfered arm length.
+module relief_source_2d(y) {
+    mask = cs + ef + 1;
+    difference() {
+        offset(delta = mask)
+            inside_opening_2d();
+        body_slice_2d(y);
+    }
+}
+
+// A thin 3D slice used as input to the elephant-foot hull.
+// The outer print-face slice is expanded by ef; both slices already contain
+// the correct cs-dependent arm-tip boundary before hull() connects them.
 module opening_layer(y, expansion = 0) {
     translate([0, y, 0])
         rotate([90, 0, 0])
             linear_extrude(height = 0.002, center = true)
                 offset(delta = expansion)
-                    inside_opening_2d();
+                    relief_source_2d(y);
 }
 
 // Why TWO hulls? A single convex hull joining expanded openings at BOTH

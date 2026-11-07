@@ -194,6 +194,15 @@
 //!
 //! **Relevant OpenSCAD code (summary):**
 //!
+//!     module inside_relief_envelope() {
+//!         if (ef > 0)
+//!             for (side = [-1, 1])
+//!                 hull() {
+//!                     opening_layer(side * (W / 2 - ef));
+//!                     opening_layer(side * W / 2, ef);
+//!                 }
+//!     }
+//!
 //!     module chamfered_body() {
 //!         difference() {
 //!             body();

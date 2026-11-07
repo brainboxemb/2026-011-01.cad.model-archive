@@ -1,11 +1,14 @@
 // Elephant-foot hull experiment for the Corner Bracket.
 //
 // Purpose:
-//   Show EVERY geometric step for one print side and one arm tip.
-//   The production model is not changed here.
+//   Start with the COMPLETE bracket so the visible problem is clear first.
+//   Only after that, zoom into one print side and one arm tip to show every
+//   geometric step. The production model is not changed here.
 //
-// The experiment starts with the two real input surfaces of
-// inside_relief_envelope(), shows their hull and its visible tip defect,
+// The experiment first shows the whole bracket with only the two main
+// inside_relief_envelope() hulls, marks the four missing corner corrections,
+// and shows the working bracket. It then shows the two real input surfaces
+// of one EF hull and its local arm-tip defect,
 // then constructs a strongest-possible "two surfaces only" candidate:
 // take the exact removed-material cross-sections of the proven reference
 // cutter at the same two Y positions and hull those two sections.
@@ -17,7 +20,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Experiment] */
-experiment_step = "04_both_main_inputs"; // [01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_cutter, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
+experiment_step = "00_whole_main_only"; // [00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_cutter, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
 
 /* [Hidden] */
 // Keep aligned with production defaults.
@@ -203,9 +206,51 @@ module exact_candidate_result() {
         }
 }
 
+// Complete printable bracket, but with ONLY the two main EF hulls.
+// Nut pockets stay present so this is the real bracket shape, not a proxy.
+module whole_main_only() {
+    difference() {
+        body();
+        nut_top();
+        nut_side();
+        inside_relief_envelope();
+    }
+}
+
+// Current working production geometry.
+module whole_working() {
+    difference() {
+        body();
+        nut_top();
+        nut_side();
+        inside_relief_envelope();
+        relief_corner_miters();
+    }
+}
+
+// These are exactly the small pieces of material that remain when only the
+// two main hulls are used, but are removed by the working corner correction.
+// On the whole bracket this reveals all four problematic arm-tip junctions.
+module whole_missing_corner_material() {
+    difference() {
+        whole_main_only();
+        whole_working();
+    }
+}
+
 // -------- visual stages --------
 
-if (experiment_step == "01_opening_profile") {
+if (experiment_step == "00_whole_main_only")
+    color("SteelBlue") whole_main_only();
+
+else if (experiment_step == "00_whole_problem_points") {
+    color("SteelBlue", 0.82) whole_main_only();
+    color("Red") whole_missing_corner_material();
+}
+else if (experiment_step == "00_whole_working")
+    color("SteelBlue") whole_working();
+
+else if (experiment_step == "01_opening_profile") {
     // 2D source profile shown as a thin plate for a consistent 3D camera.
     crop()
         color("SteelBlue")

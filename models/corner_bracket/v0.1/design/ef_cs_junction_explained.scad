@@ -1,21 +1,16 @@
-// Corner Bracket: derive ef from the working beam construction.
+// Corner Bracket: unified L-profile elephant-foot experiment.
 //
-// Key idea:
-//   the L bracket is TWO local beam cases at 90 degrees.
+// The ef input is ONE continuous L-shaped profile following the complete
+// inside of the bracket:
 //
-// Horizontal arm:
-//   beam-style ef from its underside Z=0.
+//   horizontal inside face
+//        -> rounded inside corner r_in
+//        -> vertical inside face
 //
-// Vertical arm:
-//   same beam-style ef after rotating that arm so its inside face X=0
-//   becomes a local Z=0 underside.
-//
-// Nothing special is invented for the L itself.
-// The only special problem is how the two otherwise-working beam solutions
-// meet at the inside corner.
+// No horizontal/vertical split is shown in this explanation.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_horizontal_inputs, 02_vertical_inputs, 03_bent_L_input, 04_bent_L_with_upper, 05_both_hulls]
+scene = "00_cs_body"; // [00_cs_body, 01_inner_L_profile, 02_inner_L_sheet, 03_inner_L_with_body]
 
 /* [Geometry] */
 armH = 40;
@@ -29,13 +24,11 @@ ef = 0.6;
 r_in = 2.0;
 
 /* [Hidden] */
-$fn = 48;
-eps = 0.02;
-reach = 12;
-display_gap = 3;
+$fn = 72;
+sheet_thickness = 0.35;
 
 // -----------------------------------------------------------------------------
-// Clean bracket with the normal cs geometry, NO ef.
+// Clean bracket geometry, NO ef.
 // -----------------------------------------------------------------------------
 
 module inside_corner_2d(r) {
@@ -82,20 +75,15 @@ module raw_body() {
             profile_2d();
 }
 
-module cs_outline_2d() {
-    offset(delta = 0)
-        outer_shape_2d();
-}
-
 module cs_envelope() {
     rotate([90, 0, 0])
         hull() {
             linear_extrude(height = W - 2 * cs, center = true)
-                cs_outline_2d();
+                outer_shape_2d();
 
             linear_extrude(height = W, center = true)
                 offset(delta = -cs)
-                    cs_outline_2d();
+                    outer_shape_2d();
         }
 }
 
@@ -107,147 +95,55 @@ module cs_body() {
 }
 
 // -----------------------------------------------------------------------------
-// Split ONLY for the explanation.
-// Each arm is now treated exactly like the working beam demo.
-// -----------------------------------------------------------------------------
-
-module horizontal_arm() {
-    intersection() {
-        cs_body();
-
-        // top/right arm, including a tiny overlap at the corner
-        translate([-eps, -W, -eps])
-            cube([armH + 2 * eps, 2 * W, t + 2 * eps]);
-    }
-}
-
-module vertical_arm() {
-    intersection() {
-        cs_body();
-
-        // down/left arm, including a tiny overlap at the corner
-        translate([-t - eps, -W, -armV - eps])
-            cube([t + 2 * eps, 2 * W, armV + 2 * eps]);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// HORIZONTAL ARM = literal beam construction on Z=0.
-// -----------------------------------------------------------------------------
-
-module h_bottom_footprint_2d() {
-    projection()
-        intersection() {
-            horizontal_arm();
-
-            translate([-reach, -W, -eps / 2])
-                cube([armH + 2 * reach, 2 * W, eps]);
-        }
-}
-
-module h_ef_bottom() {
-    linear_extrude(height = eps)
-        offset(delta = -ef)
-            h_bottom_footprint_2d();
-}
-
-module h_ef_upper() {
-    intersection() {
-        horizontal_arm();
-
-        translate([-reach, -W, ef])
-            cube([armH + 2 * reach, 2 * W, t + reach]);
-    }
-}
-
-module h_ef_hull() {
-    hull() {
-        h_ef_bottom();
-        h_ef_upper();
-    }
-}
-
-// -----------------------------------------------------------------------------
-// VERTICAL ARM = SAME construction after a 90-degree rotation.
+// ONE continuous inner L profile, including the rounded inside corner.
 //
-// rotate([0,90,0]) maps original X=0 to local Z=0 and original X<0 to
-// local Z>0. After the beam operation, rotate back.
+// This is deliberately constructed as a thin 2D band along the complete
+// wood-contact boundary. It is only an explanatory input shape for now.
 // -----------------------------------------------------------------------------
 
-module vertical_arm_local() {
-    rotate([0, 90, 0])
-        vertical_arm();
+module inner_path_opening_2d() {
+    reach = max(armH, armV) + 10;
+
+    difference() {
+        translate([0, -armV - 5])
+            square([armH + 5, armV + 10]);
+
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
 }
 
-module v_bottom_footprint_2d() {
-    projection()
-        intersection() {
-            vertical_arm_local();
+// Thin band following the full inside boundary:
+// horizontal -> rounded corner -> vertical.
+module inner_L_profile_2d() {
+    difference() {
+        offset(delta = sheet_thickness)
+            inner_path_opening_2d();
 
-            translate([-armV - reach, -W, -eps / 2])
-                cube([armV + 2 * reach, 2 * W, eps]);
-        }
+        inner_path_opening_2d();
+    }
 }
 
-module v_ef_bottom_local() {
-    linear_extrude(height = eps)
-        offset(delta = -ef)
-            v_bottom_footprint_2d();
-}
-
-module v_ef_upper_local() {
+// Clip the explanatory band to the real bracket extents.
+module clipped_inner_L_profile_2d() {
     intersection() {
-        vertical_arm_local();
+        inner_L_profile_2d();
 
-        translate([-armV - reach, -W, ef])
-            cube([armV + 2 * reach, 2 * W, t + reach]);
+        translate([-sheet_thickness, -armV])
+            square([armH + sheet_thickness, armV + sheet_thickness]);
     }
 }
 
-module v_ef_hull_local() {
-    hull() {
-        v_ef_bottom_local();
-        v_ef_upper_local();
-    }
-}
-
-module v_ef_bottom() {
-    rotate([0, -90, 0])
-        v_ef_bottom_local();
-}
-
-module v_ef_upper() {
-    rotate([0, -90, 0])
-        v_ef_upper_local();
-}
-
-module v_ef_hull() {
-    rotate([0, -90, 0])
-        v_ef_hull_local();
-}
-
-// -----------------------------------------------------------------------------
-// Combined ef input: one bent L-shaped sheet following BOTH inside faces.
-// This is the direct bracket equivalent of the beam's single bottom plate.
-// -----------------------------------------------------------------------------
-
-module ef_bottom_L() {
-    union() {
-        h_ef_bottom();
-        v_ef_bottom();
-    }
-}
-
-module ef_upper_L() {
-    union() {
-        h_ef_upper();
-        v_ef_upper();
-    }
+// Extrude the one-piece L profile over the bracket width.
+// In front view this reads as one bent sheet with the real rounded corner.
+module inner_L_sheet() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W, center = true)
+            clipped_inner_L_profile_2d();
 }
 
 // -----------------------------------------------------------------------------
 // Scenes.
-// Keep the whole L visible as a translucent reference.
 // -----------------------------------------------------------------------------
 
 $vpr = [90, 0, 0];
@@ -257,52 +153,20 @@ if (scene == "00_cs_body") {
         cs_body();
 }
 
-else if (scene == "01_horizontal_inputs") {
-    color("LightGray", 0.18)
-        cs_body();
-
-    color("DeepSkyBlue", 0.85)
-        translate([0, 0, -display_gap])
-            h_ef_bottom();
-
-    color("DarkOrange", 0.42)
-        h_ef_upper();
+else if (scene == "01_inner_L_profile") {
+    color("DeepSkyBlue")
+        clipped_inner_L_profile_2d();
 }
 
-else if (scene == "02_vertical_inputs") {
-    color("LightGray", 0.18)
-        cs_body();
-
-    color("DeepSkyBlue", 0.85)
-        translate([display_gap, 0, 0])
-            v_ef_bottom();
-
-    color("DarkOrange", 0.42)
-        v_ef_upper();
-}
-
-else if (scene == "03_bent_L_input") {
-    // REAL position: no display offset. This must read as one folded L sheet
-    // following the complete inside of the bracket.
-    color("DeepSkyBlue", 0.90)
-        ef_bottom_L();
-}
-
-else if (scene == "04_bent_L_with_upper") {
-    color("DeepSkyBlue", 0.72)
-        ef_bottom_L();
-
-    color("DarkOrange", 0.28)
-        ef_upper_L();
+else if (scene == "02_inner_L_sheet") {
+    color("DeepSkyBlue", 0.88)
+        inner_L_sheet();
 }
 
 else {
-    color("LightGray", 0.18)
+    color("DeepSkyBlue", 0.80)
+        inner_L_sheet();
+
+    color("DarkOrange", 0.24)
         cs_body();
-
-    color("SeaGreen", 0.75)
-        h_ef_hull();
-
-    color("DarkSeaGreen", 0.75)
-        v_ef_hull();
 }

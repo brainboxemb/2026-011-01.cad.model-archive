@@ -118,7 +118,7 @@ module exact_reference_input(y) {
 module exact_two_surface_hull() {
     hull() {
         exact_reference_input(W/2 - ef);
-        exact_reference_input(W/2 - section_thickness/2);
+        exact_reference_input(W/2);
     }
 }
 
@@ -216,7 +216,7 @@ else if (experiment_step == "09_reference_result")
 
 else if (experiment_step == "10_exact_reference_inputs") {
     color("SteelBlue") exact_reference_input(W/2 - ef);
-    color("DarkOrange") exact_reference_input(W/2 - section_thickness/2);
+    color("DarkOrange") exact_reference_input(W/2);
 }
 else if (experiment_step == "11_exact_two_surface_hull")
     color("DarkOrange", 0.85) exact_effective_cut();

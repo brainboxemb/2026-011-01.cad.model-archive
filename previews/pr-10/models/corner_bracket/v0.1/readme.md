@@ -204,15 +204,14 @@ one normal copy at `Y = ±(W/2 - ef)` and one copy expanded by
 Two **separate hulls**, one for each printed side, are necessary:
 joining the two expanded outside slices in a *single* global hull
 would remove material through the entire middle of the bracket.
-With two local hulls, only the outer 0.6 mm on each side is affected.
+With two local hulls, only the outer 0.6 mm on each side is affected.\n//! At the arm ends, where this relief meets the diagonal `cs` bevel,\n//! small additional `relief_corner_miters()` hulls finish the join.
 `difference()` then subtracts the resulting cutting volumes from
 `body()`. This naturally follows the straight plywood faces AND the
 rounded inner corner, replacing the former individual wedge cutters.
 
 Setting `ef = 0` disables this relief. `cs` still controls the
 larger outside chamfers in Step 2. The small 2D chamfers at the arm
-tips are part of Step 1, as before. The geometric regression tests
-compare the complete bracket against the former cutting method.
+tips are part of Step 1, as before. The geometric regression tests\n//! compare the complete bracket against the former cutting method.
 The small differences are concentrated near relief intersections;
 actual print fit must still be checked.
 
@@ -250,7 +249,7 @@ cutter modules used in the source code are listed underneath.
     module chamfered_body() {
         difference() {
             body(); // already has the outside hull chamfers
-            if (ef > 0) inside_relief_envelope();
+            if (ef > 0) {\n//!                 inside_relief_envelope();\n//!                 relief_corner_miters();\n//!             }
         }
     }
 

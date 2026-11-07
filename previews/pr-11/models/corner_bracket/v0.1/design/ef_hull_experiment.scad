@@ -257,12 +257,22 @@ module whole_problem_markers() {
     }
 }
 
+// Whole bracket BEFORE elephant-foot relief. Nut pockets stay present;
+// only the EF cutter has not yet been subtracted.
+module whole_before_ef() {
+    difference() {
+        body();
+        nut_top();
+        nut_side();
+    }
+}
+
 // Light whole-bracket context used behind the EF input surfaces.
 // The colored geometry is the cutter/hull; the grey bracket is only a
 // positional reference so the reader can see exactly where Y=9.4/Y=10 sit.
 module bracket_context() {
     color([0.72, 0.72, 0.72, 0.28])
-        whole_main_only();
+        whole_before_ef();
 }
 
 // -------- visual stages --------

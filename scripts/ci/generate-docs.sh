@@ -22,6 +22,17 @@ test -f ext/NopSCADlib/scripts/make_all.py
 in_container /work/examples/spacer/v0.1 \
   xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
 
+# Minimal beam-first tutorial for the two hull-based edge operations.
+demo="examples/hull_operations/v0.1"
+in_container /work \
+  bash /work/scripts/ci/render-hull-operations-demo.sh
+in_container "/work/$demo" \
+  bash -c 'python -m markdown -x tables -x sane_lists README.md > readme.html'
+test -s "$demo/readme.html"
+for image in 00_plain_beam 01_side_chamfer 02_elephant_foot 03_combined; do
+  test -s "$demo/renders/$image.png"
+done
+
 bracket="models/corner_bracket/v0.1"
 mkdir -p "$bracket/design" "$bracket/docs"
 

@@ -99,9 +99,7 @@ grep -Fq 'Y = +W/2' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 grep -Fq '## Printing and assembly' "$bracket/readme.md"
 grep -Fq '## Further reading' "$bracket/readme.md"
-# Keep a single unobtrusive reference to the extended tutorial outside the
-# six sequential model-construction steps.
-test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -eq 1
+# The hull primer is linked at Step 2 and in Further reading.\ngrep -Fq 'New to `hull()`?' "$bracket/readme.md"\ntest "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
   exit 1

@@ -36,8 +36,3 @@ for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_
   render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done
 
-
-# Detailed cs/ef junction experiment on the real bracket.
-for stage in 00_l_with_cs 01_lower_plate 02_upper_volume 03_ef_inputs 04_ef_hull 05_result; do
-  render ef_cs_junction_explained.scad junction_step "$stage" "junction_$stage" "800,520"
-done

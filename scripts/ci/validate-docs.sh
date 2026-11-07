@@ -4,6 +4,14 @@
 set -euo pipefail
 trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 
+require_text() {
+  local pattern="$1" file="$2"
+  if ! grep -Fq "$pattern" "$file"; then
+    echo "Missing required text in $file: $pattern" >&2
+    exit 1
+  fi
+}
+
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"
 test -s "$spacer/stls/spacer.png"
@@ -113,13 +121,13 @@ if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; t
 fi
 # The main walkthrough summarizes the two main EF hulls and points to the
 # dedicated Chamfer Guide for the detailed junction geometry.
-grep -Fq 'one per print side' "$bracket/readme.md"
-grep -Fq 'inside_relief_envelope()' "$bracket/readme.md"
-grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
-grep -Fq '## Printing and assembly' "$bracket/readme.md"
-grep -Fq '## Further reading' "$bracket/readme.md"
+require_text 'one per print side' "$bracket/readme.md"
+require_text 'inside_relief_envelope()' "$bracket/readme.md"
+require_text '### 2. Outer side-edge chamfers' "$bracket/readme.md"
+require_text '## Printing and assembly' "$bracket/readme.md"
+require_text '## Further reading' "$bracket/readme.md"
 # The hull primer is linked at Step 2 and in Further reading.
-grep -Fq 'New to `hull()`?' "$bracket/readme.md"
+require_text 'New to `hull()`?' "$bracket/readme.md"
 test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
@@ -145,8 +153,8 @@ for source_module in 'module sloped_hull()'; do
   grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
   grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq '## 2. Where does this appear in the real bracket?' "$bracket/docs/hull-guide.md"
-grep -Fq 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
+require_text '## 2. Where does this appear in the real bracket?' "$bracket/docs/hull-guide.md"
+require_text 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {

@@ -9,59 +9,68 @@
 <body>
   <header><a href="../../../">← Model archive</a></header>
   <main>
-<h1>Beam: normal chamfer first, elephant-foot relief second</h1>
-<p>This example reduces the Corner Bracket idea to <strong>one rectangular beam</strong>.</p>
-<p>The beam has four long edges. The important rule is simple:</p>
+<h1>Beam demo: where <code>ef</code> meets the chamfered side</h1>
+<p>This example is a <strong>single straight arm</strong> of the Corner Bracket.</p>
+<p>The point is not merely to show two different bevel sizes. The actual problem
+is the small corner where the elephant-foot relief <code>ef</code> reaches an already
+chamfered side edge <code>cs</code>.</p>
+<p>The beam removes the L shape, holes, nuts and inside radius so that this one
+junction is visible.</p>
+<h2>0. Start with a plain beam</h2>
+<p><img alt="Plain beam" src="renders/00_plain_beam.png" /></p>
+<p>The beam has square side faces and a sharp bottom contact edge.</p>
+<h2>1. Apply the normal side chamfer <code>cs</code></h2>
+<p><img alt="Beam with side-face chamfer" src="renders/01_cs_side_bevel.png" /></p>
+<p>The same idea as the real bracket is used here:</p>
 <ul>
-<li>the <strong>two upper long edges</strong> get the normal chamfer <code>cs</code>;</li>
-<li>the <strong>two lower long edges</strong> are left sharp during that operation;</li>
-<li>those lower edges are the print-bed edges and get the separate, smaller
-  elephant-foot relief <code>ef</code> afterwards.</li>
+<li>the broad printed side faces are chamfered around their <strong>outside</strong> edges;</li>
+<li>the bottom contact edge itself is deliberately not part of that outer
+  chamfer operation.</li>
 </ul>
-<p>The two end faces stay square on purpose. They are not part of this explanation.</p>
-<p>The camera, dimensions and orientation remain the same in every image.</p>
-<h2>0. Start with the plain beam</h2>
-<p><img alt="Plain rectangular beam" src="renders/00_plain_beam.png" /></p>
-<p>All four long edges are sharp.</p>
-<p>This is the reference object for the next steps.</p>
-<h2>1. Apply the normal chamfer <code>cs</code></h2>
-<p><img alt="Beam with normal chamfer, bottom left sharp" src="renders/01_side_chamfer.png" /></p>
-<p>The normal chamfer is applied to the <strong>two upper long edges</strong>.</p>
-<p>The two lower edges are deliberately <strong>not</strong> chamfered here. They still form the
-sharp print-bed boundary.</p>
-<p>So after this step the cross-section is conceptually:</p>
+<p>At the beam end this creates a <strong>diagonal <code>cs</code> bevel</strong> that runs down to the
+bottom contact plane.</p>
+<p>That lower end corner is the location we care about.</p>
+<h2>2. Add the broad elephant-foot relief <code>ef</code></h2>
+<p>The elephant-foot operation now runs along the long bottom contact edge.</p>
+<p>Most of that edge is straightforward. The difficult part is the endpoint,
+because the <code>ef</code> relief reaches the diagonal <code>cs</code> side bevel there.</p>
+<p>The image below is deliberately cropped to that one junction.</p>
+<p><img alt="Junction before the local correction" src="renders/02_junction_problem.png" /></p>
+<p>This is the problem the extra correction is intended to solve: the broad
+bottom-edge relief does not naturally finish as the desired continuous miter
+against the diagonal side bevel.</p>
+<h2>3. Add a small local miter hull</h2>
+<p>Instead of changing the whole beam or replacing the broad <code>ef</code> hull, a small
+additional triangular cutting profile is swept along the diagonal junction.</p>
+<p><img alt="Isolated local miter cutter" src="renders/03_miter_cutter.png" /></p>
+<p>This is a <strong>local correction only</strong>. It exists because two otherwise sensible
+operations meet at an awkward 3D corner:</p>
 <ul>
-<li>top-left: <code>cs</code>;</li>
-<li>top-right: <code>cs</code>;</li>
-<li>bottom-left: sharp;</li>
-<li>bottom-right: sharp.</li>
+<li><code>cs</code>: diagonal side-face bevel;</li>
+<li><code>ef</code>: bottom contact-edge relief.</li>
 </ul>
-<p>That missing bottom chamfer is intentional, because the print-bed correction
-uses a different value.</p>
-<h2>2. Isolate the elephant-foot relief <code>ef</code></h2>
-<p><img alt="Plain beam with elephant-foot relief only" src="renders/02_elephant_foot.png" /></p>
-<p>For comparison, this image returns to the plain beam and shows only <code>ef</code>.</p>
-<p>The smaller relief is applied to the <strong>two lower long edges</strong> — exactly the
-edges that were left untouched by <code>cs</code>.</p>
-<p>This makes the roles of the two parameters visible without mixing them:</p>
-<p><strong><code>cs</code> = normal edge treatment</strong></p>
-<p><strong><code>ef</code> = print-bed edge treatment</strong></p>
-<h2>3. Combine them</h2>
-<p><img alt="Beam with normal chamfer and elephant-foot relief" src="renders/03_combined.png" /></p>
-<p>Now both operations are present on the same beam:</p>
-<ol>
-<li>start with the rectangular beam;</li>
-<li>chamfer the two upper long edges with <code>cs</code>;</li>
-<li>keep the bottom edges out of that operation;</li>
-<li>apply the smaller <code>ef</code> relief to those two bottom edges.</li>
-</ol>
-<p>The resulting cross-section therefore has two different bevel sizes for two
-different purposes.</p>
-<p>This is the concept that should then be mapped back onto the real Corner
-Bracket.</p>
+<h2>4. The corrected junction</h2>
+<p><img alt="Junction after the miter correction" src="renders/04_junction_fixed.png" /></p>
+<p>The same cropped corner now shows the relief continuing through the meeting
+point rather than ending with the unwanted flat termination.</p>
+<h2>5. Final beam</h2>
+<p><img alt="Complete corrected beam" src="renders/05_final_beam.png" /></p>
+<p>The full beam is shown again only after the local issue is understood.</p>
+<p>The direct mapping back to the Corner Bracket is:</p>
+<p><strong>straight beam end ↔ arm tip</strong></p>
+<p><strong>bottom contact edge ↔ plywood-facing contact edge</strong></p>
+<p><strong>diagonal <code>cs</code> bevel ↔ side-edge bevel at the arm tip</strong></p>
+<p><strong>small miter hull ↔ <code>relief_corner_miters()</code></strong></p>
 <h2>Source</h2>
-<p>The complete minimal OpenSCAD example is in
+<p>The complete demonstration is in
 <a href="scad/hull_operations.scad"><code>scad/hull_operations.scad</code></a>.</p>
-<p>Set <code>scene</code> to <code>0</code>, <code>1</code>, <code>2</code> or <code>3</code> to inspect the same four states
-locally.</p>
+<p>The scenes are:</p>
+<ul>
+<li><code>00_plain</code></li>
+<li><code>01_cs</code></li>
+<li><code>02_problem</code></li>
+<li><code>03_miter</code></li>
+<li><code>04_fixed</code></li>
+<li><code>05_final</code></li>
+</ul>
 </main></body></html>

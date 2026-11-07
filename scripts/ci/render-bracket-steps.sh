@@ -31,7 +31,7 @@ for stage in layers comparison; do
   render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
 done
 
-# Nine stages from 2D end chamfers through side-edge hull and print relief.
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+# Ten stages from 2D chamfers through side hulls, print relief and corner-miter close-up.
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
   render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done

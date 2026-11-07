@@ -11,6 +11,19 @@ and two removable plugs that conceal the access windows after assembly.
 clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.
 
+## Where to read what
+
+Keep the documentation split by purpose:
+
+- **This page:** short model walkthrough and assembly context.
+- [Chamfer Guide](docs/chamfer-guide.html): the actual `c`, `ce`,
+  `cs` and `ef` construction, step by step.
+- [Elephant-foot Hull Experiment](docs/ef-hull-experiment.html):
+  the separate two-surface experiment, with every input, result and XOR.
+- [Hull Guide](docs/hull-guide.html): only the general `hull()` concept.
+- [Polygon Guide](docs/polygon-guide.html): only the 2D inside-radius method.
+- [Mounting Options](docs/mounting-options.html): bolts, nuts and alternatives.
+
 ## Design walkthrough
 
 The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains **what happens and why**, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in [corner_bracket.scad](scad/corner_bracket.scad); you can explore the steps in [design.scad](design/design.scad). All dimensions are in millimetres.
@@ -172,48 +185,24 @@ For each arm, the code makes four spaces: a hexagonal pocket for an M4 nut, a sh
 
 ### 4. Elephant-foot relief
 
-The bracket is printed on a broad **Y side face**. The first print
-layers can spread slightly and interfere with the plywood-contact
-faces. `ef = 0.6` adds a 45° relief near both print faces.
+The bracket is printed on a broad Y-facing side. `ef = 0.6` leaves
+a small 45° allowance near both print faces so first-layer expansion
+does not interfere with the plywood-contact surfaces.
 
 ![Why first-layer compensation is needed](figures/elephant-foot-section.svg)
 ![Where the affected edges are](figures/elephant-foot-edges.svg)
 
-The detailed geometry is explained once in the
-[Chamfer Guide](docs/chamfer-guide.html). In short:
+The complete geometry is deliberately **not repeated here**.
+The [Chamfer Guide](docs/chamfer-guide.html) shows the same sequence as
+the outside `cs` hull: first surface, second surface, both surfaces,
+resulting hull and subtraction result.
 
-- two main `hull()` cutters make the relief along the straight
-  contact faces and rounded inside corner, one per print side;
-- at each arm end that relief meets the diagonal `cs` bevel;
-- a small local miter hull finishes each of those four junctions.
-
-We tested folding the tip correction into the same main `hull()`.
-That over-cuts the junction because `hull()` fills the convex
-envelope between the main opening and the separate tip correction.
-Keeping the correction local preserves the intended geometry.
+The remaining arm-tip question is kept separate in the
+[Elephant-foot Hull Experiment](docs/ef-hull-experiment.html), where
+the current two-surface hull, the working reference, the strongest
+two-surface candidate and its XOR/overcut/undercut are shown individually.
 
 ![Bracket after print relief](design/04_print_relief.png)
-
-**Relevant OpenSCAD code (summary):**
-
-    module inside_relief_envelope() {
-        if (ef > 0)
-            for (side = [-1, 1])
-                hull() {
-                    opening_layer(side * (W / 2 - ef));
-                    opening_layer(side * W / 2, ef);
-                }
-    }
-
-    module chamfered_body() {
-        difference() {
-            body();
-            if (ef > 0) {
-                inside_relief_envelope();
-                relief_corner_miters();
-            }
-        }
-    }
 
 ### 5. Access-window plugs
 

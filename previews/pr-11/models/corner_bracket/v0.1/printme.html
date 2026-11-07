@@ -8,6 +8,18 @@ and two removable plugs that conceal the access windows after assembly.</p>
 <p><strong>This is a work in progress.</strong> Test-fit the M4 fasteners, nuts, printed
 clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.</p>
+<h2>Where to read what</h2>
+<p>Keep the documentation split by purpose:</p>
+<ul>
+<li><strong>This page:</strong> short model walkthrough and assembly context.</li>
+<li><a href="docs/chamfer-guide.html">Chamfer Guide</a>: the actual <code>c</code>, <code>ce</code>,
+  <code>cs</code> and <code>ef</code> construction, step by step.</li>
+<li><a href="docs/ef-hull-experiment.html">Elephant-foot Hull Experiment</a>:
+  the separate two-surface experiment, with every input, result and XOR.</li>
+<li><a href="docs/hull-guide.html">Hull Guide</a>: only the general <code>hull()</code> concept.</li>
+<li><a href="docs/polygon-guide.html">Polygon Guide</a>: only the 2D inside-radius method.</li>
+<li><a href="docs/mounting-options.html">Mounting Options</a>: bolts, nuts and alternatives.</li>
+</ul>
 <h2>Design walkthrough</h2>
 <p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="design/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
 <h3>1. Draw the L profile and round its inside corner in 2D</h3>
@@ -149,44 +161,20 @@ difference() {
 }
 </code></pre>
 <h3>4. Elephant-foot relief</h3>
-<p>The bracket is printed on a broad <strong>Y side face</strong>. The first print
-layers can spread slightly and interfere with the plywood-contact
-faces. <code>ef = 0.6</code> adds a 45° relief near both print faces.</p>
+<p>The bracket is printed on a broad Y-facing side. <code>ef = 0.6</code> leaves
+a small 45° allowance near both print faces so first-layer expansion
+does not interfere with the plywood-contact surfaces.</p>
 <p><img alt="Why first-layer compensation is needed" src="figures/elephant-foot-section.svg" />
 <img alt="Where the affected edges are" src="figures/elephant-foot-edges.svg" /></p>
-<p>The detailed geometry is explained once in the
-<a href="docs/chamfer-guide.html">Chamfer Guide</a>. In short:</p>
-<ul>
-<li>two main <code>hull()</code> cutters make the relief along the straight
-  contact faces and rounded inside corner, one per print side;</li>
-<li>at each arm end that relief meets the diagonal <code>cs</code> bevel;</li>
-<li>a small local miter hull finishes each of those four junctions.</li>
-</ul>
-<p>We tested folding the tip correction into the same main <code>hull()</code>.
-That over-cuts the junction because <code>hull()</code> fills the convex
-envelope between the main opening and the separate tip correction.
-Keeping the correction local preserves the intended geometry.</p>
+<p>The complete geometry is deliberately <strong>not repeated here</strong>.
+The <a href="docs/chamfer-guide.html">Chamfer Guide</a> shows the same sequence as
+the outside <code>cs</code> hull: first surface, second surface, both surfaces,
+resulting hull and subtraction result.</p>
+<p>The remaining arm-tip question is kept separate in the
+<a href="docs/ef-hull-experiment.html">Elephant-foot Hull Experiment</a>, where
+the current two-surface hull, the working reference, the strongest
+two-surface candidate and its XOR/overcut/undercut are shown individually.</p>
 <p><img alt="Bracket after print relief" src="design/04_print_relief.png" /></p>
-<p><strong>Relevant OpenSCAD code (summary):</strong></p>
-<pre><code>module inside_relief_envelope() {
-    if (ef &gt; 0)
-        for (side = [-1, 1])
-            hull() {
-                opening_layer(side * (W / 2 - ef));
-                opening_layer(side * W / 2, ef);
-            }
-}
-
-module chamfered_body() {
-    difference() {
-        body();
-        if (ef &gt; 0) {
-            inside_relief_envelope();
-            relief_corner_miters();
-        }
-    }
-}
-</code></pre>
 <h3>5. Access-window plugs</h3>
 <p><strong>The nut windows need covers.</strong> Each plug starts as a small side-view drawing made with <code>polygon()</code>. The shape includes a hook that slips under the lip inside the bracket. <code>linear_extrude()</code> gives the plug its width; <code>plug_clr</code> leaves a little space around it so it can fit.</p>
 <p><code>difference()</code> can also cut a small hole or screwdriver slot to help remove the plug. <code>plug_print()</code> places one plug on its side for printing, and <code>plugs_print_pair()</code> puts <strong>two separate plugs</strong> next to each other in the STL.</p>

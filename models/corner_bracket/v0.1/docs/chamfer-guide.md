@@ -114,17 +114,17 @@ between **Y=9.4 mm** and **Y=10.0 mm** (and mirrored at negative Y).
 This section deliberately follows the **same five-step pattern** as the
 outside `cs` hull above.
 
-### A. First hull surface — unchanged cutter profile
+### A. First hull surface — unchanged relief profile
 
 The elephant-foot operation does not hull the L-shaped bracket itself.
-It hulls a **cutting shape on the wood side of the L**.
+It hulls a **relief profile beside the two wood-contact faces of the L**.
 
 In X/Z, `inside_opening_2d()` occupies the area at **x ≥ 0 and z ≤ 0**,
 so its boundary lies directly against both wood-contact faces: `z=0` for
 the horizontal arm and `x=0` for the vertical arm. At the inside corner,
-the cutter boundary follows the same `r_in` curve as the bracket.
+the relief-profile boundary follows the same `r_in` curve as the bracket.
 
-The first thin copy of that cutter is placed at Y=9.4 mm without an
+The first thin copy of that relief profile is placed at Y=9.4 mm without an
 offset:
 
 ![First elephant-foot hull surface](../design/efh_02_inner_main_input.png)
@@ -185,7 +185,7 @@ both inputs, hull, subtraction result.
 At the arm end, the main elephant-foot hull meets the existing diagonal
 `cs` side bevel. The two main hulls leave a small local mismatch:
 
-![Exact missing arm-tip cutting volume](../design/efh_07_missing_tip_volume.png)
+![Exact missing arm-tip relief volume](../design/efh_07_missing_tip_volume.png)
 
 The current production model adds a short local miter hull at that
 junction. This gives the working reference result:
@@ -213,7 +213,7 @@ candidate hull, XOR, overcut and undercut, in the
 ## 5. What is checked, and what is not
 
 The CI test `verify-elephant-foot-hull.sh` compares the
-complete bracket with the former per-edge cutter implementation,
+complete bracket with the former per-edge relief implementation,
 including its mounting holes. A second check isolates the
 four arm-tip junctions. Both tests passed for the supported
 parameter combinations in PR #10.

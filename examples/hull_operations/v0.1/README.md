@@ -1,57 +1,65 @@
-# Hull operations on a simple beam
+# Hull operations on one simple beam
 
-This is a deliberately small teaching model.
+This page deliberately starts with **one rectangular beam**. The purpose is to
+understand the two operations before looking at the Corner Bracket.
 
-The Corner Bracket documentation became difficult to read because the viewer had
-to understand the L-profile, the inside radius, the side chamfer and the
-elephant-foot correction at the same time. This example removes all unrelated
-geometry.
+The camera, beam dimensions and orientation stay the same in every image.
 
-## Start with one beam
+## 0. Start: unchanged beam
 
-The reference object is only a rectangular beam:
+![Plain rectangular beam](renders/00_plain_beam.png)
 
-- length: 70 mm
-- width: 24 mm
-- height: 20 mm
+There is no chamfer and no elephant-foot correction yet.
 
-Nothing is hidden in the first image.
+## 1. Operation A: side chamfer `cs`
 
-## Four scenes
+![Beam with side chamfer only](renders/01_side_chamfer.png)
 
-Set `scene` in `scad/hull_operations.scad`:
+Only the long outside edges change.
 
-1. `scene = 0` — plain beam
-2. `scene = 1` — side chamfer (`cs`) only
-3. `scene = 2` — elephant-foot relief (`ef`) only
-4. `scene = 3` — both operations on the same beam
+The construction is easiest to read as three cross-sections:
 
-The camera angle should remain identical for all four renders. The purpose is
-to make the changed surfaces visually comparable, not to produce attractive
-perspective views.
+1. a narrower section at the outer face;
+2. the normal full section farther inward;
+3. `hull()` connects those sections.
 
-## What the two operations mean
+So the important sequence is:
 
-### 1. Side chamfer: `cs`
+**beam → hull between two sections → beveled outside edge**
 
-The side chamfer changes the outer side edges. In this demo, a `hull()`
-connects narrower outer-face sections with the full middle section. The result
-is a beam whose long outside edges are beveled.
+Nothing about the elephant-foot correction is involved yet.
 
-### 2. Elephant-foot relief: `ef`
+## 2. Operation B: elephant-foot relief `ef`
 
-The elephant-foot correction changes only the small region at the print-bed
-edge. The demo constructs the relief volume with a short `hull()` and subtracts
-that volume from the beam.
+![Beam with elephant-foot relief only](renders/02_elephant_foot.png)
 
-This operation should therefore be read as:
+Now return to the original beam and ignore `cs`.
 
-**beam → small relief volume → subtract relief volume → corrected beam**
+The correction acts only in the small region at the print-bed edge. A short
+`hull()` defines the relief volume between the original edge and an inset
+section. That small volume is then removed from the beam.
 
-not as a mysterious second shape unrelated to the beam.
+Read this operation as:
 
-## Next step
+**beam → make small relief volume → subtract it → corrected bottom edge**
 
-Only after these four scenes are understandable should the same two operations
-be shown on the real Corner Bracket. That second explanation should use the
-same order and the same terminology.
+## 3. Both operations on the same beam
+
+![Beam with both operations](renders/03_combined.png)
+
+Only after the two operations are clear separately are they combined:
+
+1. start with the same beam;
+2. apply the side chamfer `cs`;
+3. apply the elephant-foot relief `ef`.
+
+This is the geometry relationship that should later be translated back to the
+real L-shaped Corner Bracket.
+
+## Source
+
+The complete minimal OpenSCAD example is in
+[`scad/hull_operations.scad`](scad/hull_operations.scad).
+
+Set `scene` to `0`, `1`, `2` or `3` to inspect the same four states
+locally.

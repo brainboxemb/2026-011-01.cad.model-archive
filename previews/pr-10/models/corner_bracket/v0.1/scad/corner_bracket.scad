@@ -52,7 +52,7 @@ c        = 3;      // 45-degree chamfer at outer arm ends
 cs       = 2;      // 45-degree side-edge chamfers; 0 disables
 
 /* [Print compensation] */
-ef       = 0.6;    // 45-degree elephant-foot relief around wood-facing edges; 0 disables
+ef       = 0.6;    // 45-degree elephant-foot relief on print-facing sides; 0 disables
 r_in     = 2.0;    // inside corner radius: plywood must be rounded at least this much; 0 or >=1
 
 /* [Bolt and captive nut] */
@@ -182,46 +182,54 @@ module body() {
     }
 }
 
-// ---------- Elephant-foot relief on wood-facing edges ----------
-module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates
-    polygon([[W / 2 - ef - 1, -1], [W / 2 + 1, -1], [W / 2 + 1, ef + 1]]);
+// ---------- Unified hull-based side chamfers and print relief ----------
+// The broad outside edges are controlled by side_chamfer_env() above.
+// For the *concave*, wood-facing edges, use the complement: the open
+// quadrant between the two arms, less the small rounded corner fill.
+// Its boundary includes both straight contact faces and the inner arc.
+// We extend the quadrant beyond the arm ends so the bevel is not clipped.
+module inside_opening_2d() {
+    reach = max(5, cs + ef + 1);
+    difference() {
+        translate([0, -armV - reach])
+            square([armH + reach, armV + reach]);
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
 }
 
-// Generic 45-degree relief along a straight wood-facing edge:
-// A = starting point, U = outward in plane, V = into material,
-// D = edge direction, len = edge length (U x V = D).
-module ef_edge_wedge(A, U, V, D, len) {
-    multmatrix([[U[0], V[0], D[0], A[0]],
-                [U[1], V[1], D[1], A[1]],
-                [U[2], V[2], D[2], A[2]],
-                [0, 0, 0, 1]])
-        linear_extrude(height = len)
-            polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
+// A thin 3D slice of the open space at one position across the Y width.
+// A larger 2D opening at the printed side removes an ef-sized amount
+// from the wood-contact boundary without changing the middle of the part.
+module opening_layer(y, expansion = 0) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = 0.002, center = true)
+                offset(delta = expansion)
+                    inside_opening_2d();
 }
 
-module ef_cuts() {
-    s2 = sqrt(2) / 2;
-    if (ef > 0) for (m = [0, 1]) mirror([0, m, 0]) {
-        // Diagonal corners where side and end chamfers meet.
-        if (cs > 0) {
-            // Top arm: (armH-cs, W/2) to (armH, W/2-cs) at z=0.
-            ef_edge_wedge([armH - cs - s2, W / 2 + s2, 0], [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                          cs * sqrt(2) + 2);
-            // Vertical arm: (W/2-cs, -armV) to (W/2, -armV+cs) at x=0.
-            ef_edge_wedge([0, W / 2 - cs - s2, -armV - s2], [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                          cs * sqrt(2) + 2);
-        }
-        // Edge along the top arm (z=0, x=r_in..armH).
-        translate([r_in, 0, 0]) rotate([90, 0, 90])
-            linear_extrude(height = armH + 1 - r_in) ef_wedge_profile();
-        // Edge along the vertical arm (x=0, z=-r_in..-armV).
-        translate([0, 0, -armV - 1]) rotate([0, 0, 90])
-            linear_extrude(height = armV + 1 - r_in) ef_wedge_profile();
-        // Edge along the rounded inside corner.
-        if (r_in >= 1)
-            translate([r_in, 0, -r_in]) rotate([90, 0, 0]) rotate([0, 0, 89])
-                rotate_extrude(angle = 92)
-                    polygon([[r_in - 1, W / 2 - ef - 1], [r_in - 1, W / 2 + 1], [r_in + ef + 1, W / 2 + 1]]);
+// Why TWO hulls? A single convex hull joining expanded openings at BOTH
+// outside Y faces would also enlarge the opening all through the middle.
+// Each side must have its own local transition from normal to expanded.
+module inside_relief_envelope() {
+    if (ef > 0)
+        for (side = [-1, 1])
+            hull() {
+                opening_layer(side * (W / 2 - ef));
+                opening_layer(side * W / 2, ef);
+            }
+}
+
+// Both kinds of chamfer now use hull-based limiting volumes: the outside
+// envelope in body() and these two narrow inner-opening transitions.
+// This replaces the separate straight, diagonal and rotate_extrude()
+// elephant-foot cutters, including the relief at the rounded inside corner.
+module chamfered_body() {
+    difference() {
+        body();
+        if (ef > 0)
+            inside_relief_envelope();
     }
 }
 
@@ -262,10 +270,9 @@ module nut_side() {
 
 module bracket() {
     difference() {
-        body();
+        chamfered_body();
         nut_top();
         nut_side();
-        ef_cuts();
     }
 }
 

@@ -21,7 +21,7 @@ path = Path(sys.argv[1])
 text = path.read_text(errors="replace")
 points = []
 for line in text.splitlines():
-    match = re.match(r"\\s*vertex\\s+([-+0-9.eE]+)\\s+([-+0-9.eE]+)\\s+([-+0-9.eE]+)", line)
+    match = re.match(r"\s*vertex\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)", line)
     if match:
         points.append(tuple(map(float, match.groups())))
 if len(points) % 3:

@@ -31,8 +31,24 @@ for stage in layers comparison; do
   render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
 done
 
-# Ten stages from 2D chamfers through side hulls, print relief and corner-miter close-up.
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
-  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
+# Fifteen stages from the 2D L profile through cs, the complete elephant-foot
+# relief construction, the small arm-tip correction and the final bracket.
+for stage in \
+  01_sharp_profile \
+  02_profile_chamfers \
+  03_extruded_profile \
+  04_convex_outline \
+  05_cs_hull_inputs \
+  06_cs_hull_envelope \
+  07_cs_body \
+  08_inside_opening \
+  09_ef_layer_inputs \
+  10_ef_one_side \
+  11_ef_both_sides \
+  12_before_end_correction \
+  13_end_correction \
+  14_final_relief \
+  15_final_bracket; do
+  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "800,520"
 done
 

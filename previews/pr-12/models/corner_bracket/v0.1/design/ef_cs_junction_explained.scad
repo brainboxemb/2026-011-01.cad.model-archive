@@ -32,6 +32,7 @@ r_in = 2.0;
 $fn = 48;
 eps = 0.02;
 reach = 12;
+display_gap = 3;
 
 // -----------------------------------------------------------------------------
 // Clean bracket with the normal cs geometry, NO ef.
@@ -230,7 +231,7 @@ module v_ef_hull() {
 // Keep the whole L visible as a translucent reference.
 // -----------------------------------------------------------------------------
 
-$vpr = [70, 0, 35];
+$vpr = [90, 0, 0];
 
 if (scene == "00_cs_body") {
     color("SteelBlue")
@@ -241,10 +242,13 @@ else if (scene == "01_horizontal_inputs") {
     color("LightGray", 0.18)
         cs_body();
 
-    color("DeepSkyBlue", 0.75)
-        h_ef_bottom();
+    // Display only: move the blue lower input downward so the two beam
+    // inputs are visually separate. h_ef_hull() still uses the real position.
+    color("DeepSkyBlue", 0.85)
+        translate([0, 0, -display_gap])
+            h_ef_bottom();
 
-    color("DarkOrange", 0.32)
+    color("DarkOrange", 0.42)
         h_ef_upper();
 }
 
@@ -260,10 +264,13 @@ else if (scene == "03_vertical_inputs") {
     color("LightGray", 0.18)
         cs_body();
 
-    color("DeepSkyBlue", 0.75)
-        v_ef_bottom();
+    // Display only: move the blue lower input to the right, i.e. outward
+    // from the vertical arm's local beam bottom X=0.
+    color("DeepSkyBlue", 0.85)
+        translate([display_gap, 0, 0])
+            v_ef_bottom();
 
-    color("DarkOrange", 0.32)
+    color("DarkOrange", 0.42)
         v_ef_upper();
 }
 

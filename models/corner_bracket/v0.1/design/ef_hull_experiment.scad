@@ -102,7 +102,7 @@ module missing_tip_volume() {
 }
 
 // Full working relief volume around this tip, before intersecting it with body().
-// Keeping the cutter itself (rather than the already-subtracted result)
+// Keeping the relief volume itself (rather than the already-subtracted result)
 // lets us take exact Y-plane cross-sections at the two hull positions.
 module reference_tip_relief_volume() {
     intersection() {

@@ -41,6 +41,7 @@ r_in = 2.0;
 $fn = 48;
 eps = 0.02;
 display_thickness = 0.35;
+display_gap = 4;
 
 // -----------------------------------------------------------------------------
 // Base L footprint — equivalent to beam_profile_2d()
@@ -239,13 +240,17 @@ if (junction_step == "00_l_with_cs") {
 }
 
 else if (junction_step == "01_ef_inputs") {
-    // BLUE: actual lower plate on the print bed.
-    color("DeepSkyBlue", 0.62)
+    // Visual exploded view ONLY:
+    // BLUE stays at its real X/Y position on the print bed.
+    // ORANGE moves only upward in Z, never sideways.
+    //
+    // The real hull below still uses ef_input_upper() at z=ef.
+    color("DeepSkyBlue")
         ef_input_bottom(display_thickness);
 
-    // ORANGE: complete already-cs-chamfered upper L.
-    color("DarkOrange", 0.28)
-        ef_input_upper();
+    color("DarkOrange", 0.45)
+        translate([0, 0, display_gap])
+            ef_input_upper();
 }
 
 else if (junction_step == "02_ef_hull") {

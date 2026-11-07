@@ -33,8 +33,8 @@ and files, and the bill of materials. The corner bracket also generates:
 - five images demonstrating `hull()` using a rectangular bar;
 - nine images comparing 2D versus 3D construction of the inside corner;
 - seven images walking through the actual polygon and outside `cs` hull steps;
-- twenty-two elephant-foot images: seven fixed-view A stages without the
-  corner correction, eight matching B stages with the working correction,
+- twenty-one elephant-foot images: seven fixed-view A stages without the
+  corner correction, seven matching B stages with the working correction,
   and seven local C images for the two-surface simplification test;
 - editable SVG diagrams for mounting and print-orientation context.
 

@@ -105,125 +105,87 @@ side-edge bevels remains.
 
 ![Actual body after the outside side-edge hull and intersection](../design/chamfer_07_intersection.png)
 
-## 3. Elephant-foot relief: what goes into its `hull()`?
+## 3. Elephant-foot relief: the second hull construction
 
-**Printing orientation matters:** the bracket rests on a broad
-Y-facing side during printing. Slight first-layer expansion can
-interfere with the plywood-facing surfaces. Here `ef=0.6` mm
-provides clearance near *both* Y side faces.
+The bracket is printed on a broad Y-facing side. With the defaults,
+`W=20` and `ef=0.6`, each print side gets its own local transition
+between **Y=9.4 mm** and **Y=10.0 mm** (and mirrored at negative Y).
 
-Rather than offsetting the *solid bracket*, the model starts
-with the **empty space between the two arms**:
+This section deliberately follows the **same five-step pattern** as the
+outside `cs` hull above.
+
+### A. First hull surface — unchanged opening
+
+The cutter starts from the empty space between the two arms,
+`inside_opening_2d()`. The first thin surface is placed at Y=9.4 mm
+without an offset:
+
+![First elephant-foot hull surface](../design/efh_02_inner_main_input.png)
 
 ```openscad
-module inside_opening_2d() {
-    reach = max(5, cs + ef + 1);
-    difference() {
-        translate([0, -armV - reach])
-            square([armH + reach, armV + reach]);
-        if (r_in > 0) inside_corner_2d(r_in);
-    }
-}
+opening_layer(W/2 - ef);
 ```
 
-That cutting opening has straight boundaries along the
-plywood-contact faces and a curved boundary at the inside radius.
-Its ends extend *beyond* the arms to avoid artificial end caps.
+### B. Second hull surface — expanded opening
 
-For **one printed side**, two *very thin* 3D copies of this
-opening are made:
+At the actual print face, Y=10.0 mm, the same opening is expanded by
+`ef=0.6`:
 
-| Location | Input to `hull()` | Effect |
-| --- | --- | --- |
-| Y = +9.4 mm | Original opening | No print relief in the middle |
-| Y = +10 mm | Opening expanded by `offset(delta=0.6)` | Room for first-layer bulging |
-
-At the other printed side the same pair appears at
-**Y = −9.4 mm** and **Y = −10 mm**.
-
-![Section diagram of the two separate local elephant-foot hulls](../figures/elephant-foot-hull-explained.svg)
+![Second elephant-foot hull surface](../design/efh_03_outer_main_input.png)
 
 ```openscad
-module opening_layer(y, expansion=0) {
-    translate([0,y,0])
-        rotate([90,0,0])
-            linear_extrude(height=0.002, center=true)
-                offset(delta=expansion)
-                    inside_opening_2d();
-}
+opening_layer(W/2, ef);
+```
 
+### C. Both hull surfaces together
+
+These are the two children passed to `hull()` for the +Y print side:
+
+![Both elephant-foot hull surfaces](../design/efh_04_both_main_inputs.png)
+
+The −Y side uses the mirrored pair.
+
+### D. Resulting hull volume
+
+`hull()` connects the two surfaces with the 45° transition:
+
+![Elephant-foot hull volume](../design/efh_05_main_hull.png)
+
+```openscad
 module inside_relief_envelope() {
     if (ef > 0)
         for (side=[-1,1])
             hull() {
-                opening_layer(side*(W/2-ef)); // unchanged opening
-                opening_layer(side*W/2, ef);   // expanded opening
+                opening_layer(side*(W/2-ef));
+                opening_layer(side*W/2, ef);
             }
 }
 ```
 
-Each `hull()` joins a normal opening to a slightly expanded one.
-**Subtracting** this volume from `body()` creates the 45°
-relief along the straight contact faces *and* the rounded inside
-corner. The 0.002 mm layer thickness is a modelling tolerance,
-not the specified relief depth.
+### E. Subtract the hull from the real body
 
-Why not one hull connecting **all four** slices? That would put
-both enlarged outside outlines in a *single convex envelope* and
-enlarge the opening throughout the width, including the
-undisturbed middle. Thus, the model uses **one local hull per side**.
+Subtracting both local hulls from `body()` gives the main
+elephant-foot relief along the straight plywood-contact faces and the
+rounded inside corner:
 
-![Bracket after the two main elephant-foot hulls are applied](../design/chamfer_08_print_relief.png)
+![Bracket after the two main elephant-foot hulls](../design/efh_06_main_result.png)
 
-## 4. Where the two kinds of bevel meet
+That is the complete **second hull walkthrough**: input A, input B,
+both inputs, hull, subtraction result.
 
-The two main `inside_relief_envelope()` hulls correctly create the
-elephant-foot relief along the straight plywood-contact faces and around
-the rounded inside corner.
+## 4. Arm-tip junction
 
-At each arm end, however, that relief meets the diagonal `cs`
-side-edge bevel. With only the two main hulls a small pointed/flat
-junction remains.
+At the arm end, the main elephant-foot hull meets the existing diagonal
+`cs` side bevel. The two main hulls leave a small local mismatch:
 
-![Annotated diagram of the side bevel, relief and arm-end junction](../figures/elephant-foot-junction.svg)
+![Exact missing arm-tip cutting volume](../design/efh_07_missing_tip_volume.png)
 
-### Why not put that small correction into the same hull?
+The current production model adds a short local miter hull at that
+junction. This gives the working reference result:
 
-That was tested directly.
-
-For one print side, the main elephant-foot cutter is a convex hull.
-The extra arm-tip correction lies beside that cutter in such a way that
-the **combined required cutting volume is not convex**.
-
-If the tip correction is added as another child of the same `hull()`,
-OpenSCAD does exactly what `hull()` promises: it fills the complete
-convex envelope between the opening and the tip correction. That removes
-too much material around the junction.
-
-Clipping the two opening profiles with the existing `cs` envelope does
-not solve it either: that only shortens geometry which is already outside
-the solid; it does not add the missing cutting volume inside the small
-tip junction.
-
-So the production model keeps the two main opening hulls and adds small
-**local miter hulls** only where `ef` meets `cs`:
+![Working arm-tip result](../design/efh_09_reference_result.png)
 
 ```openscad
-module inside_relief_envelope() {
-    if (ef > 0)
-        for (side = [-1, 1])
-            hull() {
-                opening_layer(side * (W / 2 - ef));
-                opening_layer(side * W / 2, ef);
-            }
-}
-
-module relief_corner_miters() {
-    // Two short local hulls per print side:
-    // horizontal arm end + vertical arm end.
-    ...
-}
-
 module chamfered_body() {
     difference() {
         body();
@@ -235,15 +197,11 @@ module chamfered_body() {
 }
 ```
 
-The local hulls are **not post-processing**. They are ordinary parametric
-OpenSCAD cutting geometry in the same `difference()` operation.
-
-The focused regression test compares the arm-tip region before and after
-these local hulls. With the standard geometry, adding them removes more
-than 99% of the former local mismatch while leaving the rest of the
-elephant-foot construction unchanged.
-
-![Final bracket geometry](../design/chamfer_09_final.png)
+Whether that local correction can be folded back into **only the two
+main hull surfaces** is deliberately kept out of this construction
+guide. It is tested step by step, including the exact input surfaces,
+candidate hull, XOR, overcut and undercut, in the
+[Elephant-foot Hull Experiment](ef-hull-experiment.html).
 
 ## 5. What is checked, and what is not
 

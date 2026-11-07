@@ -128,7 +128,11 @@ require_text '## Printing and assembly' "$bracket/readme.md"
 require_text '## Further reading' "$bracket/readme.md"
 # The hull primer is linked at Step 2 and in Further reading.
 require_text 'New to `hull()`?' "$bracket/readme.md"
-test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
+hull_guide_refs="$(grep -Fc 'hull-guide.html' "$bracket/readme.md")"
+if [[ "$hull_guide_refs" -lt 2 ]]; then
+  echo "Expected at least 2 hull-guide links in $bracket/readme.md, found $hull_guide_refs" >&2
+  exit 1
+fi
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
   exit 1
@@ -139,10 +143,10 @@ for source_module in \
   'module profile()' 'module side_chamfer_env()' \
   'module nut_top()' 'module chamfered_body()' \
   'module plug_local()' 'module plugs_in_place()'; do
-  grep -Fq "$source_module" "$bracket/readme.md"
-  grep -Fq "$source_module" "$bracket/readme.html"
+  require_text "$source_module" "$bracket/readme.md"
+  require_text "$source_module" "$bracket/readme.html"
 done
-grep -Fq '<pre><code>' "$bracket/readme.html"
+require_text '<pre><code>' "$bracket/readme.html"
 if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
   echo "Extended hull tutorial leaked back into the main design manual" >&2
   exit 1
@@ -150,8 +154,8 @@ fi
 
 # The hull guide now progresses from a simple bar to the real bracket.
 for source_module in 'module sloped_hull()'; do
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
+  require_text "$source_module" "$bracket/docs/hull-guide.md"
+  require_text "$source_module" "$bracket/docs/hull-guide.html"
 done
 require_text '## 2. Where does this appear in the real bracket?' "$bracket/docs/hull-guide.md"
 require_text 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
@@ -159,13 +163,16 @@ require_text 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
   local file="$1" page="$2"
-  test -s "$bracket/design/$file.png"
+  test -s "$bracket/design/$file.png" || {
+    echo "Missing generated design image: $bracket/design/$file.png" >&2
+    exit 1
+  }
   if [[ "$page" == "readme" ]]; then
-    grep -Fq "design/$file.png" "$bracket/readme.md"
-    grep -Fq "design/$file.png" "$bracket/readme.html"
+    require_text "design/$file.png" "$bracket/readme.md"
+    require_text "design/$file.png" "$bracket/readme.html"
   else
-    grep -Fq "../design/$file.png" "$bracket/docs/$page.md"
-    grep -Fq "../design/$file.png" "$bracket/docs/$page.html"
+    require_text "../design/$file.png" "$bracket/docs/$page.md"
+    require_text "../design/$file.png" "$bracket/docs/$page.html"
   fi
 }
 
@@ -189,12 +196,12 @@ for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extrud
 done
 
 for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
+  require_text "$snippet" "$bracket/docs/polygon-guide.md"
+  require_text "$snippet" "$bracket/docs/polygon-guide.html"
 done
-grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
-grep -Fq 'chamfer-guide.html' "$bracket/readme.html"
-grep -Fq 'polygon-guide.html' "$bracket/readme.html"
+require_text 'polygon-guide.html' "$bracket/docs/hull-guide.html"
+require_text 'chamfer-guide.html' "$bracket/readme.html"
+require_text 'polygon-guide.html' "$bracket/readme.html"
 if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   echo "General polygon tutorial leaked into the bracket walkthrough" >&2
   exit 1

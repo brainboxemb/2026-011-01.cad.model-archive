@@ -31,11 +31,16 @@ This is now the same construction as the beam:
 The actual bottom footprint of `cs_body()` is taken at the print bed. That
 already contains the `cs` geometry. Only then is `offset(-ef)` applied.
 
-The result is one thin L-shaped plate exactly underneath the bracket.
+The result is one thin L-shaped plate at exactly the same X/Y position as the
+bracket.
 
 **Orange — `ef_input_upper()`**
 
 This is the complete `cs_body()` from `Z = ef` upward.
+
+For this illustration only, the orange volume is moved straight upward in Z so
+the blue plate is visibly **under** it. There is no X/Y displacement. The real
+`hull()` uses the unshifted geometry at the actual `ef` height.
 
 So both inputs already contain the normal chamfer before the elephant-foot hull
 is created.

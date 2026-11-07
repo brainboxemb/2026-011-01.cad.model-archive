@@ -25,8 +25,9 @@ All dimensions below are millimetres.</p>
 <li><strong>This page:</strong> short model walkthrough and assembly context.</li>
 <li><a href="docs/chamfer-guide.html">Chamfer Guide</a>: the actual <code>c</code>, <code>ce</code>,
   <code>cs</code> and <code>ef</code> construction, step by step.</li>
-<li><a href="docs/ef-hull-experiment.html">Elephant-foot Hull Experiment</a>:
-  the separate two-surface experiment, with every input, result and XOR.</li>
+<li><a href="docs/ef-hull-experiment.html">Elephant-foot relief guide</a>:
+  the complete A/B construction walkthrough first, followed by the
+  separate two-surface simplification test and XOR.</li>
 <li><a href="docs/hull-guide.html">Hull Guide</a>: only the general <code>hull()</code> concept.</li>
 <li><a href="docs/polygon-guide.html">Polygon Guide</a>: only the 2D inside-radius method.</li>
 <li><a href="docs/mounting-options.html">Mounting Options</a>: bolts, nuts and alternatives.</li>
@@ -181,10 +182,10 @@ does not interfere with the plywood-contact surfaces.</p>
 The <a href="docs/chamfer-guide.html">Chamfer Guide</a> shows the same sequence as
 the outside <code>cs</code> hull: first surface, second surface, both surfaces,
 resulting hull and subtraction result.</p>
-<p>The remaining arm-tip question is kept separate in the
-<a href="docs/ef-hull-experiment.html">Elephant-foot Hull Experiment</a>, where
-the current two-surface hull, the working reference, the strongest
-two-surface candidate and its XOR/overcut/undercut are shown individually.</p>
+<p>The detailed elephant-foot construction lives in the
+<a href="docs/ef-hull-experiment.html">Elephant-foot relief guide</a>. It first
+shows the complete bracket step by step <strong>without</strong> the arm-tip correction,
+that does it zoom in for the two-surface simplification test.</p>
 <p>For a direct visual comparison in the <strong>real model</strong>, use the OpenSCAD
 Customizer option <code>ef_corner_correction</code>. Leave it <code>true</code> for the
 normal model or set it to <code>false</code> to disable only the four small

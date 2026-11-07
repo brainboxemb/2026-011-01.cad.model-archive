@@ -16,14 +16,18 @@ There is no elephant-foot correction in this scene.
 
 ![Two ef inputs](../design/junction_01_ef_inputs.png)
 
-This should now read exactly like the beam:
+This should now read exactly like the beam.
 
-- **blue:** one thin **L-shaped bottom plate** on the print bed. It is derived
-  from the already-`cs`-chamfered footprint and then made `ef` smaller;
+For this illustration only, the two inputs are shown as an **exploded view** so
+the lower plate cannot disappear behind the upper volume:
+
+- **blue:** one thin **L-shaped bottom plate**. It is derived from the
+  already-`cs`-chamfered footprint and then made `ef` smaller;
 - **orange:** the complete already-`cs`-chamfered **L volume from height
   `ef` upward**.
 
-So there are no abstract vertical profile planes in this explanation.
+The exploded spacing is visual only. The actual `hull()` uses both inputs at
+their real positions.
 
 ## 2. Hull result
 

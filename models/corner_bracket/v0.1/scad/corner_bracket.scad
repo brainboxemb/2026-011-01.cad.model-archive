@@ -242,9 +242,9 @@ module relief_side(side) {
 
     // The two arm ends already have a cs side bevel, so their edge position
     // changes with Y. These local hulls follow that diagonal directly.
-    s2 = sqrt(2) / 2;
-    mirror_y = side < 0 ? 1 : 0;
-    mirror([0, mirror_y, 0]) {
+    module arm_end_hulls() {
+        s2 = sqrt(2) / 2;
+
         // Horizontal arm end.
         relief_miter_hull([armH - cs - s2, W / 2 + s2, 0],
                           [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
@@ -255,6 +255,11 @@ module relief_side(side) {
                           [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
                           cs * sqrt(2) + 2);
     }
+
+    if (side < 0)
+        mirror([0, 1, 0]) arm_end_hulls();
+    else
+        arm_end_hulls();
 }
 
 // Two symmetric complete relief constructions: one per print face.

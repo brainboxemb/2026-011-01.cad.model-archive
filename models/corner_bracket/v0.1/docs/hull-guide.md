@@ -228,7 +228,7 @@ Three settings can be easy to confuse:
 | --- | --- | --- |
 | `c` and `ce` | Arm tips and large outside corner, in the side profile | Vertices in the initial 2D `polygon()` |
 | `cs` | Outer edges on the two broad Y side faces | `hull()` envelope and `intersection()` |
-| `ef` | Printed-side contact edges, the inner radius, and arm-tip junctions | Two opening hulls plus local miter hulls, removed with `difference()` |
+| `ef` | Printed-side contact edges, the inner radius, and arm-tip junctions | Two opening hulls plus local arm-tip correction hulls, removed with `difference()` |
 
 The separate `ef` hulls are necessary because the outer `cs` envelope
 is made around the **outside convex perimeter**, whereas the relief
@@ -252,7 +252,7 @@ Here is the actual approach:
    unexpanded opening. `difference()` subtracts both local transition
    volumes from the actual L bracket.
 5. At each arm-tip diagonal where the `cs` bevel and `ef` bevel meet,
-   `relief_corner_miters()` creates another short **triangular miter hull**.
+   `relief_corner_miters()` creates another short **small triangular correction hull**.
    This prevents a flat unfinished end at that small corner.
 6. The outer `cs` bevel still comes from `side_chamfer_env()`,
    using the hull and intersection described in Section 2.
@@ -274,7 +274,7 @@ module inside_relief_envelope() {
 ```
 
 The [Chamfer Guide](chamfer-guide.html) shows this on the actual bracket,
-including a close-up of the miter cutter before and after subtraction.
+including a close-up of the local correction cutter before and after subtraction.
 The old straight, diagonal and circular elephant-foot cutters are
 kept *only in the regression fixture*.
 For supported configurations, CI compares the full old and new solids,
@@ -303,7 +303,7 @@ segments as an equivalent straight-bar reference.
 This example remains useful to understand **why** two bevels can be
 combined for a convex solid. For the concave full L, the production
 implementation instead uses an outer hull, two local inner-opening hulls
-and additional short miter hulls at the arm tips.
+and additional short local correction hulls at the arm tips.
 
 ## Where to read next
 

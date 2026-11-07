@@ -18,7 +18,7 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
-  chamfer_explained.scad   Ten chamfer construction stages
+  chamfer_explained.scad   Eight actual chamfer construction stages
   combined_chamfer_hull.scad  Straight-arm single-hull experiment
   *.png                     CI-generated tutorial images (not committed)
 docs/
@@ -69,8 +69,8 @@ The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
 and a **historical** point-based method for the concave inside corner.
 
-The [Chamfer Guide](docs/chamfer-guide.md) gives ten illustrated stages,
-including a close-up of the arm-tip junction where the elephant-foot
+The [Chamfer Guide](docs/chamfer-guide.md) gives eight actual geometry illustrations and two annotated diagrams,
+including a junction schematic where the elephant-foot
 and outside side-edge bevels meet. CI tests that small miter explicitly:
 without the added local hulls, a small flat termination remains even
 when the whole-bracket volume difference looks negligible.

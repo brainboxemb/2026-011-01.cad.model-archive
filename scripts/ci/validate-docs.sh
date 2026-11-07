@@ -32,8 +32,14 @@ for source in design hull_explained rounding_explained inside_corner_methods cha
 done
 test -s "$bracket/docs/documentation.scad"
 test -s "$bracket/tests/inside-corner-equivalence.scad"
+test -s "$bracket/tests/elephant-foot-equivalence.scad"
 grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
 grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module inside_relief_envelope()' "$bracket/scad/corner_bracket.scad"
+if grep -Fq 'module ef_cuts()' "$bracket/scad/corner_bracket.scad"; then
+  echo "Obsolete per-edge elephant-foot cutters still in production model" >&2
+  exit 1
+fi
 grep -Fq 'module inside_corner_2d(r)' "$bracket/readme.md"
 grep -Fq 'module sharp_profile()' "$bracket/readme.md"
 if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
@@ -110,7 +116,7 @@ fi
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \
-  'module nut_top()' 'module ef_cuts()' \
+  'module nut_top()' 'module chamfered_body()' \
   'module plug_local()' 'module plugs_in_place()'; do
   grep -Fq "$source_module" "$bracket/readme.md"
   grep -Fq "$source_module" "$bracket/readme.html"

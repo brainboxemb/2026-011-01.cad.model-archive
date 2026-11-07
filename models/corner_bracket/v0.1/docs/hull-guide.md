@@ -5,6 +5,9 @@
 of the actual Corner Bracket: its already-chamfered polygon, outside
 edge bevels, elephant-foot relief and arm-tip junctions.
 
+For the separate 2D construction of the rounded inside corner, see the
+[Polygon Guide](polygon-guide.html).
+
 In OpenSCAD, `hull()` creates the **smallest convex shape containing
 all its children**. It connects shapes smoothly in the geometric sense
 of *straight, sloping connecting surfaces*; it does not automatically

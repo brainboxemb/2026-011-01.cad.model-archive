@@ -223,6 +223,21 @@ module ef_upper_body() {
 }
 
 
+// Correct beam-equivalent lower input:
+// stay on the REAL inner L boundary, but make the sheet smaller in its own
+// surface directions. Across Y this means W-2*ef, analogous to inseting the
+// beam bottom footprint before hull().
+module ef_boundary_L_sheet() {
+    intersection() {
+        rotate([90, 0, 0])
+            linear_extrude(height = W - 2 * ef, center = true)
+                clipped_inner_L_band_2d();
+
+        cs_hull();
+    }
+}
+
+
 // Beam-equivalent thin input:
 // move the complete continuous inner boundary ef INTO the bracket material.
 // This gives the hull a real size/position difference, just like the beam's
@@ -278,7 +293,7 @@ module ef_corridor() {
 
 module ef_raw_hull() {
     hull() {
-        ef_inset_L_sheet();
+        ef_boundary_L_sheet();
         ef_upper_body();
     }
 }
@@ -338,12 +353,11 @@ else if (scene == "03_cs_shaped_L") {
 }
 
 else if (scene == "04_ef_inputs") {
-    // Blue: continuous thin L shifted ef INTO the bracket material.
+    // Blue: stays on the real inner L boundary, but is smaller across Y.
     color("DeepSkyBlue", 0.82)
-        ef_inset_L_sheet();
+        ef_boundary_L_sheet();
 
-    // Orange: complete already-cs-chamfered body beginning beyond the ef
-    // transition zone.
+    // Orange: complete cs body begins ef normal to the inner L boundary.
     color("DarkOrange", 0.28)
         ef_upper_body();
 }

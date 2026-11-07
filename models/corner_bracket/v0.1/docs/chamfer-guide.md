@@ -12,7 +12,7 @@ Three different features are easily confused:
 | `c` | 3 mm | Ends of both arms | Coordinates in the **2D polygon** |
 | `ce` | 6 mm | Large outside corner joining the arms | Coordinates in the **2D polygon** |
 | `cs` | 2 mm | Long outside edges of the printed *side faces* | `offset()` + `hull()` + `intersection()` |
-| `ef` | 0.6 mm | Printed-side contact edges and junctions with the outer bevel | Two local opening hulls, plus corner-miter hulls |
+| `ef` | 0.6 mm | Printed-side contact edges and junctions with the outer bevel | Two local opening hulls, plus small local corner hulls |
 
 These operations run at different stages. `c` and `ce` are part of
 the initial **profile**, `cs` changes the **3D side edges**, and
@@ -173,7 +173,7 @@ revolving another cutter around the arc, the production code:
 4. Adds **two more short hulls per printed side** where the relief meets
    the diagonal `cs` bevels at the arm ends. Those junctions otherwise
    leave a visible flat termination at the corner.
-5. Subtracts the opening and miter hulls from the outside-chamfered
+5. Subtracts the opening and local corner hulls from the outside-chamfered
    body with `difference()`.
 
 Why not just one hull from one printed side to the other? A global
@@ -186,7 +186,7 @@ module chamfered_body() {
         body();                      // outside: cs hull bevel
         if (ef > 0) {
             inside_relief_envelope(); // inner plywood-facing edges
-            relief_corner_miters();  // diagonal arm-tip junctions
+            relief_corner_local corners();  // diagonal arm-tip junctions
         }
     }
 }
@@ -202,14 +202,14 @@ gets swept along each local diagonal with `hull()`.
 
 ![Before, small diagonal hull cutter and completed tip junction](../design/chamfer_10_corner_junction.png)
 
-**Left:** inner-opening hulls only. **Middle:** isolated diagonal miter
-cutting hull. **Right:** both opening and miter hulls applied. The
+**Left:** inner-opening hulls only. **Middle:** isolated diagonal local corner
+cutting hull. **Right:** both opening and local corner hulls applied. The
 figure crops the horizontal arm-tip corner for inspection; the production
 model also handles the opposite side and the other arm.
 
 A dedicated CI test clips the **symmetric difference** with the former
 model to just these four junctions. It verifies that adding the
-miter hulls removes at least 90% of the local defect volume across the
+local corner hulls removes at least 90% of the local defect volume across the
 supported nonzero `cs`/`ef` combinations. This supplements the
 whole-model 0.1% volume tolerance.
 

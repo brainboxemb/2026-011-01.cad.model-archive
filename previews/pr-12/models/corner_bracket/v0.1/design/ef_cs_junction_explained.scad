@@ -12,7 +12,7 @@
 // visually accepted.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_raw_hull, 06_ef_relief, 07_final_body]
+scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_raw_hull, 06_direct_intersection, 07_ef_relief, 08_final_body]
 
 /* [Geometry] */
 armH = 40;
@@ -310,6 +310,19 @@ module ef_hull() {
 }
 
 // -----------------------------------------------------------------------------
+// Direct beam-style test:
+// ignore how ugly the convex raw hull is outside the part and simply keep
+// the overlap with the real cs_body.
+// -----------------------------------------------------------------------------
+
+module direct_intersection() {
+    intersection() {
+        cs_body();
+        ef_raw_hull();
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Apply the ef relief directly to the existing cs body.
 // -----------------------------------------------------------------------------
 
@@ -365,7 +378,15 @@ else if (scene == "05_ef_raw_hull") {
         ef_raw_hull();
 }
 
-else if (scene == "06_ef_relief") {
+else if (scene == "06_direct_intersection") {
+    color("SeaGreen", 0.90)
+        direct_intersection();
+
+    color("DarkOrange", 0.12)
+        cs_body();
+}
+
+else if (scene == "07_ef_relief") {
     color("SeaGreen", 0.90)
         ef_hull();
 

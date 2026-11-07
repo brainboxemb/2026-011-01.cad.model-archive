@@ -1,5 +1,5 @@
 {
-    "assemblies/main_assembled.png": 0.698,
-    "assemblies/main_assembly.png": 0.648,
-    "readme.html": 0.071
+    "assemblies/main_assembled.png": 0.878,
+    "assemblies/main_assembly.png": 0.871,
+    "readme.html": 0.085
 }

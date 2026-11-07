@@ -114,11 +114,18 @@ between **Y=9.4 mm** and **Y=10.0 mm** (and mirrored at negative Y).
 This section deliberately follows the **same five-step pattern** as the
 outside `cs` hull above.
 
-### A. First hull surface — unchanged opening
+### A. First hull surface — unchanged cutter profile
 
-The cutter starts from the empty space between the two arms,
-`inside_opening_2d()`. The first thin surface is placed at Y=9.4 mm
-without an offset:
+The elephant-foot operation does not hull the L-shaped bracket itself.
+It hulls a **cutting shape on the wood side of the L**.
+
+In X/Z, `inside_opening_2d()` occupies the area at **x ≥ 0 and z ≤ 0**,
+so its boundary lies directly against both wood-contact faces: `z=0` for
+the horizontal arm and `x=0` for the vertical arm. At the inside corner,
+the cutter boundary follows the same `r_in` curve as the bracket.
+
+The first thin copy of that cutter is placed at Y=9.4 mm without an
+offset:
 
 ![First elephant-foot hull surface](../design/efh_02_inner_main_input.png)
 

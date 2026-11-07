@@ -71,10 +71,39 @@ existing EF hull surfaces.</p>
 <p>Now zoom into <strong>one horizontal arm end on the +Y print side</strong>.</p>
 <p>The sequence deliberately mirrors the outside <code>cs</code> hull walkthrough:</p>
 <p><strong>source profile → surface A → surface B → both surfaces → hull → result</strong></p>
-<h3>2A. Source opening profile</h3>
-<p>The main EF cutter starts from the empty quadrant between the two L arms,
-including the rounded inside-corner boundary:</p>
-<p><img alt="Source opening profile" src="../design/efh_01_opening_profile.png" /></p>
+<h3>2A. Source cutting profile</h3>
+<p>The elephant-foot relief is made by <strong>subtracting material from the two
+wood-contact faces</strong> of the bracket. We therefore do not hull the bracket
+itself. We first make a 2D <strong>cutter profile</strong> on the wood side of those
+faces.</p>
+<p>In the X/Z side view:</p>
+<ul>
+<li>the horizontal wood-contact face lies along <code>z = 0</code>;</li>
+<li>the vertical wood-contact face lies along <code>x = 0</code>;</li>
+<li>the cutter occupies the open area at <strong>x ≥ 0 and z ≤ 0</strong>;</li>
+<li>at the inside corner, its boundary follows the same <code>r_in</code> curve as the
+  bracket.</li>
+</ul>
+<p>So <code>inside_opening_2d()</code> is simply the large 2D shape immediately
+<strong>inside the L</strong>, touching both wood-contact edges. It extends beyond the
+arm ends on purpose; only the part that overlaps the bracket can remove
+material.</p>
+<p><img alt="2D cutting profile beside the two wood-contact faces" src="../design/efh_01_opening_profile.png" /></p>
+<p>```openscad
+module inside_opening_2d() {
+    reach = max(5, cs + ef + 1);</p>
+<pre><code>difference() {
+    translate([0, -armV - reach])
+        square([armH + reach, armV + reach]);
+
+    if (r_in &gt; 0)
+        inside_corner_2d(r_in);
+}
+</code></pre>
+<p>}
+```</p>
+<p>The important point is: <strong>this blue shape is a cutter, not part of the
+bracket</strong>.</p>
 <h3>2B. First hull surface — Y = 9.4 mm</h3>
 <p>The first thin surface uses the unchanged opening:</p>
 <p><img alt="First EF hull surface" src="../design/efh_02_inner_main_input.png" /></p>

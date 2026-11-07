@@ -139,10 +139,15 @@ side-edge bevels remains.</p>
 between <strong>Y=9.4 mm</strong> and <strong>Y=10.0 mm</strong> (and mirrored at negative Y).</p>
 <p>This section deliberately follows the <strong>same five-step pattern</strong> as the
 outside <code>cs</code> hull above.</p>
-<h3>A. First hull surface — unchanged opening</h3>
-<p>The cutter starts from the empty space between the two arms,
-<code>inside_opening_2d()</code>. The first thin surface is placed at Y=9.4 mm
-without an offset:</p>
+<h3>A. First hull surface — unchanged cutter profile</h3>
+<p>The elephant-foot operation does not hull the L-shaped bracket itself.
+It hulls a <strong>cutting shape on the wood side of the L</strong>.</p>
+<p>In X/Z, <code>inside_opening_2d()</code> occupies the area at <strong>x ≥ 0 and z ≤ 0</strong>,
+so its boundary lies directly against both wood-contact faces: <code>z=0</code> for
+the horizontal arm and <code>x=0</code> for the vertical arm. At the inside corner,
+the cutter boundary follows the same <code>r_in</code> curve as the bracket.</p>
+<p>The first thin copy of that cutter is placed at Y=9.4 mm without an
+offset:</p>
 <p><img alt="First elephant-foot hull surface" src="../design/efh_02_inner_main_input.png" /></p>
 <p><code>openscad
 opening_layer(W/2 - ef);</code></p>

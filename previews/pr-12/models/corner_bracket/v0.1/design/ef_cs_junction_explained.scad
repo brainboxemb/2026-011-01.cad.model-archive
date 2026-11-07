@@ -15,7 +15,7 @@
 // meet at the inside corner.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_horizontal_inputs, 02_horizontal_hull, 03_vertical_inputs, 04_vertical_hull, 05_both_hulls]
+scene = "00_cs_body"; // [00_cs_body, 01_horizontal_inputs, 02_vertical_inputs, 03_bent_L_input, 04_bent_L_with_upper, 05_both_hulls]
 
 /* [Geometry] */
 armH = 40;
@@ -227,6 +227,25 @@ module v_ef_hull() {
 }
 
 // -----------------------------------------------------------------------------
+// Combined ef input: one bent L-shaped sheet following BOTH inside faces.
+// This is the direct bracket equivalent of the beam's single bottom plate.
+// -----------------------------------------------------------------------------
+
+module ef_bottom_L() {
+    union() {
+        h_ef_bottom();
+        v_ef_bottom();
+    }
+}
+
+module ef_upper_L() {
+    union() {
+        h_ef_upper();
+        v_ef_upper();
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Scenes.
 // Keep the whole L visible as a translucent reference.
 // -----------------------------------------------------------------------------
@@ -242,8 +261,6 @@ else if (scene == "01_horizontal_inputs") {
     color("LightGray", 0.18)
         cs_body();
 
-    // Display only: move the blue lower input downward so the two beam
-    // inputs are visually separate. h_ef_hull() still uses the real position.
     color("DeepSkyBlue", 0.85)
         translate([0, 0, -display_gap])
             h_ef_bottom();
@@ -252,20 +269,10 @@ else if (scene == "01_horizontal_inputs") {
         h_ef_upper();
 }
 
-else if (scene == "02_horizontal_hull") {
+else if (scene == "02_vertical_inputs") {
     color("LightGray", 0.18)
         cs_body();
 
-    color("SeaGreen", 0.80)
-        h_ef_hull();
-}
-
-else if (scene == "03_vertical_inputs") {
-    color("LightGray", 0.18)
-        cs_body();
-
-    // Display only: move the blue lower input to the right, i.e. outward
-    // from the vertical arm's local beam bottom X=0.
     color("DeepSkyBlue", 0.85)
         translate([display_gap, 0, 0])
             v_ef_bottom();
@@ -274,12 +281,19 @@ else if (scene == "03_vertical_inputs") {
         v_ef_upper();
 }
 
-else if (scene == "04_vertical_hull") {
-    color("LightGray", 0.18)
-        cs_body();
+else if (scene == "03_bent_L_input") {
+    // REAL position: no display offset. This must read as one folded L sheet
+    // following the complete inside of the bracket.
+    color("DeepSkyBlue", 0.90)
+        ef_bottom_L();
+}
 
-    color("SeaGreen", 0.80)
-        v_ef_hull();
+else if (scene == "04_bent_L_with_upper") {
+    color("DeepSkyBlue", 0.72)
+        ef_bottom_L();
+
+    color("DarkOrange", 0.28)
+        ef_upper_L();
 }
 
 else {

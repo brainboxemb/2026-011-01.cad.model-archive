@@ -41,12 +41,11 @@ ef_corner_correction = false;</code></p>
 <p>Most of the elephant-foot relief is already correct. The remaining problem
 is local to the places where the EF relief reaches an arm end.</p>
 <h3>1B. The four problem locations on the complete bracket</h3>
-<p>The same bracket is shown again, but now the material removed by the working
-corner correction is colored red:</p>
+<p>The same bracket is shown again with <strong>four red location markers</strong>:</p>
 <p><img alt="Complete bracket with the four problem locations marked" src="../design/efh_00_whole_problem_points.png" /></p>
-<p>These red pieces are <strong>not an abstract error metric</strong>. They are exactly the
-small pieces that remain with only the two main hulls and disappear when the
-working arm-tip correction is enabled.</p>
+<p>The red spheres are deliberately just markers, <strong>not the correction
+geometry itself</strong>. Their only purpose is to make the four tiny junctions
+visible at whole-bracket scale.</p>
 <p>There are four because the bracket has:</p>
 <ul>
 <li>two arm ends; and</li>
@@ -58,6 +57,8 @@ working arm-tip correction is enabled.</p>
 edges and inside radius. The unresolved geometry is concentrated at the
 four arm-tip / side-chamfer junctions.</p>
 </blockquote>
+<p>The <strong>exact missing cutting volume</strong> is shown later in section 3A, after
+we zoom into one of these marked locations.</p>
 <h3>1C. Complete working bracket — correction enabled</h3>
 <p>Now enable the current correction:</p>
 <p><code>openscad

@@ -33,8 +33,11 @@ for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_c
 done
 
 
-# Fifteen local views of the elephant-foot two-surface hull experiment.
+# Start with the complete bracket, then zoom into the local EF hull experiment.
 for stage in \
+  00_whole_main_only \
+  00_whole_problem_points \
+  00_whole_working \
   01_opening_profile \
   02_inner_main_input \
   03_outer_main_input \

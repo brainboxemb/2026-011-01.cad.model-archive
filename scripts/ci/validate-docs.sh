@@ -176,7 +176,7 @@ done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
 done
-for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

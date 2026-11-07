@@ -71,7 +71,7 @@
 //!
 //! ### 2. Outer side-edge chamfers
 //!
-//! The sharp *side* edges get a bevel. The code first creates two versions
+//! **New to `hull()`?** Read the [illustrated hull guide](docs/hull-guide.html)\n//! first: it starts with two simple layers, then works through this bracket's\n//! real `outer_shape()`, `offset()`, `hull()` and `intersection()` line by line.\n//!\n//! The sharp *side* edges get a bevel. The code first creates two versions
 //! of the outside outline: one narrower in width and one with a smaller
 //! perimeter. `hull()` connects them with sloping surfaces.
 //! `intersection()` then trims the original L profile to that shape.

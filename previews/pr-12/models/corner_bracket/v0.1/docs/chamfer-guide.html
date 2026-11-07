@@ -47,7 +47,7 @@ each stage. The examples use the real model modules whenever possible.</p>
 <td><code>ef</code></td>
 <td style="text-align: right;">0.6 mm</td>
 <td>Printed-side contact edges and junctions with the outer bevel</td>
-<td>Two local opening hulls, plus small local corner hulls</td>
+<td>Two local opening hulls, plus small local correction hulls</td>
 </tr>
 </tbody>
 </table>
@@ -166,7 +166,7 @@ revolving another cutter around the arc, the production code:</p>
 <li>Adds <strong>two more short hulls per printed side</strong> where the relief meets
    the diagonal <code>cs</code> bevels at the arm ends. Those junctions otherwise
    leave a visible flat termination at the corner.</li>
-<li>Subtracts the opening and local corner hulls from the outside-chamfered
+<li>Subtracts the opening hulls and local correction hulls from the outside-chamfered
    body with <code>difference()</code>.</li>
 </ol>
 <p>Why not just one hull from one printed side to the other? A global
@@ -178,7 +178,7 @@ module chamfered_body() {
         body();                      // outside: cs hull bevel
         if (ef &gt; 0) {
             inside_relief_envelope(); // inner plywood-facing edges
-            relief_corner_local corners();  // diagonal arm-tip junctions
+            relief_corner_miters();  // diagonal arm-tip junctions
         }
     }
 }</code></p>
@@ -189,13 +189,13 @@ side-edge bevel. This is hard to see in a full model view and barely
 changes the overall mesh volume. A separate <strong>small triangular profile</strong>
 gets swept along each local diagonal with <code>hull()</code>.</p>
 <p><img alt="Before, small diagonal hull cutter and completed tip junction" src="../design/chamfer_10_corner_junction.png" /></p>
-<p><strong>Left:</strong> inner-opening hulls only. <strong>Middle:</strong> isolated diagonal local corner
-cutting hull. <strong>Right:</strong> both opening and local corner hulls applied. The
+<p><strong>Left:</strong> inner-opening hulls only. <strong>Middle:</strong> isolated small diagonal
+correction volume. <strong>Right:</strong> both the opening relief and local correction applied. The
 figure crops the horizontal arm-tip corner for inspection; the production
 model also handles the opposite side and the other arm.</p>
 <p>A dedicated CI test clips the <strong>symmetric difference</strong> with the former
 model to just these four junctions. It verifies that adding the
-local corner hulls removes at least 90% of the local defect volume across the
+local correction removes at least 90% of the local defect volume across the
 supported nonzero <code>cs</code>/<code>ef</code> combinations. This supplements the
 whole-model 0.1% volume tolerance.</p>
 <p>The diagrams locate the small 45-degree contact-edge relief:</p>

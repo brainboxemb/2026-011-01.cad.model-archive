@@ -183,46 +183,44 @@ module body() {
 }
 
 // ---------- Hull-based elephant-foot relief ----------
-// Keep the complete L profile unchanged through the middle of the part.
-// On each printed side, hull() connects that full profile to a copy inset
-// by ef. Because body() already has the larger outer side chamfer cs, the
-// cs envelope remains dominant on outside edges; this envelope only adds
-// the smaller print relief where body() still reaches the wood-facing edges.
+// Build the relief as a CUTTER from the complete open quadrant between the
+// two arms. Unlike the earlier helper, this opening stops at the real arm
+// ends (x = armH and z = -armV). Offsetting it therefore expands not only
+// into the two plywood-contact faces and the inside radius, but also around
+// both arm ends. The complete elephant-foot contour is present BEFORE hull().
 //
-// Using the complete profile here means the arm-end chamfers and rounded
-// inside corner are part of the hull input itself. No separate corner-miter
-// cutters are required.
-module profile_layer(y, inset = 0) {
+// One local hull is made for each printed side. No extra miter/post-process
+// geometry is required afterwards.
+module inside_opening_2d() {
+    difference() {
+        translate([0, -armV])
+            square([armH, armV]);
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
+}
+
+module opening_layer(y, expansion = 0) {
     translate([0, y, 0])
         rotate([90, 0, 0])
             linear_extrude(height = 0.002, center = true)
-                if (inset > 0)
-                    offset(delta = -inset) profile();
-                else
-                    profile();
+                offset(delta = expansion)
+                    inside_opening_2d();
 }
 
-module print_relief_env() {
-    if (ef > 0) {
-        // Unchanged central width.
-        rotate([90, 0, 0])
-            linear_extrude(height = W - 2 * ef, center = true)
-                profile();
-
-        // Same construction on both printed side faces.
+module inside_relief_envelope() {
+    if (ef > 0)
         for (side = [-1, 1])
             hull() {
-                profile_layer(side * (W / 2 - ef));
-                profile_layer(side * W / 2, ef);
+                opening_layer(side * (W / 2 - ef));
+                opening_layer(side * W / 2, ef);
             }
-    } else
-        profile_extrusion();
 }
 
 module chamfered_body() {
-    intersection() {
+    difference() {
         body();
-        print_relief_env();
+        inside_relief_envelope();
     }
 }
 

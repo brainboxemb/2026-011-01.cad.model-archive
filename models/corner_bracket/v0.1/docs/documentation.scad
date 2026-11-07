@@ -200,6 +200,11 @@
 //! the current two-surface hull, the working reference, the strongest
 //! two-surface candidate and its XOR/overcut/undercut are shown individually.
 //!
+//! For a direct visual comparison in the **real model**, use the OpenSCAD
+//! Customizer option `ef_corner_correction`. Leave it `true` for the
+//! normal model or set it to `false` to disable only the four small
+//! arm-tip corrections while keeping the two main EF hulls active.
+//!
 //! ![Bracket after print relief](design/04_print_relief.png)
 //!
 //! ### 5. Access-window plugs

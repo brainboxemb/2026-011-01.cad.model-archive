@@ -35,7 +35,7 @@ test -s "$bracket/scad/corner_bracket.scad"
 test -s "$bracket/scad/inspection.scad"
 test ! -e "$bracket/scad/documentation.scad"
 test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
-for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull; do
+for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull ef_hull_experiment; do
   test -s "$bracket/design/$source.scad"
 done
 test -s "$bracket/docs/documentation.scad"
@@ -57,7 +57,7 @@ if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
 fi
 
 # The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+for page in mounting-options hull-guide polygon-guide chamfer-guide ef-hull-experiment; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
   grep -Fq "docs/$page.html" "$bracket/readme.md"
@@ -187,6 +187,25 @@ for stage in layers comparison; do
 done
 for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
   check_image "chamfer_$stage" chamfer-guide
+done
+
+for stage in \
+  01_opening_profile \
+  02_inner_main_input \
+  03_outer_main_input \
+  04_both_main_inputs \
+  05_main_hull \
+  06_main_result \
+  07_missing_tip_volume \
+  08_reference_cutter \
+  09_reference_result \
+  10_exact_reference_inputs \
+  11_exact_two_surface_hull \
+  12_exact_candidate_result \
+  13_exact_candidate_xor \
+  14_exact_candidate_overcut \
+  15_exact_candidate_undercut; do
+  check_image "efh_$stage" ef-hull-experiment
 done
 
 # 2D and 3D rounding alternatives must both be illustrated in the

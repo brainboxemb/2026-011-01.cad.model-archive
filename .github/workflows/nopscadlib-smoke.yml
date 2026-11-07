@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate generated preview navigation
+        run: python3 scripts/ci/test-preview-index.py
+
       - name: Generate and validate model documentation
         run: bash scripts/ci/generate-docs.sh
 

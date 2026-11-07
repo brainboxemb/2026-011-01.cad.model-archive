@@ -45,14 +45,13 @@ is local to the places where the EF relief reaches an arm end.
 
 ### 1B. The four problem locations on the complete bracket
 
-The same bracket is shown again, but now the material removed by the working
-corner correction is colored red:
+The same bracket is shown again with **four red location markers**:
 
 ![Complete bracket with the four problem locations marked](../design/efh_00_whole_problem_points.png)
 
-These red pieces are **not an abstract error metric**. They are exactly the
-small pieces that remain with only the two main hulls and disappear when the
-working arm-tip correction is enabled.
+The red spheres are deliberately just markers, **not the correction
+geometry itself**. Their only purpose is to make the four tiny junctions
+visible at whole-bracket scale.
 
 There are four because the bracket has:
 
@@ -64,6 +63,9 @@ So this establishes the starting point:
 > The main two-hull elephant-foot construction works over the long contact
 > edges and inside radius. The unresolved geometry is concentrated at the
 > four arm-tip / side-chamfer junctions.
+
+The **exact missing cutting volume** is shown later in section 3A, after
+we zoom into one of these marked locations.
 
 ### 1C. Complete working bracket — correction enabled
 

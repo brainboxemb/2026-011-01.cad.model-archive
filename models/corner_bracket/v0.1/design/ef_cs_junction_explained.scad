@@ -1,20 +1,24 @@
-// Corner Bracket: same construction as the beam.
+// Corner Bracket: generic cs + ef hull experiment.
 //
-// FIRST put the bracket on its flat L-shaped print side.
-// AFTER that, use exactly the beam coordinates:
+// No print orientation is used here.
 //
-//   X/Y = complete L footprint on the print bed
-//   Z   = bracket width / print height
+// Natural bracket coordinates:
+//   X/Z = L profile
+//   Y   = bracket width W
 //
-// So ef is again:
-//   bottom L footprint at Z=0
-//   +
-//   already-cs-chamfered L from Z=ef upward
+// First create the normal cs geometry.
+// Then add ef generically across the same Y direction:
 //
-// No side-profile explanation is used after print_orientation().
+//   inner layer at Y = W/2 - ef : normal cs L at that Y
+//   outer layer at Y = W/2      : same cs-aware L, additionally inset by ef
+//
+// hull() connects those two layers.
+// The opposite side is simply the mirrored equivalent.
+//
+// STOP after the input layers until their geometry is visually correct.
 
 /* [Illustration] */
-junction_step = "00_print_orientation"; // [00_print_orientation, 01_bottom_L, 02_upper_L, 03_ef_inputs]
+junction_step = "00_cs_body"; // [00_cs_body, 01_inner_cs_L, 02_outer_ef_L, 03_both_inputs]
 
 /* [Geometry] */
 armH = 40;
@@ -29,10 +33,11 @@ r_in = 2.0;
 
 /* [Hidden] */
 $fn = 48;
-eps = 0.02;
 display_thickness = 0.35;
 
-// ---------- original bracket geometry: NO ef ----------
+// -----------------------------------------------------------------------------
+// Base L: c / ce / inside radius, NO ef.
+// -----------------------------------------------------------------------------
 
 module inside_corner_2d(r) {
     difference() {
@@ -54,7 +59,9 @@ module clean_profile() {
             [0, -armV],
             [0, 0]
         ]);
-        if (r_in > 0) inside_corner_2d(r_in);
+
+        if (r_in > 0)
+            inside_corner_2d(r_in);
     }
 }
 
@@ -70,93 +77,107 @@ module outer_shape() {
     ]);
 }
 
+// -----------------------------------------------------------------------------
+// Normal cs body.
+// -----------------------------------------------------------------------------
+
 module cs_envelope() {
     rotate([90, 0, 0])
         hull() {
             linear_extrude(height = W - 2 * cs, center = true)
                 outer_shape();
+
             linear_extrude(height = W, center = true)
                 offset(delta = -cs)
                     outer_shape();
         }
 }
 
-module original_cs_body() {
+module cs_body() {
     intersection() {
         rotate([90, 0, 0])
             linear_extrude(height = W, center = true)
                 clean_profile();
+
         cs_envelope();
     }
 }
 
-// ---------- PUT THE COMPLETE BRACKET ON ITS L-SHAPED SIDE ----------
+// -----------------------------------------------------------------------------
+// Exact 2D cs cross-section at a Y position.
 //
-// Original +Y side is at Y=+W/2.
-// rotate([-90,0,0]) maps original +Y to new -Z.
-// translate upward by W/2 makes that side exactly new Z=0.
+// For the 45-degree cs hull:
+//   inset = cs - distance_from_outer_side
 //
-// From this point onward the geometry has the SAME meaning as the beam:
-// the full L is a horizontal XY footprint and width W runs upward in Z.
+// At Y=W/2:
+//   inset = cs
+//
+// At Y=W/2-ef:
+//   inset = cs-ef
+// -----------------------------------------------------------------------------
 
-module print_body() {
-    translate([0, 0, W/2])
-        rotate([-90, 0, 0])
-            original_cs_body();
-}
+function cs_inset_at_y(y) =
+    max(0, cs - (W/2 - y));
 
-// ---------- SAME ef inputs as beam ----------
-
-module bottom_L_footprint_2d() {
-    projection()
-        intersection() {
-            print_body();
-            translate([-100, -100, -eps/2])
-                cube([200, 200, eps]);
-        }
-}
-
-module ef_input_bottom(thickness = eps) {
-    linear_extrude(height = thickness)
-        offset(delta = -ef)
-            bottom_L_footprint_2d();
-}
-
-module ef_input_upper() {
+module cs_L_at_y(y) {
     intersection() {
-        print_body();
-        translate([-100, -100, ef])
-            cube([200, 200, W + 20]);
+        clean_profile();
+
+        offset(delta = -cs_inset_at_y(y))
+            outer_shape();
     }
 }
 
-// ---------- scenes ----------
+// INPUT A: normal cs L, ef inward from the outer side.
+module inner_cs_L_2d() {
+    cs_L_at_y(W/2 - ef);
+}
 
-$vpr = [55, 0, 35];
+// INPUT B: first take the normal cs L on the outer side,
+// then apply the generic ef inset to that complete L.
+module outer_ef_L_2d() {
+    offset(delta = -ef)
+        cs_L_at_y(W/2);
+}
 
-if (junction_step == "00_print_orientation") {
-    // Complete bracket already lying on its flat L-shaped side.
+// Thin X/Z layers only for visualizing the two hull inputs.
+module layer_at_y(y, which = "inner", thickness = display_thickness) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = thickness, center = true)
+                if (which == "inner")
+                    inner_cs_L_2d();
+                else
+                    outer_ef_L_2d();
+}
+
+// -----------------------------------------------------------------------------
+// Scenes.
+// Camera looks onto the complete L profile, with enough Y perspective to see
+// that the two complete L layers are at different Y positions.
+// -----------------------------------------------------------------------------
+
+$vpr = [78, 0, 18];
+
+if (junction_step == "00_cs_body") {
     color("SteelBlue")
-        print_body();
+        cs_body();
 }
 
-else if (junction_step == "01_bottom_L") {
-    // This must be a complete horizontal L plate: the BOTTOM of the bracket.
-    color("DeepSkyBlue")
-        ef_input_bottom(display_thickness);
-}
-
-else if (junction_step == "02_upper_L") {
-    // Complete cs-chamfered bracket, simply clipped below Z=ef.
+else if (junction_step == "01_inner_cs_L") {
     color("DarkOrange")
-        ef_input_upper();
+        layer_at_y(W/2 - ef, "inner");
+}
+
+else if (junction_step == "02_outer_ef_L") {
+    color("DeepSkyBlue")
+        layer_at_y(W/2, "outer");
 }
 
 else {
-    // Same two inputs as the beam, in their REAL positions.
-    color("DeepSkyBlue", 0.70)
-        ef_input_bottom(display_thickness);
+    color("DarkOrange", 0.55)
+        layer_at_y(W/2 - ef, "inner");
 
-    color("DarkOrange", 0.28)
-        ef_input_upper();
+    color("DeepSkyBlue", 0.72)
+        layer_at_y(W/2, "outer");
 }

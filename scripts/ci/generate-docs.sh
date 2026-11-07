@@ -31,6 +31,9 @@ in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/verify-corner-rounding.sh
 
 in_container /work/models/corner_bracket/v0.1 \
+  bash /work/scripts/ci/verify-combined-chamfer-experiment.sh
+
+in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/render-bracket-steps.sh
 
 # NopSCADlib discovers the document builder from scad/*.scad.

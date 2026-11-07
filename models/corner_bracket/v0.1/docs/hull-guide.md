@@ -16,7 +16,9 @@ an additional `intersection()` is needed.
 
 The editable demonstration is
 [hull_explained.scad](../design/hull_explained.scad).
-For annotated pictures of the **actual bracket's chamfers**, see the\n[Chamfer Guide](chamfer-guide.html). For drawing or rounding the\n*inside* corner, see the separate
+For annotated pictures of the **actual bracket's chamfers**, see the
+[Chamfer Guide](chamfer-guide.html). For drawing or rounding the
+*inside* corner, see the separate
 [Polygon and inside-corner guide](polygon-guide.html), including the
 former point-based arc method. That is a different operation.
 

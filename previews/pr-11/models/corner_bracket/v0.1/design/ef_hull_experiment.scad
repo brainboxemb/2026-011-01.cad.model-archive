@@ -241,14 +241,30 @@ module whole_missing_corner_material() {
     }
 }
 
+// Overview markers only. These are intentionally NOT cutter geometry:
+// their purpose is to make the four problem locations readable on the
+// complete 40 mm bracket before the exact local geometry is shown.
+module whole_problem_markers() {
+    marker_r = 1.6;
+    for (side = [-1, 1]) {
+        // Horizontal arm: EF contact edge reaches the chamfered arm end.
+        translate([armH - cs/2, side * (W/2 - cs/2), 0])
+            sphere(r = marker_r, $fn = 24);
+
+        // Vertical arm: equivalent junction at the lower arm end.
+        translate([0, side * (W/2 - cs/2), -armV + cs/2])
+            sphere(r = marker_r, $fn = 24);
+    }
+}
+
 // -------- visual stages --------
 
 if (experiment_step == "00_whole_main_only")
     color("SteelBlue") whole_main_only();
 
 else if (experiment_step == "00_whole_problem_points") {
-    color("SteelBlue", 0.82) whole_main_only();
-    color("Red") whole_missing_corner_material();
+    color("SteelBlue") whole_main_only();
+    color("Red") whole_problem_markers();
 }
 else if (experiment_step == "00_whole_working")
     color("SteelBlue") whole_working();

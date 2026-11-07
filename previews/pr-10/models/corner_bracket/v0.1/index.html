@@ -22,7 +22,7 @@ All dimensions below are millimetres.</p>
 <h2>Design walkthrough</h2>
 <p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="design/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
 <h3>1. Draw the L profile and round its inside corner in 2D</h3>
-<p><strong>Start with a simple L shape.</strong> <code>polygon()</code> connects the vertices
+<p>For a visual explanation of the <strong>arm-end and outside corner chamfers</strong>\n//! (<code>c</code> and <code>ce</code>), see the <a href="docs/chamfer-guide.html">Chamfer Guide</a>.\n//!\n//! <strong>Start with a simple L shape.</strong> <code>polygon()</code> connects the vertices
 around the bracket's outline. The two arm-end bevels and the outside
 corner chamfer are included directly. The inner corner is initially
 sharp at <code>(0, 0)</code>.</p>
@@ -72,7 +72,7 @@ module profile_extrusion() {
 }
 </code></pre>
 <h3>2. Outer side-edge chamfers</h3>
-<p>The sharp <em>side</em> edges get a bevel. The code first creates two versions
+<p><strong>New to <code>hull()</code>?</strong> Read the <a href="docs/hull-guide.html">illustrated Hull Guide</a>\n//! for the underlying operation, then the <a href="docs/chamfer-guide.html">Chamfer Guide</a>\n//! for <strong>nine pictures of this actual model</strong>: the polygon bevels, both hull\n//! inputs, their convex envelope, clipping to the L and the print relief.\n//!\n//! The sharp <em>side</em> edges get a bevel. The code first creates two versions
 of the outside outline: one narrower in width and one with a smaller
 perimeter. <code>hull()</code> connects them with sloping surfaces.
 <code>intersection()</code> then trims the original L profile to that shape.
@@ -154,7 +154,7 @@ difference() {
 }
 </code></pre>
 <h3>4. Elephant-foot relief</h3>
-<p><strong>What is elephant foot?</strong> The very first printed layers sometimes
+<p>The <a href="docs/chamfer-guide.html">Chamfer Guide</a> compares the side-edge\n//! bevel and the elephant-foot relief visually, before and after each cut.\n//!\n//! <strong>What is elephant foot?</strong> The very first printed layers sometimes
 spread sideways where they touch the print bed. A nominally square edge
 can become slightly wider at the base. The bracket is printed on one
 of its flat <strong>side faces</strong>, so this bulge can interfere with the surfaces

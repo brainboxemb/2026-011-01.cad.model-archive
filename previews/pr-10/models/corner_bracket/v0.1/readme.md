@@ -17,7 +17,7 @@ The six pictures show how the bracket is built, from a flat drawing to the finis
 
 ### 1. Draw the L profile and round its inside corner in 2D
 
-**Start with a simple L shape.** `polygon()` connects the vertices
+For a visual explanation of the **arm-end and outside corner chamfers**\n//! (`c` and `ce`), see the [Chamfer Guide](docs/chamfer-guide.html).\n//!\n//! **Start with a simple L shape.** `polygon()` connects the vertices
 around the bracket's outline. The two arm-end bevels and the outside
 corner chamfer are included directly. The inner corner is initially
 sharp at `(0, 0)`.
@@ -73,7 +73,7 @@ the old 19-point inside radius. `r_in = 0` leaves a sharp corner.
 
 ### 2. Outer side-edge chamfers
 
-The sharp *side* edges get a bevel. The code first creates two versions
+**New to `hull()`?** Read the [illustrated Hull Guide](docs/hull-guide.html)\n//! for the underlying operation, then the [Chamfer Guide](docs/chamfer-guide.html)\n//! for **nine pictures of this actual model**: the polygon bevels, both hull\n//! inputs, their convex envelope, clipping to the L and the print relief.\n//!\n//! The sharp *side* edges get a bevel. The code first creates two versions
 of the outside outline: one narrower in width and one with a smaller
 perimeter. `hull()` connects them with sloping surfaces.
 `intersection()` then trims the original L profile to that shape.
@@ -164,7 +164,7 @@ For each arm, the code makes four spaces: a hexagonal pocket for an M4 nut, a sh
 
 ### 4. Elephant-foot relief
 
-**What is elephant foot?** The very first printed layers sometimes
+The [Chamfer Guide](docs/chamfer-guide.html) compares the side-edge\n//! bevel and the elephant-foot relief visually, before and after each cut.\n//!\n//! **What is elephant foot?** The very first printed layers sometimes
 spread sideways where they touch the print bed. A nominally square edge
 can become slightly wider at the base. The bracket is printed on one
 of its flat **side faces**, so this bulge can interfere with the surfaces

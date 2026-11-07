@@ -1,227 +1,271 @@
-# How OpenSCAD hull() works
+# How hull() creates the bracket's side chamfers
 
-This separate, illustrated tutorial explains the `hull()` operation without interrupting the [corner bracket design walkthrough](../index.html).
+The corner bracket uses `hull()` in **Step 2**, immediately after the
+rounded L profile has been extruded. This guide starts with a rectangular
+bar, then explains the *actual* bracket construction line by line.
 
-**The key idea:** `hull()` creates the smallest convex shape around its inputs. That can produce rounded *outside* corners if the inputs are circles, or sloped sides when connecting two rectangles of different sizes. It **cannot preserve the concave inside corner** of an L shape.
+**Go straight to:** [simple bar](#1-first-learn-hull-with-a-rectangular-bar) ·
+[actual bracket](#2-how-the-real-corner-bracket-uses-hull) ·
+[combined chamfer experiment](#3-experiment-can-hull-also-handle-elephant-foot-relief).
 
-You can explore the examples in OpenSCAD using [rounding_explained.scad](../design/rounding_explained.scad) and [hull_explained.scad](../design/hull_explained.scad).
+`hull()` wraps its inputs in the **smallest convex shape** containing
+them. Think of a tight rubber band in 2D or taut plastic film in 3D.
+It can connect differently sized cross-sections with sloping faces.
+It does **not** follow a concave L-shaped outline on its own:
+an additional `intersection()` is needed.
 
-## Rounded corners: circles versus a concave L
+The editable demonstration is
+[hull_explained.scad](../design/hull_explained.scad).
+For annotated pictures of the **actual bracket's chamfers**, see the\n[Chamfer Guide](chamfer-guide.html). For drawing or rounding the\n*inside* corner, see the separate
+[Polygon and inside-corner guide](polygon-guide.html), including the
+former point-based arc method. That is a different operation.
 
-`hull()` can produce rounded corners, but only **when the input shapes
-already have rounded outside edges**. To see the difference, compare
-the circle example with the actual inside corner of the bracket.
+## 1. First learn hull with a rectangular bar
 
-**Example A — rounded outside corners using circles**
+### A. Start with a plain bar
 
-First place four separate circles at the corners of an imaginary
-rectangle. Each circle has a radius of 5 mm.
+A rectangular solid has straight, sharp edges.
 
-![Four separate circles before hull](../design/rounding_01_four_circles.png)
+![Plain rectangular bar](../design/hull_01_original_bar.png)
 
-    module four_circles() {
-        for (x = [-22, 22], y = [-13, 13])
-            translate([x, y]) circle(r = 5);
+```openscad
+module original_bar() {
+    translate([0, 0, height / 2])
+        cube([length, width, height], center = true);
+}
+```
+
+### B. Make a wide, thin layer
+
+This horizontal layer covers the whole footprint of the bar.
+
+![Wide layer](../design/hull_02_wide_layer.png)
+
+```openscad
+module wide_layer() {
+    translate([0, 0, slice_thickness / 2])
+        cube([length, width, slice_thickness], center = true);
+}
+```
+
+### C. Make a smaller layer above it
+
+Move the second layer to the top and inset its four edges by
+`chamfer` millimetres. The two layers do not touch.
+
+![Wide and narrow layers before hull](../design/hull_03_two_layers.png)
+
+```openscad
+module narrow_layer() {
+    translate([0, 0, height - slice_thickness / 2])
+        cube([length - 2 * chamfer, width - 2 * chamfer,
+              slice_thickness], center = true);
+}
+```
+
+### D. Connect them with hull
+
+`hull()` creates the connecting sloped faces. It does not need an
+explicit polygon for each side.
+
+![Hull between the two layers](../design/hull_04_hull.png)
+
+```openscad
+module sloped_hull() {
+    hull() {
+        wide_layer();
+        narrow_layer();
     }
+}
+```
 
-Next apply `hull()`. Picture a tight rubber band around all four
-circles. It connects the outside of the circles with straight lines,
-but **keeps the curved parts at the corners**. So `hull()` does not
-calculate a corner radius: `circle(r = 5)` supplies that radius.
+### E. Compare the result
 
-![Rounded rectangle formed by hull around four circles](../design/rounding_02_hull_of_circles.png)
+`intersection()` keeps only the part common to both shapes. Here
+the hull already fits inside the original bar, so the intersection
+does not visibly change it.
 
-    module hull_of_circles() {
-        hull() four_circles();
+![Original bar compared with sloped bar](../design/hull_05_result.png)
+
+```openscad
+module clipped_bar() {
+    intersection() {
+        original_bar();
+        sloped_hull();
     }
+}
+```
 
-**Example B — why a point-based inside arc was originally used**
+**The principle to carry over:** provide a wide shape and a narrower
+shape at different positions; hull connects them. For the bracket,
+the shapes are **extruded polygons rather than horizontal rectangles**.
 
-Now look at the L-shaped profile before rounding. Its inside corner
-is the point `(0, 0)`. Unlike the rectangle above, this is a
-**concave corner**: material is missing between the two arms.
+## 2. How the real corner bracket uses hull
 
-![L profile with a sharp inside corner](../design/rounding_03_sharp_L.png)
+This section follows
+[`corner_bracket.scad`](../scad/corner_bracket.scad), with the
+default settings `W = 20` mm and `cs = 2` mm.
 
-    module sharp_L() {
-        polygon([
-            [0, 0], [armH, 0], [armH, wall],
-            [-wall, wall], [-wall, -armV], [0, -armV]
-        ]);
+### Step 2.1 — Start with the actual L profile
+
+Step 1 of the [model walkthrough](../index.html) builds a 2D
+`profile()` from the L polygon plus the rounded inside corner.
+`linear_extrude(height = W, center = true)` gives that shape a
+width of 20 mm. `rotate([90,0,0])` makes the extrusion run along
+the **Y axis**, so its side faces lie at `Y = -10` and `Y = +10`.
+
+![Extruded L profile before side chamfers](../design/01_profile.png)
+
+The intended side-edge bevel is 2 mm deep into each outside side
+face. We want to keep the *middle* of the part unchanged.
+
+### Step 2.2 — Build a temporary outer envelope
+
+The source defines `outer_shape()` as a **convex polygon** containing
+the L. It deliberately bridges the open inside region of the L.
+This is not the printable part; it is only a convenient shape for
+controlling the outside edges.
+
+```openscad
+module outer_shape() {
+    polygon([
+        [armH, -armV], [armH, t - c], [armH - c, t],
+        [-t + ce, t], [-t, t - ce], [-t, -armV + c],
+        [-t + c, -armV]
+    ]);
+}
+```
+
+Why use this simpler polygon? A hull of the real L would also
+bridge its inside opening. The temporary convex envelope lets us
+apply a consistent outside-edge bevel first, and restore the real
+inside boundary afterward.
+
+### Step 2.3 — Define two differently sized 3D envelopes
+
+The first envelope has the **full 2D outside outline**, but its
+extrusion is only `W - 2*cs = 16` mm wide. It occupies
+`Y = -8 ... +8`. It preserves the full outside dimensions in
+the middle of the bracket.
+
+The second envelope reaches the **full 20 mm width**, from
+`Y = -10 ... +10`, but its 2D outline is inset by `cs = 2` mm
+using `offset(delta = -cs)`. At the outermost side faces, its
+perimeter is therefore smaller.
+
+```openscad
+// Full perimeter, narrower Y span (-8 .. +8 mm).
+linear_extrude(height = W - 2 * cs, center = true)
+    outer_shape();
+
+// Inset perimeter, full Y span (-10 .. +10 mm).
+linear_extrude(height = W, center = true)
+    offset(delta = -cs)
+        outer_shape();
+```
+
+Notice that **width** here refers to the Y direction, while
+`offset()` changes the perimeter in the X/Z profile plane. The
+combination gives a 2 mm bevel at each outside side face.
+The two extrusions overlap: `hull()` connects their outer
+boundaries rather than joining two isolated flat plates.
+
+### Step 2.4 — Hull the envelopes, then orient them
+
+```openscad
+module side_chamfer_env() {
+    rotate([90, 0, 0]) hull() {
+        linear_extrude(height = W - 2 * cs, center = true)
+            outer_shape();
+        linear_extrude(height = W, center = true)
+            offset(delta = -cs)
+                outer_shape();
     }
+}
+```
 
-One way to round *only that corner* is to calculate points along a
-quarter-circle. This was used in the **original v0.1 profile**.
-Start with a circle of radius `r`, centred at `(r, -r)`.
-The actual bracket still defaults to `r_in = 2` mm, but the teaching
-illustration uses `r = 10` mm to make the construction easier to see.
+The code constructs the two extrusions in local coordinates,
+applies `hull()` to connect their outside surfaces and rotates
+the result to match the bracket. This is the direct counterpart
+of the simple rectangular-bar example.
 
-![Construction circle centred next to the inside corner](../design/rounding_04_circle_guide.png)
+### Step 2.5 — Intersect with the true L profile
 
-The full circle in this **legacy point-based example** is a visual
-construction guide. That earlier method used sine and cosine to
-calculate each arc vertex, rather than subtracting a `circle()`:
+The limiting envelope is convex, so it also occupies the space
+*between* the two arms. We must **not** print that filled-in region.
 
-    x = r + r * cos(a);
-    z = -r + r * sin(a);
-
-For example, when `r = 2` mm:
-
-- at 180 degrees, the point is `(0, -2)`: the start of the arc;
-- at 135 degrees, it is about `(0.586, -0.586)`;
-- at 90 degrees, it is `(2, 0)`: the end of the arc.
-
-The older `for` expression repeats the calculation every 5 degrees
-from 180 to 90, producing **19 points**. In this picture, red dots
-mark those points. The yellow region shows the material added at
-the inside corner. In the current model, the same shape is built
-with ordinary 2D `square()` and `circle()` operations.
-
-![Sampled quarter-circle points and corner fill](../design/rounding_05_arc_points.png)
-
-    corner_arc = (r_in > 0)
-        ? [for (a = [180 : -5 : 90])
-            [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-        : [[0, 0]];
-
-In the former implementation, `polygon()` joined the points into a
-**single 2D outline**. This picture is retained to explain that
-technique, not to show the current `profile()` implementation.
-
-![L profile with a rounded concave inside corner](../design/rounding_06_rounded_L.png)
-
-Finally, why not apply `hull()` to the whole L? **Because hull
-always makes a convex shape.** It would bridge the space between
-the arms and fill most of the L's open inside corner. The red
-region below is the unwanted extra material.
-
-![Hull of an L profile fills the open inside corner](../design/rounding_07_hull_fills_corner.png)
-
-    // This is deliberately NOT used for the bracket:
-    hull() rounded_L();
-
-**In short:** `hull()` is suitable for rounded *outside* corners made
-from circles, but not for this concave L corner. The current bracket
-uses **2D `square() - circle()` plus `union()`**. The older approach
-using calculated polygon points is kept in the editable
-[rounding_explained.scad](../design/rounding_explained.scad) tutorial
-as a comparison.
-
----
-
-## Sloped edges: hull between two rectangular layers
-
-**First, a simpler example.** The bracket is L-shaped, which makes the
-chamfer operation harder to see. Let's try the same idea on an ordinary
-rectangular bar. The following pictures are generated from the small,
-editable [hull_explained.scad](../design/hull_explained.scad) example.
-
-#### A. Start with a plain bar
-
-This rectangular block has straight, sharp edges. It is what we want
-to change. In OpenSCAD, `cube()` makes a rectangular solid.
-
-![A plain rectangular bar](../design/hull_01_original_bar.png)
-
-    module original_bar() {
-        translate([0, 0, height / 2])
-            cube([length, width, height], center = true);
+```openscad
+module body() {
+    intersection() {
+        rotate([90, 0, 0])
+            linear_extrude(height = W, center = true)
+                profile();
+        if (cs > 0)
+            side_chamfer_env();
+        else
+            rotate([90, 0, 0])
+                linear_extrude(height = W, center = true)
+                    outer_shape();
     }
+}
+```
 
-#### B. Make a thin, wide layer at the bottom
+The first operand is the true L, including its rounded concave
+inside corner. The second is the sloped outside envelope.
+`intersection()` keeps only the volume that belongs to **both**.
+The result has bevels on the outer side edges, while the L opening
+and plywood-facing surfaces remain governed by the original profile.
 
-Imagine taking a very thin horizontal slice through the bottom of the
-bar. It is **as wide and as long as the original bar**, but only 0.5 mm
-thick. This is the first shape that we will give to `hull()`.
+![Actual bracket after side-edge chamfers](../design/02_edge_chamfers.png)
 
-![The wide bottom layer](../design/hull_02_wide_layer.png)
+### Step 2.6 — Keep the other bevels distinct
 
-    module wide_layer() {
-        translate([0, 0, slice_thickness / 2])
-            cube([length, width, slice_thickness], center = true);
-    }
+Three settings can be easy to confuse:
 
-#### C. Put a smaller layer above it
+| Parameter | Where it works | How it is currently implemented |
+| --- | --- | --- |
+| `c` and `ce` | Arm tips and large outside corner, in the side profile | Vertices in the initial 2D `polygon()` |
+| `cs` | Outer edges on the two broad Y side faces | `hull()` envelope and `intersection()` |
+| `ef` | Edges where printed sides meet plywood-facing surfaces, including the curved inside corner | Separate cutters in `ef_cuts()` |
 
-Now add a second thin layer at the **top** of the bar (orange). It is
-smaller than the bottom layer (blue): on every side it is 5 mm in from
-the edge. **The two layers do not touch yet.** They are the two inputs
-for the next operation.
+This explains **why the existing code still has a separate
+elephant-foot step**: the `cs` envelope is built around the
+*outside convex perimeter*, while the `ef` relief also follows
+the **concave inner corner** and its transitions.
 
-![The wide and narrow layers before hull](../design/hull_03_two_layers.png)
+## 3. Experiment: can hull also handle elephant-foot relief?
 
-    module narrow_layer() {
-        translate([0, 0, height - slice_thickness / 2])
-            cube([length - 2 * chamfer, width - 2 * chamfer,
-                  slice_thickness], center = true);
-    }
+For a **straight, convex arm**, yes: the editable
+[combined-chamfer experiment](../design/combined_chamfer_hull.scad)
+places four rectangular layers inside a **single hull**:
 
-#### D. Connect both layers using hull()
+1. Bottom layer inset by `ef = 0.6` mm.
+2. Full-width layer at height `ef`.
+3. Full-width layer before the top bevel.
+4. Top layer inset by `cs = 2` mm.
 
-Now OpenSCAD wraps the two layers in the **smallest solid that encloses
-both of them**. Think of stretching tight plastic film around both.
-This is what `hull()` does. Since the bottom is wide and the top is
-narrower, the new connecting sides become **sloped**.
+![Four layers for the combined bevel experiment](../design/combined_chamfer_layers.png)
 
-![Hull creates sloping sides between both layers](../design/hull_04_hull.png)
+The left object uses one hull; the right uses three individual
+hull segments as a geometric reference.
 
-    module sloped_hull() {
-        hull() {
-            wide_layer();
-            narrow_layer();
-        }
-    }
+![Combined hull versus sectional reference](../design/combined_chamfer_comparison.png)
 
-#### E. Compare the before and after
+A CI script checks symmetric differences for four configurations.
+This verifies the **simple rectangular experiment only**, not an
+equivalent replacement for the full bracket.
 
-**Left:** the original bar with sharp edges.
-**Right:** the result after `hull()`, with sloping edges.
-`intersection()` can keep only the volume shared by the original bar
-and this new shape. In this simple example the hull is already
-completely inside the bar, so `intersection()` changes nothing further.
+The real bracket's geometry varies around its **concave inside
+corner** and rounded wood-contact edge. Replacing both
+`side_chamfer_env()` and `ef_cuts()` would require suitable
+convex subregions (or another limiting construction) and further
+whole-bracket regression tests. **The printable bracket has not
+been changed by this experiment.**
 
-![Original bar beside bevelled bar](../design/hull_05_result.png)
+## Where to read next
 
-    module clipped_bar() {
-        intersection() {
-            original_bar();
-            sloped_hull();
-        }
-    }
-
-**Back to the corner bracket.** The real model uses the same principle,
-but the two layers have a different outline: `outer_shape()` instead
-of rectangles. The code below uses `offset(delta = -cs)` to make
-one outline smaller, `hull()` to connect the two sizes, and
-`intersection()` to trim the actual L-shaped bracket. This avoids
-having to cut every side edge individually. In contrast to the simple
-bar, the bracket's construction keeps the plywood contact faces flat.
-
-## Is hull() the simplest way to round an L corner?
-
-Not for a **concave** (inside) corner. Two ordinary shape-based
-methods are easier to understand:
-
-- **2D first:** `difference()` of a `square()` and a `circle()`,
-  `union()` that small corner piece with the L, then `linear_extrude()`.
-- **3D first:** `difference()` of a `cube()` and a `cylinder()`,
-  then `union()` it with the extruded L.
-
-The complete example—including **nine illustrated steps**, both complete
-OpenSCAD constructions, and a comparison with point-based `polygon()`—
-is on the separate [Polygon and rounded-corner guide](polygon-guide.html).
-Those alternatives show the same target shape without using `hull()`.
-
-## Applying this to the actual bracket
-
-The bracket's **inside radius** is now made in **2D** from a small
-`square()` with a matching `circle()` subtracted, joined to a sharp L
-profile with `union()`, then extruded. The former 19-point
-`polygon()` arc is documented above as a historical comparison.
-Using 72 circle segments retains the same 5-degree approximation.
-
-For the **outer side-edge chamfers**, the code creates a broad and a slightly inset version of a temporary outline. `hull()` connects these into a sloped limiting shape. `intersection()` keeps only the material shared by the real L profile and that temporary shape.
-
-See [Step 1 and Step 2 of the model design](../index.html) for the actual `profile()`, `side_chamfer_env()`, and `body()` code. The examples are for learning. Step 1 of the real design now uses the
-2D boolean approach; the `hull()` demonstration still applies to its
-outer side-edge chamfers.
+For the rounded inside corner, the previous `sin()/cos()`
+point-list method and the current `square() - circle()` method,
+see [Polygons and rounded inside corners](polygon-guide.html).
+That subject is intentionally separate from this guide about
+`hull()` and outside edge chamfers.

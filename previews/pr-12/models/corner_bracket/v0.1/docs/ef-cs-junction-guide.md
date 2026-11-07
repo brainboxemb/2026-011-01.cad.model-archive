@@ -19,11 +19,17 @@ No elephant-foot geometry is present yet.
 
 This image shows **nothing except the lower input**.
 
-It must look like one flat L-shaped plate. For visibility only, it is rendered
-2 mm thick; the real hull input remains an almost-zero-thickness layer.
+The construction is now literally the same as in the beam demo:
 
-The plate is taken from the already-`cs`-chamfered footprint and then inset by
-`ef`.
+1. put the complete already-`cs`-chamfered L in print orientation;
+2. take a thin slab exactly at print-bed `Z=0`;
+3. project that slab to obtain the real bottom footprint;
+4. apply `offset(-ef)`;
+5. extrude that result as the lower plate.
+
+So this plate is no longer an X/Z section that is rotated afterward. It is
+derived directly from the final print-oriented 3D L, which fixes both its
+orientation and its position.
 
 ## 2. Upper `ef` input only
 

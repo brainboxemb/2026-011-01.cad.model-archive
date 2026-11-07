@@ -20,10 +20,17 @@ be a flat L-shaped plate, just like the plate under the beam.</p>
 <h2>1. Lower <code>ef</code> input only</h2>
 <p><img alt="Lower L plate" src="../design/junction_01_lower_plate.png" /></p>
 <p>This image shows <strong>nothing except the lower input</strong>.</p>
-<p>It must look like one flat L-shaped plate. For visibility only, it is rendered
-2 mm thick; the real hull input remains an almost-zero-thickness layer.</p>
-<p>The plate is taken from the already-<code>cs</code>-chamfered footprint and then inset by
-<code>ef</code>.</p>
+<p>The construction is now literally the same as in the beam demo:</p>
+<ol>
+<li>put the complete already-<code>cs</code>-chamfered L in print orientation;</li>
+<li>take a thin slab exactly at print-bed <code>Z=0</code>;</li>
+<li>project that slab to obtain the real bottom footprint;</li>
+<li>apply <code>offset(-ef)</code>;</li>
+<li>extrude that result as the lower plate.</li>
+</ol>
+<p>So this plate is no longer an X/Z section that is rotated afterward. It is
+derived directly from the final print-oriented 3D L, which fixes both its
+orientation and its position.</p>
 <h2>2. Upper <code>ef</code> input only</h2>
 <p><img alt="Upper L volume" src="../design/junction_02_upper_volume.png" /></p>
 <p>This is the complete already-<code>cs</code>-chamfered L from height <code>ef</code> upward.</p>

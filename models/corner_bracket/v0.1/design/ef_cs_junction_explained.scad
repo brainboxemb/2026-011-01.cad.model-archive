@@ -31,7 +31,8 @@ r_in = 2.0;
 /* [Hidden] */
 $fn = 48;
 eps = 0.02;
-reach = 12;\ndisplay_gap = 3;
+reach = 12;
+display_gap = 3;
 
 // -----------------------------------------------------------------------------
 // Clean bracket with the normal cs geometry, NO ef.

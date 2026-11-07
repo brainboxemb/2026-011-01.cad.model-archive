@@ -72,7 +72,7 @@ For a minimal NopSCADlib demonstration, try the
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
 - [Shared CAD toolchain](https://github.com/brainboxemb/docker.scad-toolchain) (CI only)
-- [Published model documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/)
+- [Published model documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/) (includes active PR/branch previews)
 - [Documentation generation and publication](docs/PUBLISHING.md)
 
 **Documentation generation on Windows/workstations is not supported.**

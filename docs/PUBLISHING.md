@@ -32,8 +32,9 @@ and files, and the bill of materials. The corner bracket also generates:
 - six images explaining its actual geometry;
 - five images demonstrating `hull()` using a rectangular bar;
 - nine images comparing 2D versus 3D construction of the inside corner;
-- ten images walking through the different chamfers and a close-up of
-  the elephant-foot/side-bevel junction;
+- eight images walking through the actual polygon and chamfer steps;
+- two editable SVG diagrams explaining the elephant-foot hull inputs
+  and the arm-tip junction;
 - two images from the combined-hull experiment on a straight arm.
 
 The current bracket uses the **2D square-minus-circle construction**.
@@ -44,8 +45,8 @@ using [geometry equivalence checks](../scripts/ci/verify-corner-rounding.sh).
 The main design manual keeps only **six actual bracket stages**.
 The extended bar and real-bracket hull explanation live in
 `docs/hull-guide.html`; the nine-stage 2D/3D inside-corner comparison
-lives in `docs/polygon-guide.html`. The ten-stage chamfer walkthrough,
-including a focused junction close-up, lives in `docs/chamfer-guide.html`.
+lives in `docs/polygon-guide.html`. The unified chamfer explanation, including annotated elephant-foot hull
+and arm-tip diagrams, lives in `docs/chamfer-guide.html`.
 The `docs/mounting-options.html` comparison contains editable SVG
 cross-section diagrams for fixing alternatives. The main manual also
 illustrates elephant-foot compensation with SVG diagrams.

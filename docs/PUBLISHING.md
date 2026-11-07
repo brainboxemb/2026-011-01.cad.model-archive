@@ -33,9 +33,9 @@ and files, and the bill of materials. The corner bracket also generates:
 - five images demonstrating `hull()` using a rectangular bar;
 - nine images comparing 2D versus 3D construction of the inside corner;
 - seven images walking through the actual polygon and outside `cs` hull steps;
-- fifteen local images showing every stage of the elephant-foot two-surface
-  experiment: both input surfaces, hull, reference, candidate, XOR,
-  overcut and undercut;
+- twenty-two elephant-foot images: seven fixed-view A stages without the
+  corner correction, eight matching B stages with the working correction,
+  and seven local C images for the two-surface simplification test;
 - editable SVG diagrams for mounting and print-orientation context.
 
 The current bracket uses the **2D square-minus-circle construction**.
@@ -46,11 +46,11 @@ using [geometry equivalence checks](../scripts/ci/verify-corner-rounding.sh).
 The main design manual keeps only **six actual bracket stages** and a
 short map telling readers where each subject lives.
 
-- `docs/chamfer-guide.html` is the single construction guide for the real
-  bracket. It shows the outside `cs` hull and the elephant-foot `ef` hull
-  using the same input-A/input-B/both/hull/result sequence.
-- `docs/ef-hull-experiment.html` owns the alternative two-surface
-  experiment and all of its comparison/XOR material.
+- `docs/chamfer-guide.html` owns the real profile and outside `cs` hull,
+  then links to the dedicated elephant-foot page instead of duplicating it.
+- `docs/ef-hull-experiment.html` owns all elephant-foot explanation:
+  fixed-view A/B construction sequences first, followed by the local
+  two-surface simplification experiment and XOR material.
 - `docs/hull-guide.html` is only the generic rectangular-bar introduction
   to `hull()`.
 - `docs/polygon-guide.html` owns the 2D/3D inside-radius explanation.

@@ -185,7 +185,7 @@ result into the working result at this one arm tip.
 
 ### 3B. Working relief volume
 
-The current reference cutter is:
+The current reference relief volume is:
 
 - the same main EF hull; plus
 - the local arm-tip miter hull.
@@ -211,7 +211,7 @@ at Y=9.4 and Y=10.0.
 ![Exact reference cross-sections used as hull inputs](../design/efh_10_exact_reference_inputs.png)
 
 These shapes are obtained with `projection(cut=true)` from the working
-cutter. No hand-calculated `cs` point is used.
+relief volume. No hand-calculated `cs` point is used.
 
 ### 4B. Hull of those exact two surfaces
 

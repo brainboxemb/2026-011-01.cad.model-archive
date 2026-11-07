@@ -171,91 +171,71 @@ undisturbed middle. Thus, the model uses **one local hull per side**.
 
 ## 4. Where the two kinds of bevel meet
 
-There is one further detail. At each arm end, the `ef` relief
-meets the **diagonal `cs` side-edge bevel**. The two opening
-profiles above describe the plywood contact faces and the inner
-radius, but **not** the entire slanted edge at this junction.
-Using only those profiles leaves a small flat termination.
+The two main `inside_relief_envelope()` hulls correctly create the
+elephant-foot relief along the straight plywood-contact faces and around
+the rounded inside corner.
 
-The production model handles this as part of the **same relief construction
-for each printed side**. In addition to the main opening hull, that side gets
-two short local hulls: one at the horizontal arm end and one at the vertical
-arm end. These local hulls follow the diagonal end of the `cs` bevel.
+At each arm end, however, that relief meets the diagonal `cs`
+side-edge bevel. With only the two main hulls a small pointed/flat
+junction remains.
 
 ![Annotated diagram of the side bevel, relief and arm-end junction](../figures/elephant-foot-junction.svg)
 
-The current assembly is therefore:
+### Why not put that small correction into the same hull?
+
+That was tested directly.
+
+For one print side, the main elephant-foot cutter is a convex hull.
+The extra arm-tip correction lies beside that cutter in such a way that
+the **combined required cutting volume is not convex**.
+
+If the tip correction is added as another child of the same `hull()`,
+OpenSCAD does exactly what `hull()` promises: it fills the complete
+convex envelope between the opening and the tip correction. That removes
+too much material around the junction.
+
+Clipping the two opening profiles with the existing `cs` envelope does
+not solve it either: that only shortens geometry which is already outside
+the solid; it does not add the missing cutting volume inside the small
+tip junction.
+
+So the production model keeps the two main opening hulls and adds small
+**local miter hulls** only where `ef` meets `cs`:
 
 ```openscad
-module relief_side(side) {
-    // 1. Main opening hull: straight contact faces + inside radius
-    hull() {
-        opening_layer(side * (W / 2 - ef));
-        opening_layer(side * W / 2, ef);
-    }
-
-    // 2 + 3. Two local hulls follow the cs diagonals at the arm ends.
-    // (arguments omitted here; see corner_bracket.scad)
-    ...
+module inside_relief_envelope() {
+    if (ef > 0)
+        for (side = [-1, 1])
+            hull() {
+                opening_layer(side * (W / 2 - ef));
+                opening_layer(side * W / 2, ef);
+            }
 }
 
-module inside_relief_envelope() {
-    for (side = [-1, 1])
-        relief_side(side);
+module relief_corner_miters() {
+    // Two short local hulls per print side:
+    // horizontal arm end + vertical arm end.
+    ...
 }
 
 module chamfered_body() {
     difference() {
         body();
-        inside_relief_envelope();
+        if (ef > 0) {
+            inside_relief_envelope();
+            relief_corner_miters();
+        }
     }
 }
 ```
 
-So there is no separate geometric “post-process” stage. Each print side is
-defined as one complete relief construction, internally composed of three
-local hulls because a single convex hull cannot represent both the concave
-L opening and the opposite-side arm-end cuts.
+The local hulls are **not post-processing**. They are ordinary parametric
+OpenSCAD cutting geometry in the same `difference()` operation.
 
-### Why the extra corner hulls cannot simply be folded into the opening hull
-
-We tested the tempting simplification: make the 2D opening stop at the
-arm ends, expand that complete opening by `ef`, and let the same two
-side hulls create the entire relief.
-
-**That does not reproduce the required geometry.**
-
-The reason is that the two constructions describe different dimensions:
-
-- `inside_relief_envelope()` is driven by **2D X/Z opening profiles**
-  placed at two Y positions. It correctly describes the straight
-  plywood-contact faces and the rounded inside corner.
-- The arm-tip junction is already cut by the outside `cs` bevel.
-  That bevel's end edge moves in **X or Z as Y changes**. In other words,
-  the junction is a genuinely **3D diagonal edge**, not a fixed feature
-  in one X/Z profile.
-
-A 2D `offset()` of the opening can move its X/Z boundary, but it cannot
-encode that Y-dependent diagonal at the arm tip. When the attempted
-"complete opening" is hulled between the two Y layers, the elephant-foot
-relief either terminates incorrectly at the `cs` bevel or disappears
-from the intended contact edge after clipping.
-
-This was also why the alternative experiment using the **complete L
-material profile** failed: `hull()` takes a convex envelope, so the
-concave inside of the L is not a usable source for this relief.
-
-Therefore the production construction deliberately uses **three local
-hulls per print side**:
-
-1. one opening hull creates the relief on the straight contact faces and
-   around the inside radius;
-2. one short hull follows the horizontal arm-end diagonal;
-3. one short hull follows the vertical arm-end diagonal.
-
-The two sides are mirror images. All six hulls together form
-`inside_relief_envelope()`; they are ordinary parametric OpenSCAD
-geometry and are subtracted in a single `difference()`.
+The focused regression test compares the arm-tip region before and after
+these local hulls. With the standard geometry, adding them removes more
+than 99% of the former local mismatch while leaving the rest of the
+elephant-foot construction unchanged.
 
 ## 5. What is checked, and what is not
 

@@ -25,7 +25,7 @@ There is **no preliminary, plain L polygon in the production model**.
 including the outer corner (`ce`), both arm-end chamfers (`c`) and
 the short `ef` bevels at the wood-facing arm tips.
 
-![Actual polygon outline with its end chamfers](../design/chamfer_02_profile_chamfers.png)
+![The real complete polygon, before the inside radius is added](../design/chamfer_02_profile_chamfers.png)
 
 The critical points are already in that one `polygon()`:
 
@@ -47,6 +47,11 @@ ends or outside corner are unchamfered.
 the small inside fillet made by `inside_corner_2d(r_in)`, using a
 2D square minus a circle. That fillet is added with `union()`.
 See the [Polygon Guide](polygon-guide.html) for its construction.
+
+![The same polygon after adding only the rounded inside-corner piece](../design/chamfer_02_inside_radius_added.png)
+
+The difference between these two pictures is **only** the small
+inside fillet. The arm ends and outside corner do not change.
 
 Finally, `linear_extrude(height = W, center = true)` and
 `rotate([90,0,0])` turn this profile into a 20 mm-wide solid:

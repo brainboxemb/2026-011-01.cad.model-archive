@@ -188,9 +188,13 @@
 //! At each arm end that relief meets the outer `cs` bevel.
 //! The current model adds small local junction hulls to complete
 //! those transitions. They are **geometry**, not a separate mesh
-//! post-processing operation. The open design question is whether
-//! better-shaped input profiles could incorporate them into the
-//! opening hulls directly.
+//! post-processing operation.
+//!
+//! A simpler version was tested in which the complete 2D opening was
+//! expanded before `hull()`, with no local junction cutters. It does
+//! **not** describe the same shape: the `cs` arm-tip edge changes
+//! X/Z position as Y changes, while a 2D opening profile cannot encode
+//! that Y-dependent diagonal. The local 3D hulls are therefore retained.
 //!
 //! ![Bracket after print relief](design/04_print_relief.png)
 //!

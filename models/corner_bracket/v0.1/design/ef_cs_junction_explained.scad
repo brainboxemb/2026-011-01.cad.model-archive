@@ -222,6 +222,31 @@ module ef_upper_body() {
     }
 }
 
+
+// Beam-equivalent thin input:
+// move the complete continuous inner boundary ef INTO the bracket material.
+// This gives the hull a real size/position difference, just like the beam's
+// offset(-ef) bottom footprint.
+module ef_inset_L_band_2d() {
+    difference() {
+        offset(delta = ef + sheet_thickness)
+            inside_opening_2d();
+
+        offset(delta = ef)
+            inside_opening_2d();
+    }
+}
+
+module ef_inset_L_sheet() {
+    intersection() {
+        rotate([90, 0, 0])
+            linear_extrude(height = W, center = true)
+                ef_inset_L_band_2d();
+
+        cs_hull();
+    }
+}
+
 // The raw hull between two complete concave L shapes is convex and would fill
 // the open inside corner with a diagonal triangle.
 //
@@ -253,8 +278,8 @@ module ef_corridor() {
 
 module ef_raw_hull() {
     hull() {
-        cs_shaped_inner_L_sheet();
-        ef_expanded_L_sheet();
+        ef_inset_L_sheet();
+        ef_upper_body();
     }
 }
 
@@ -313,12 +338,12 @@ else if (scene == "03_cs_shaped_L") {
 }
 
 else if (scene == "04_ef_inputs") {
-    // Blue: thin continuous L input at the real inside boundary.
-    color("DeepSkyBlue", 0.78)
-        cs_shaped_inner_L_sheet();
+    // Blue: continuous thin L shifted ef INTO the bracket material.
+    color("DeepSkyBlue", 0.82)
+        ef_inset_L_sheet();
 
-    // Orange: complete already-cs-chamfered bracket, with only the first ef
-    // of material along the continuous inside L removed.
+    // Orange: complete already-cs-chamfered body beginning beyond the ef
+    // transition zone.
     color("DarkOrange", 0.28)
         ef_upper_body();
 }

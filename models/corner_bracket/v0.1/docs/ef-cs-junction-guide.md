@@ -38,9 +38,13 @@ bracket.
 
 This is the complete `cs_body()` from `Z = ef` upward.
 
-For this illustration only, the orange volume is moved straight upward in Z so
-the blue plate is visibly **under** it. There is no X/Y displacement. The real
-`hull()` uses the unshifted geometry at the actual `ef` height.
+Both objects are shown at their **real hull positions**:
+
+- the blue plate lies on the print bed at `Z=0`;
+- the orange upper L starts at `Z=ef`.
+
+The orange L is made strongly transparent and the default camera is lower so
+the blue plate can actually be seen underneath it, just as in the beam demo.
 
 So both inputs already contain the normal chamfer before the elephant-foot hull
 is created.

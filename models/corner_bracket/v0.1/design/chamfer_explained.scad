@@ -4,7 +4,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Illustration] */
-chamfer_step = "01_sharp_profile"; // [01_sharp_profile, 02_profile_chamfers, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final]
+chamfer_step = "01_sharp_profile"; // [01_sharp_profile, 02_profile_chamfers, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final, 10_corner_junction]
 /* [Hidden] */
 // Initial sharp profile is only a reference, not a printable production part.
 // Defaults correspond to corner_bracket.scad v0.1.
@@ -67,3 +67,29 @@ else if (chamfer_step == "08_print_relief") {
 }
 else if (chamfer_step == "09_final")
     color("SteelBlue") bracket();
+
+// A focused close-up of the two-sided elephant-foot/side-chamfer junction.
+// Left: basic opening hulls; centre: additional diagonal hull cutting volume;
+// right: completed bevel. Only a small local region is shown.
+module tip_junction_crop() {
+    translate([armH-cs-ef-3, W/2-cs-ef-3, -1.5])
+        cube([cs+ef+6, cs+ef+6, ef+5]);
+}
+module pre_miter_body() {
+    difference() {
+        body();
+        inside_relief_envelope();
+    }
+}
+
+if (chamfer_step == "10_corner_junction") {
+    translate([-20-armH+2, -W/2+2, 0])
+        color("SteelBlue")
+            intersection() { pre_miter_body(); tip_junction_crop(); }
+    translate([-armH+2, -W/2+2, 0])
+        color("IndianRed")
+            intersection() { relief_corner_miters(); tip_junction_crop(); }
+    translate([20-armH+2, -W/2+2, 0])
+        color("DarkOrange")
+            intersection() { chamfered_body(); tip_junction_crop(); }
+}

@@ -202,24 +202,44 @@ The additional cutter is **not a smoothing or mesh post-process**:
 it is ordinary OpenSCAD geometry subtracted in the *same*
 `difference()` operation.
 
-### Could this be one better-prepared hull instead?
+### Why the extra corner hulls cannot simply be folded into the opening hull
 
-**That is a sensible design alternative.** If the side-edge
-junctions are encoded correctly in the input profiles *before*
-`hull()`, a separate set of tip cutters might be unnecessary.
+We tested the tempting simplification: make the 2D opening stop at the
+arm ends, expand that complete opening by `ef`, and let the same two
+side hulls create the entire relief.
 
-However, simply cutting corners from the existing 2D
-`inside_opening_2d()` is **not yet proven** to reproduce the
-full 3D junction: the affected end edge also slopes through
-**Y** because of `cs`. And `hull()` replaces nonconvex
-details by their convex envelope. A carefully segmented profile
-construction or extra intermediate sections may be needed.
+**That does not reproduce the required geometry.**
 
-**Current status:** the single-profile idea has **not** been
-implemented or validated on the full bracket. The production
-model still uses the extra local hull cutters. The proposed
-refactor should be compared at the four individual corners,
-not merely by total bracket volume.
+The reason is that the two constructions describe different dimensions:
+
+- `inside_relief_envelope()` is driven by **2D X/Z opening profiles**
+  placed at two Y positions. It correctly describes the straight
+  plywood-contact faces and the rounded inside corner.
+- The arm-tip junction is already cut by the outside `cs` bevel.
+  That bevel's end edge moves in **X or Z as Y changes**. In other words,
+  the junction is a genuinely **3D diagonal edge**, not a fixed feature
+  in one X/Z profile.
+
+A 2D `offset()` of the opening can move its X/Z boundary, but it cannot
+encode that Y-dependent diagonal at the arm tip. When the attempted
+"complete opening" is hulled between the two Y layers, the elephant-foot
+relief either terminates incorrectly at the `cs` bevel or disappears
+from the intended contact edge after clipping.
+
+This was also why the alternative experiment using the **complete L
+material profile** failed: `hull()` takes a convex envelope, so the
+concave inside of the L is not a usable source for this relief.
+
+Therefore the production construction deliberately separates the jobs:
+
+1. two opening hulls create the elephant-foot relief on the straight
+   contact faces and around the inside radius;
+2. four small local `relief_corner_miters()` hulls follow the
+   Y-dependent diagonal where `ef` meets `cs`.
+
+These local hulls are not mesh post-processing. They are part of the
+parametric OpenSCAD solid and are subtracted in the same
+`difference()` operation.
 
 ## 5. What is checked, and what is not
 

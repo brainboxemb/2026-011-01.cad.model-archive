@@ -49,6 +49,6 @@ trap - EXIT
 
 # Generate guide HTML next to its Markdown in docs/.
 in_container /work/models/corner_bracket/v0.1/docs \
-  bash -c 'for page in mounting-options hull-guide polygon-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
+  bash -c 'for page in mounting-options hull-guide polygon-guide chamfer-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
 bash scripts/ci/validate-docs.sh

@@ -167,7 +167,7 @@ done
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

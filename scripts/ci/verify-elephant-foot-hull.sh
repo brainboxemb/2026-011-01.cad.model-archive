@@ -22,7 +22,7 @@ cases=(
 )
 for case in "${cases[@]}"; do
   read -r cs ef radius <<< "$case"
-  for variant in old new xor; do
+  for variant in old new xor tip_xor tip_xor_before; do
     outfile="$tmp/$variant.stl"
     log="$tmp/$variant.log"
     rm -f "$outfile"
@@ -31,14 +31,14 @@ for case in "${cases[@]}"; do
       -D "r_in=$radius" -D "test_view=\"$variant\"" \
       "$fixture" >"$log" 2>&1 || exitcode=$?
     # OpenSCAD may exit non-zero when the XOR is completely empty.
-    if [[ "$variant" == xor ]] && grep -q 'Current top level object is empty' "$log"; then
+    if [[ "$variant" == xor || "$variant" == tip_xor || "$variant" == tip_xor_before ]] && grep -q 'Current top level object is empty' "$log"; then
       : # correct zero difference
     elif [[ "$exitcode" -ne 0 ]]; then
       echo "OpenSCAD failed ($variant, cs=$cs, ef=$ef, r_in=$radius)" >&2
       cat "$log" >&2
       exit 1
     fi
-    if [[ "$variant" != xor ]] && grep -q 'not be a valid 2-manifold' "$log"; then
+    if [[ "$variant" == old || "$variant" == new ]] && grep -q 'not be a valid 2-manifold' "$log"; then
       echo "Model is not manifold ($variant, cs=$cs, ef=$ef, r_in=$radius)" >&2
       cat "$log" >&2
       exit 1
@@ -53,7 +53,7 @@ from pathlib import Path
 folder, cs, ef, radius = sys.argv[1:]
 volume = {}
 bounds = {}
-for variant in ("old", "new", "xor"):
+for variant in ("old", "new", "xor", "tip_xor", "tip_xor_before"):
     path = Path(folder, variant + ".stl")
     vertices = []
     if path.exists():
@@ -82,6 +82,20 @@ print(f"cs={cs}, ef={ef}, r_in={radius}: "
       f"XOR={volume['xor']:.4f} mm^3 ({relative:.4%})")
 if relative > 0.001:
     raise SystemExit("Hull relief changes >0.1% of the legacy solid")
+# Local corner check: the broad whole-part XOR limit would not detect a
+# very visible miter defect on a ~0.6 mm edge. Measure ONLY the four joints
+# where the elephant-foot bevel meets the outside side-edge bevel.
+if float(cs) > 0 and float(ef) > 0:
+    before = volume["tip_xor_before"]
+    after = volume["tip_xor"]
+    print(f"  arm-tip corner XOR: before miter={before:.5f}, "
+          f"after miter={after:.5f} mm^3")
+    if before < 0.05:
+        raise SystemExit("Arm-tip regression reference unexpectedly empty")
+    if after >= before * 0.1:
+        raise SystemExit("Miter hull must eliminate at least 90% of "
+                         "the arm-tip defect volume")
+
 if ef == "0" and volume["xor"] > 0.001:
     raise SystemExit("Disabling elephant-foot relief must restore exact original")
 if any(abs(a-b) > 0.002

@@ -1,19 +1,14 @@
-// Corner Bracket: the SAME elephant-foot construction as the beam.
+// Corner Bracket: EXACTLY the same ef construction order as the beam.
 //
-// Clean baseline:
-//   - real L geometry;
-//   - normal c / ce / cs chamfers;
-//   - NO ef at the arm tips yet.
+// 1. Build a clean L with c / ce / cs, but NO ef.
+// 2. Put that complete 3D L in print orientation.
+// 3. Take a thin slab at print-bed Z=0 and project it -> bottom footprint.
+// 4. offset(-ef) that footprint -> lower plate.
+// 5. Take the complete print-oriented L from Z=ef upward -> upper volume.
+// 6. hull lower + upper locally per arm to preserve the concave inside corner.
 //
-// Then exactly like the beam:
-//   INPUT 1 = one thin L-shaped bottom plate at the print bed,
-//             already carrying cs and inset by ef;
-//   INPUT 2 = the complete already-cs-chamfered L volume from ef height upward.
-//
-// The complete concave L cannot be put through one global hull(), because that
-// would fill its inside corner. Internally only, the horizontal and vertical
-// arms are hulled separately and then united. The displayed inputs themselves
-// remain one bottom L plate and one upper L volume.
+// This avoids the earlier mistake of building a loose X/Z section and then
+// rotating it afterward.
 
 /* [Illustration] */
 junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_lower_plate, 02_upper_volume, 03_ef_inputs, 04_ef_hull, 05_result]
@@ -23,10 +18,9 @@ use <../scad/corner_bracket.scad>
 
 $fn = 48;
 eps = 0.02;
-display_thickness = 2.0;
-display_explode = 6;
+display_thickness = 1.0;
+display_explode = 4;
 
-// Same production defaults, explicit so the clean baseline is unambiguous.
 armH = 40;
 armV = 40;
 t = 10;
@@ -38,7 +32,7 @@ ef = 0.6;
 r_in = 2.0;
 
 // -----------------------------------------------------------------------------
-// 0. CLEAN BASELINE: L + cs, NO ef
+// Clean model-space L: normal chamfers, NO elephant-foot geometry.
 // -----------------------------------------------------------------------------
 
 module clean_sharp_profile() {
@@ -98,65 +92,54 @@ module clean_body() {
     }
 }
 
-// Actual X/Z cross-section of the already-cs-chamfered clean L.
-module clean_body_section_2d(y) {
-    mirror([0, 1, 0])
-        projection(cut = true)
-            rotate([90, 0, 0])
-                translate([0, -y, 0])
-                    clean_body();
+// -----------------------------------------------------------------------------
+// Put the COMPLETE 3D L in print coordinates first.
+// +Y printed face becomes print-bed Z=0.
+// -----------------------------------------------------------------------------
+
+module print_body() {
+    translate([0, 0, W / 2])
+        rotate([-90, 0, 0])
+            clean_body();
 }
 
 // -----------------------------------------------------------------------------
-// 1. THE TWO EF INPUTS — now literally the same pattern as the beam
+// Same bottom-footprint construction as the BEAM demo.
 // -----------------------------------------------------------------------------
 
-// INPUT 1: thin L-shaped BOTTOM PLATE.
-//
-// Do NOT project/cut clean_body() exactly at Y=W/2: that plane lies on the
-// boundary of the 3D solid and can collapse to an empty/degenerate section.
-//
-// The 2D shape at the outer printed face is already known directly:
-//   clean_profile() intersected with the cs-inset outer envelope.
-//
-// This is the exact L-shaped equivalent of the beam's chamfered bottom
-// footprint. Only after cs is present do we inset the complete footprint by ef.
-module outer_cs_face_2d() {
-    intersection() {
-        clean_profile();
-        offset(delta = -cs)
-            clean_outer_shape();
-    }
+module bottom_footprint_2d() {
+    projection()
+        intersection() {
+            print_body();
+
+            // Tiny slab crossing the actual print bed.
+            translate([-100, -100, -eps / 2])
+                cube([200, 200, eps]);
+        }
 }
 
-module lower_plate_2d() {
-    offset(delta = -ef)
-        outer_cs_face_2d();
-}
-
+// Lower hull input: real print-bed footprint, already carrying cs,
+// then inset by ef.
 module lower_plate(thickness = eps) {
-    translate([0, W / 2, 0])
-        rotate([90, 0, 0])
-            linear_extrude(height = thickness, center = true)
-                lower_plate_2d();
+    linear_extrude(height = thickness)
+        offset(delta = -ef)
+            bottom_footprint_2d();
 }
 
-// INPUT 2: the complete already-cs-chamfered L from ef above the print bed
-// inward through the rest of the part.
-//
-// In model coordinates the +Y face is the print bed, so "ef upward" means
-// retain y <= W/2-ef.
+// Upper hull input: the complete already-cs-chamfered PRINT-ORIENTED L
+// from ef above the bed upward.
 module upper_l_volume() {
     intersection() {
-        clean_body();
+        print_body();
 
-        translate([-100, -100, -100])
-            cube([200, 100 + W / 2 - ef, 200]);
+        translate([-100, -100, ef])
+            cube([200, 200, W + 20]);
     }
 }
 
 // -----------------------------------------------------------------------------
-// INTERNAL ONLY: split the concave L into two arms for hull().
+// Internal split only for hull(): preserve the concave inside L corner.
+// In print coordinates the original X/Z profile is now the XY footprint.
 // -----------------------------------------------------------------------------
 
 module horizontal_arm_mask_2d() {
@@ -169,17 +152,12 @@ module vertical_arm_mask_2d() {
         square([t + 4, armV + t + 4]);
 }
 
-module arm_mask_2d(which) {
-    if (which == "horizontal")
-        horizontal_arm_mask_2d();
-    else
-        vertical_arm_mask_2d();
-}
-
 module arm_mask_3d(which) {
-    rotate([90, 0, 0])
-        linear_extrude(height = 2 * W, center = true)
-            arm_mask_2d(which);
+    linear_extrude(height = W + 20)
+        if (which == "horizontal")
+            horizontal_arm_mask_2d();
+        else
+            vertical_arm_mask_2d();
 }
 
 module lower_arm_plate(which) {
@@ -210,9 +188,6 @@ module l_ef_hulls() {
     }
 }
 
-// The two hulls already contain their upper arm volumes. Union the untouched
-// upper L as well to guarantee the original concave L and inside radius remain
-// complete.
 module result_body_one_side() {
     union() {
         upper_l_volume();
@@ -221,62 +196,40 @@ module result_body_one_side() {
 }
 
 // -----------------------------------------------------------------------------
-// Print orientation: +Y printed face becomes Z=0.
-// -----------------------------------------------------------------------------
-
-module print_orientation() {
-    translate([0, 0, W / 2])
-        rotate([-90, 0, 0])
-            children();
-}
-
-// -----------------------------------------------------------------------------
-// Four scenes
+// Scenes
 // -----------------------------------------------------------------------------
 
 if (junction_step == "00_l_with_cs") {
-    print_orientation()
-        color("SteelBlue")
-            clean_body();
+    color("SteelBlue")
+        print_body();
 }
 
 else if (junction_step == "01_lower_plate") {
-    // Show ONLY the lower input first. No transparency and no upper volume.
-    // This must read as one flat L-shaped plate.
     color("DeepSkyBlue")
-        print_orientation()
-            lower_plate(display_thickness);
+        lower_plate(display_thickness);
 }
 
 else if (junction_step == "02_upper_volume") {
-    // Show ONLY the upper input: the complete cs-chamfered L from ef upward.
     color("DarkOrange")
-        print_orientation()
-            upper_l_volume();
+        upper_l_volume();
 }
 
 else if (junction_step == "03_ef_inputs") {
-    // Exploded view after print rotation so the two real inputs are
-    // unmistakably separated in world Z.
     color("DeepSkyBlue")
         translate([0, 0, -display_explode])
-            print_orientation()
-                lower_plate(display_thickness);
+            lower_plate(display_thickness);
 
-    color("DarkOrange", 0.45)
+    color("DarkOrange", 0.40)
         translate([0, 0, display_explode])
-            print_orientation()
-                upper_l_volume();
+            upper_l_volume();
 }
 
 else if (junction_step == "04_ef_hull") {
-    print_orientation()
-        color("SeaGreen")
-            l_ef_hulls();
+    color("SeaGreen")
+        l_ef_hulls();
 }
 
 else {
-    print_orientation()
-        color("SeaGreen")
-            result_body_one_side();
+    color("SeaGreen")
+        result_body_one_side();
 }

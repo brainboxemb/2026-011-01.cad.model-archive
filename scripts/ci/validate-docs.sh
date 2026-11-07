@@ -111,9 +111,9 @@ if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; t
   echo "Unreadable corner fragment illustration reintroduced" >&2
   exit 1
 fi
-# The main walkthrough now links to the dedicated diagram rather than
-# repeating the Y=+/-W/2 construction details verbatim.
-grep -Fq 'both side faces' "$bracket/readme.md"
+# The main walkthrough summarizes the two main EF hulls and points to the
+# dedicated Chamfer Guide for the detailed junction geometry.
+grep -Fq 'one per print side' "$bracket/readme.md"
 grep -Fq 'inside_relief_envelope()' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 grep -Fq '## Printing and assembly' "$bracket/readme.md"

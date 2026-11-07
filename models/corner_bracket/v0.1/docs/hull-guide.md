@@ -115,8 +115,8 @@ the top. This forms both a bottom print allowance and a top bevel.
 
 The editable
 [combined-chamfer prototype](../design/combined_chamfer_hull.scad)
-demonstrates this for a **straight convex bar only**. The Corner Bracket
-is different: its inside is concave, and the arm-tip junction with
-`cs` moves in X/Z as Y changes. A single prepared 2D profile therefore
-cannot describe that full 3D junction. See
+demonstrates this for a **straight convex bar only**. At the Corner
+Bracket arm tip, the required EF cutter plus its `cs` junction is
+non-convex. Putting both into one `hull()` fills the convex envelope
+between them and removes too much material. See
 [Section 4 of the Chamfer Guide](chamfer-guide.html).

@@ -1,9 +1,10 @@
 # Corner bracket — v0.1
 
-The original bracket geometry has been **refactored without changing its
-intended shape**: the inside radius now uses ordinary 2D `square()` and
-`circle()` shapes, rather than a calculated list of arc points.
-The rest of the model and its inspection helper remain unchanged.
+The bracket has been refactored in two stages: the inside radius uses 2D
+`square()` and `circle()` operations instead of sampled arc points; the
+wood-contact elephant-foot relief now uses two local hull transitions
+instead of individual straight, diagonal and circular cutting wedges.
+The original mounting and captive-nut system is unchanged.
 The bracket is a prototype; print tolerances and strength have not been physically verified.
 
 ## Source layout
@@ -17,14 +18,17 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
+  chamfer_explained.scad   Nine chamfer construction stages
+  combined_chamfer_hull.scad  Straight-arm single-hull experiment
   *.png                     CI-generated tutorial images (not committed)
 docs/
   documentation.scad        NopSCADlib documentation build source
   hull-guide.md             Hull article
   polygon-guide.md          2D vs 3D rounding article
+  chamfer-guide.md          2D profile bevels, side hull and print relief
   mounting-options.md       Illustrated fastener alternatives
 figures/                    Editable vector diagrams
-tests/                      Geometry equivalence fixture (legacy vs new profile)
+tests/                      Profile and full-bracket geometry regression fixtures
 ```
 
 Only the **two files in `scad/`** belong to the actual bracket design;

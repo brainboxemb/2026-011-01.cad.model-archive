@@ -2,7 +2,8 @@
 
 The bracket has been refactored in two stages: the inside radius uses 2D
 `square()` and `circle()` operations instead of sampled arc points; the
-wood-contact elephant-foot relief now uses two local opening hulls and short diagonal miter hulls\ninstead of individual straight, diagonal and circular cutting wedges.
+wood-contact elephant-foot relief now uses two local opening hulls and short diagonal miter hulls
+instead of individual straight, diagonal and circular cutting wedges.
 The original mounting and captive-nut system is unchanged.
 The bracket is a prototype; print tolerances and strength have not been physically verified.
 
@@ -17,7 +18,7 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
-  chamfer_explained.scad   Nine chamfer construction stages
+  chamfer_explained.scad   Ten chamfer construction stages
   combined_chamfer_hull.scad  Straight-arm single-hull experiment
   *.png                     CI-generated tutorial images (not committed)
 docs/
@@ -59,14 +60,20 @@ The generated [design documentation](https://brainboxemb.github.io/2026-011-01.c
 focuses on the six model stages, including a more detailed explanation of
 elephant-foot relief.
 
-The extended [illustrated hull guide](docs/hull-guide.md) is separate. It covers
-the simple rectangular-bar experiment and rounding an outside corner with
-circles. The original `hull_explained.scad` and
-`rounding_explained.scad` files remain available for interactive exploration.
+The separate [Hull Guide](docs/hull-guide.md) starts with a simple
+rectangular-bar example, then explains the **actual** outside and inner
+relief hulls used in the bracket. `hull_explained.scad` and
+`rounding_explained.scad` remain available as teaching examples.
 
 The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
 and a **historical** point-based method for the concave inside corner.
+
+The [Chamfer Guide](docs/chamfer-guide.md) gives ten illustrated stages,
+including a close-up of the arm-tip junction where the elephant-foot
+and outside side-edge bevels meet. CI tests that small miter explicitly:
+without the added local hulls, a small flat termination remains even
+when the whole-bracket volume difference looks negligible.
 
 The [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
 straightforward constructions of the same **inside** radius:

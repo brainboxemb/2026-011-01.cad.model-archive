@@ -57,7 +57,7 @@ visible at whole-bracket scale.</p>
 edges and inside radius. The unresolved geometry is concentrated at the
 four arm-tip / side-chamfer junctions.</p>
 </blockquote>
-<p>The <strong>exact missing cutting volume</strong> is shown later in section 3A, after
+<p>The <strong>exact missing relief volume</strong> is shown later in section 3A, after
 we zoom into one of these marked locations.</p>
 <h3>1C. Complete working bracket — correction enabled</h3>
 <p>Now enable the current correction:</p>
@@ -71,16 +71,16 @@ existing EF hull surfaces.</p>
 <p>Now zoom into <strong>one horizontal arm end on the +Y print side</strong>.</p>
 <p>The sequence deliberately mirrors the outside <code>cs</code> hull walkthrough:</p>
 <p><strong>source profile → surface A → surface B → both surfaces → hull → result</strong></p>
-<h3>2A. Source cutting profile</h3>
+<h3>2A. Source relief profile</h3>
 <p>The elephant-foot relief is made by <strong>subtracting material from the two
 wood-contact faces</strong> of the bracket. We therefore do not hull the bracket
-itself. We first make a 2D <strong>cutter profile</strong> on the wood side of those
+itself. We first make a 2D <strong>relief profile</strong> on the wood side of those
 faces.</p>
 <p>In the X/Z side view:</p>
 <ul>
 <li>the horizontal wood-contact face lies along <code>z = 0</code>;</li>
 <li>the vertical wood-contact face lies along <code>x = 0</code>;</li>
-<li>the cutter occupies the open area at <strong>x ≥ 0 and z ≤ 0</strong>;</li>
+<li>the relief profile occupies the open area at <strong>x ≥ 0 and z ≤ 0</strong>;</li>
 <li>at the inside corner, its boundary follows the same <code>r_in</code> curve as the
   bracket.</li>
 </ul>
@@ -88,7 +88,7 @@ faces.</p>
 <strong>inside the L</strong>, touching both wood-contact edges. It extends beyond the
 arm ends on purpose; only the part that overlaps the bracket can remove
 material.</p>
-<p><img alt="2D cutting profile beside the two wood-contact faces" src="../design/efh_01_opening_profile.png" /></p>
+<p><img alt="2D relief profile beside the two wood-contact faces" src="../design/efh_01_opening_profile.png" /></p>
 <p>```openscad
 module inside_opening_2d() {
     reach = max(5, cs + ef + 1);</p>
@@ -102,8 +102,7 @@ module inside_opening_2d() {
 </code></pre>
 <p>}
 ```</p>
-<p>The important point is: <strong>this blue shape is a cutter, not part of the
-bracket</strong>.</p>
+<p>The important point is: <strong>this blue shape is the relief profile used to build the hull; it is not part of the bracket</strong>.</p>
 <h3>2B. First hull surface — Y = 9.4 mm</h3>
 <p>The first thin surface uses the unchanged opening:</p>
 <p><img alt="First EF hull surface" src="../design/efh_02_inner_main_input.png" /></p>
@@ -129,24 +128,24 @@ Y=10.0.</p>
 <p>This local view is the same geometry as the complete bracket in <strong>1A</strong>.
 The small arm-tip problem is now large enough to inspect.</p>
 <h2>3. What exactly is missing at the arm tip?</h2>
-<h3>3A. Exact missing cutting volume</h3>
-<p>Subtract the main-hull cutter from the working reference cutter:</p>
-<p><img alt="Exact missing arm-tip cutting volume" src="../design/efh_07_missing_tip_volume.png" /></p>
-<p>The red solid is the exact extra cutting volume that turns the main-hull
+<h3>3A. Exact missing relief volume</h3>
+<p>Subtract the main relief hull from the working reference relief volume:</p>
+<p><img alt="Exact missing arm-tip relief volume" src="../design/efh_07_missing_tip_volume.png" /></p>
+<p>The red solid is the exact extra relief volume that turns the main-hull
 result into the working result at this one arm tip.</p>
-<h3>3B. Working cutter</h3>
+<h3>3B. Working relief volume</h3>
 <p>The current reference cutter is:</p>
 <ul>
 <li>the same main EF hull; plus</li>
 <li>the local arm-tip miter hull.</li>
 </ul>
-<p><img alt="Working EF cutter" src="../design/efh_08_reference_cutter.png" /></p>
+<p><img alt="Working EF relief volume" src="../design/efh_08_reference_relief_volume.png" /></p>
 <h3>3C. Working local result</h3>
 <p><img alt="Working arm-tip result" src="../design/efh_09_reference_result.png" /></p>
 <p>This is the local form of the complete working bracket shown in <strong>1C</strong>.</p>
 <h2>4. Test the strongest two-surface version</h2>
 <p>Instead of guessing a new tip polygon, take the <strong>exact cross-sections of
-the working cutter itself</strong> at the same two Y positions.</p>
+the working relief volume itself</strong> at the same two Y positions.</p>
 <p>That gives the proposed two-surface method the best possible input shapes
 at Y=9.4 and Y=10.0.</p>
 <h3>4A. Exact reference surfaces</h3>
@@ -169,7 +168,7 @@ does not reproduce the reference.</p>
 <p>This is material removed by the working reference but missed by the
 candidate.</p>
 <h2>5. Measured result</h2>
-<p>CI renders the same local experiment as STL and measures the cutting
+<p>CI renders the same local experiment as STL and measures the relief
 volumes:</p>
 <table>
 <thead>
@@ -223,7 +222,7 @@ impossible”:</p>
 <blockquote>
 <p><strong>Using only two hull surfaces at the existing Y positions does not
 reproduce the current working arm-tip geometry, even when those two
-surfaces are exact sections of the working cutter.</strong></p>
+surfaces are exact sections of the working relief volume.</strong></p>
 </blockquote>
 <p>A different construction with more Y sections or a different decomposition
 would be a different experiment.</p>

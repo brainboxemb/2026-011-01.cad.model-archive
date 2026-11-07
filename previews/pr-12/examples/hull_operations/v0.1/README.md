@@ -1,109 +1,86 @@
-# Beam demo: the corner where the chamfers meet
+# Beam demo: what goes into each `hull()`
 
-This example represents **one straight arm tip** of the Corner Bracket.
+This page uses one straight beam arm to explain the Corner Bracket geometry.
 
-The important point is that the **kopse kant is part of the geometry too**.
-The previous beam version only showed the long edges and was therefore still
-missing part of the real situation.
+The visual rule is now the same for every hull operation:
 
-There are three relevant edge treatments:
+**first show the two input objects transparently, then show the result.**
 
-- `c`: the normal upper chamfer in the end profile;
-- `cs`: the chamfer around the printed side faces;
-- `ef`: the elephant-foot relief at the bottom, both along the long contact
-  edges **and across the lower end profile**.
-
-The problem appears at the lower corner where those surfaces meet.
+The end face is included, so both the normal chamfer and the elephant-foot
+relief continue over the kopse kant.
 
 ## 0. Plain beam
 
 ![Plain beam](renders/00_plain_beam.png)
 
-Nothing is chamfered yet.
+This is the unchanged reference.
 
-## 1. Normal chamfers, including the end face
+## 1. Side chamfer `cs`: the two hull inputs
 
-![Beam with normal end and side chamfers](renders/01_normal_chamfers.png)
+![Two transparent cs hull inputs](renders/01_cs_inputs.png)
 
-This step now includes both parts that belong to the normal geometry:
+These are the **actual two objects passed to `hull()`**:
 
-1. the upper corner of each **kopse kant** is chamfered with `c`;
-2. the printed side faces are chamfered with `cs`.
+- blue: the full outer outline, but narrower across the beam width;
+- orange: the inset outer outline, but across the full beam width.
 
-The lower edge is still left for the elephant-foot correction.
+They are shown transparent and in the same coordinate system, so the geometric
+relationship is visible before OpenSCAD connects them.
 
-This is important because the beam end must not remain a square block while we
-try to explain the real bracket arm.
+## 2. Side chamfer `cs`: result
 
-## 2. Add the complete elephant-foot relief
+![Result after the cs hull](renders/02_cs_result.png)
 
-The elephant-foot treatment is also not limited to the two long bottom edges.
+After `hull()`, the two input objects form the sloping side-edge chamfer.
+The normal end-profile chamfer is included as well.
 
-It consists of both:
+## 3. Elephant-foot `ef`: the two hull inputs
 
-- the `ef` relief along the long lower contact edges;
-- the `ef` chamfer across the **lower kopse kant**.
+![Two transparent ef hull inputs](renders/03_ef_inputs.png)
 
-That means the bottom correction now wraps through the end of the beam instead
-of stopping before it.
+The already-chamfered beam is only faint context here.
 
-The image below crops the lower end corner where the complete `ef` geometry
-meets the diagonal `cs` side bevel.
+For one printed side, the two `ef` inputs are:
 
-![Junction before the local correction](renders/02_junction_problem.png)
+- blue: the normal opening, one `ef` inward from the printed side;
+- orange: the expanded opening on the printed side itself.
 
-This is the junction we actually want to understand.
+The other side of the beam uses the same construction.
 
-## 3. The local miter correction
+## 4. Elephant-foot `ef`: result
 
-The broad `ef` construction by itself does not give the desired transition at
-that 3D meeting point. A small triangular cutter is therefore swept along the
-diagonal junction.
+![Result after the ef hull](renders/04_ef_result.png)
 
-![Isolated local miter cutter](renders/03_miter_cutter.png)
+The `ef` hull is subtracted from the beam. The relief now runs along the long
+bottom edge and the lower end profile is included too.
 
-The correction is local. It does not redefine the normal chamfers or the broad
-elephant-foot relief.
+Most of the geometry is correct at this point.
 
-## 4. Corrected lower corner
+## 5. The remaining problem
 
-![Junction after the miter correction](renders/04_junction_fixed.png)
+![Close-up of the cs/ef junction problem](renders/05_junction_problem.png)
 
-The cropped view now contains all relevant surfaces:
+The problem is local: at the lower end corner, the `ef` relief reaches the
+diagonal `cs` side bevel and leaves the unwanted termination.
 
-- the end-face `ef` chamfer;
-- the long bottom `ef` relief;
-- the diagonal `cs` side bevel;
-- the small miter correction between them.
+## 6. Local correction: hull inputs
 
-## 5. Complete beam
+![Transparent inputs for the local miter hull](renders/06_miter_inputs.png)
 
-![Complete corrected beam](renders/05_final_beam.png)
+The small correction is again a `hull()` between two triangular profiles.
+The beam is shown faintly only to locate them.
 
-Only after the junction is clear do we return to the full beam.
+## 7. Corrected junction
 
-The mapping back to the real Corner Bracket is now direct:
+![Corrected cs/ef junction](renders/07_junction_fixed.png)
 
-**beam kopse kant ↔ arm tip**
+The small local hull removes only the remaining corner defect.
 
-**upper end chamfer `c` ↔ existing arm-end chamfer**
+So the complete logic is:
 
-**side-face chamfer `cs` ↔ side-edge bevel**
-
-**lower end + long-edge `ef` ↔ elephant-foot relief**
-
-**small miter hull ↔ `relief_corner_miters()`**
+**two transparent inputs → hull result → two transparent inputs → hull result → local junction correction.**
 
 ## Source
 
 The complete demonstration is in
 [`scad/hull_operations.scad`](scad/hull_operations.scad).
-
-The scenes are:
-
-- `00_plain`
-- `01_normal_chamfers`
-- `02_problem`
-- `03_miter`
-- `04_fixed`
-- `05_final`

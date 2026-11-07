@@ -33,20 +33,26 @@ for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_c
 done
 
 
-# Start with the complete bracket, then zoom into the local EF hull experiment.
+# Elephant-foot guide:
+# A = main hulls only, B = same construction plus the working correction.
+# C then zooms into one arm tip for the two-surface simplification experiment.
 for stage in \
-  00_whole_main_only \
-  00_whole_problem_points \
-  00_whole_working \
-  01_opening_profile \
-  02_inner_main_input \
-  03_outer_main_input \
-  04_both_main_inputs \
-  05_main_hull \
-  06_main_result \
+  A01_before_ef \
+  A02_surface_a \
+  A03_surface_b \
+  A04_both_surfaces \
+  A05_main_hull \
+  A06_main_result \
+  A07_problem_locations \
+  B01_before_ef \
+  B02_surface_a \
+  B03_surface_b \
+  B04_both_surfaces \
+  B05_main_hull \
+  B06_corner_correction \
+  B07_combined_relief \
+  B08_working_result \
   07_missing_tip_volume \
-  08_reference_relief_volume \
-  09_reference_result \
   10_exact_reference_inputs \
   11_exact_two_surface_hull \
   12_exact_candidate_result \

@@ -64,7 +64,7 @@ So this establishes the starting point:
 > edges and inside radius. The unresolved geometry is concentrated at the
 > four arm-tip / side-chamfer junctions.
 
-The **exact missing cutting volume** is shown later in section 3A, after
+The **exact missing relief volume** is shown later in section 3A, after
 we zoom into one of these marked locations.
 
 ### 1C. Complete working bracket — correction enabled
@@ -89,18 +89,18 @@ The sequence deliberately mirrors the outside `cs` hull walkthrough:
 
 **source profile → surface A → surface B → both surfaces → hull → result**
 
-### 2A. Source cutting profile
+### 2A. Source relief profile
 
 The elephant-foot relief is made by **subtracting material from the two
 wood-contact faces** of the bracket. We therefore do not hull the bracket
-itself. We first make a 2D **cutter profile** on the wood side of those
+itself. We first make a 2D **relief profile** on the wood side of those
 faces.
 
 In the X/Z side view:
 
 - the horizontal wood-contact face lies along `z = 0`;
 - the vertical wood-contact face lies along `x = 0`;
-- the cutter occupies the open area at **x ≥ 0 and z ≤ 0**;
+- the relief profile occupies the open area at **x ≥ 0 and z ≤ 0**;
 - at the inside corner, its boundary follows the same `r_in` curve as the
   bracket.
 
@@ -109,7 +109,7 @@ So `inside_opening_2d()` is simply the large 2D shape immediately
 arm ends on purpose; only the part that overlaps the bracket can remove
 material.
 
-![2D cutting profile beside the two wood-contact faces](../design/efh_01_opening_profile.png)
+![2D relief profile beside the two wood-contact faces](../design/efh_01_opening_profile.png)
 
 ```openscad
 module inside_opening_2d() {
@@ -125,8 +125,7 @@ module inside_opening_2d() {
 }
 ```
 
-The important point is: **this blue shape is a cutter, not part of the
-bracket**.
+The important point is: **this blue shape is the relief profile used to build the hull; it is not part of the bracket**.
 
 ### 2B. First hull surface — Y = 9.4 mm
 
@@ -175,23 +174,23 @@ The small arm-tip problem is now large enough to inspect.
 
 ## 3. What exactly is missing at the arm tip?
 
-### 3A. Exact missing cutting volume
+### 3A. Exact missing relief volume
 
-Subtract the main-hull cutter from the working reference cutter:
+Subtract the main relief hull from the working reference relief volume:
 
-![Exact missing arm-tip cutting volume](../design/efh_07_missing_tip_volume.png)
+![Exact missing arm-tip relief volume](../design/efh_07_missing_tip_volume.png)
 
-The red solid is the exact extra cutting volume that turns the main-hull
+The red solid is the exact extra relief volume that turns the main-hull
 result into the working result at this one arm tip.
 
-### 3B. Working cutter
+### 3B. Working relief volume
 
 The current reference cutter is:
 
 - the same main EF hull; plus
 - the local arm-tip miter hull.
 
-![Working EF cutter](../design/efh_08_reference_cutter.png)
+![Working EF relief volume](../design/efh_08_reference_relief_volume.png)
 
 ### 3C. Working local result
 
@@ -202,7 +201,7 @@ This is the local form of the complete working bracket shown in **1C**.
 ## 4. Test the strongest two-surface version
 
 Instead of guessing a new tip polygon, take the **exact cross-sections of
-the working cutter itself** at the same two Y positions.
+the working relief volume itself** at the same two Y positions.
 
 That gives the proposed two-surface method the best possible input shapes
 at Y=9.4 and Y=10.0.
@@ -244,7 +243,7 @@ candidate.
 
 ## 5. Measured result
 
-CI renders the same local experiment as STL and measures the cutting
+CI renders the same local experiment as STL and measures the relief
 volumes:
 
 | `cs` | `ef` | Reference | Two-surface candidate | XOR | Overcut | Undercut | Missing tip before correction |
@@ -260,7 +259,7 @@ impossible”:
 
 > **Using only two hull surfaces at the existing Y positions does not
 > reproduce the current working arm-tip geometry, even when those two
-> surfaces are exact sections of the working cutter.**
+> surfaces are exact sections of the working relief volume.**
 
 A different construction with more Y sections or a different decomposition
 would be a different experiment.

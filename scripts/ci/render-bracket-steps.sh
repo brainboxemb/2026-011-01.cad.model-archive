@@ -26,9 +26,9 @@ for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extrud
   render inside_corner_methods.scad demo_stage "$stage" "corner_$stage" "720,450"
 done
 
-# Nine stages of the actual bracket geometry. The arm-tip junction is
-# documented by an editable, annotated SVG instead of an unreadable crop.
-for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+# Seven stages cover the actual profile and outside cs hull. The complete
+# elephant-foot hull gets its own dedicated sequence below.
+for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection; do
   render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done
 

@@ -23,6 +23,12 @@ surfaces are shaped correctly?</p>
 the current two-surface hull, then derives a stronger candidate from the
 <strong>exact cross-sections of the working reference cutter</strong>. That avoids
 guessing what the corrected hull surfaces ought to look like.</p>
+<p>For direct manual testing, the production model now exposes:</p>
+<p><code>openscad
+ef_corner_correction = true;</code></p>
+<p>Set it to <code>false</code> in the OpenSCAD Customizer to disable <strong>only</strong> the four
+small arm-tip corrections. The two main <code>inside_relief_envelope()</code> hulls
+remain active, so the difference you see is exactly the corner correction.</p>
 <h2>Reading order</h2>
 <p>The sequence is deliberately the same as the earlier <code>cs</code> hull
 walkthrough:</p>

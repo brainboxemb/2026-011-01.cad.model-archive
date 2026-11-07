@@ -47,5 +47,5 @@
 <text x="791" y="448" font-size="14" fill="#425a70">short hull at this 3D edge.</text>
 </g>
 <rect x="34" y="504" width="1072" height="33" rx="7" fill="#e8f2f8"/>
-<text x="51" y="526" font-family="Arial,sans-serif" font-size="14.5" fill="#24475f">Design question: can the diagonal condition be encoded in the inputs of the EF hull? Worth testing; not yet demonstrated for the full L.</text>
+<text x="51" y="526" font-family="Arial,sans-serif" font-size="14.5" fill="#24475f">Tested simplification: a 2D EF opening cannot encode this Y-dependent diagonal. The local 3D junction hull is required.</text>
 </svg>

@@ -6,8 +6,13 @@ for config in "2 0.6" "0 0.6" "2 0" "3 1.2"; do
   read -r cs ef <<< "$config"
   log="$(mktemp)"
   out="$(mktemp --suffix=.stl)"
-  openscad -o "$out" -D 'view="xor"' \
-    -D "upper_chamfer=$cs" -D "elephant_foot=$ef" "$source_file" >"$log" 2>&1
+  if ! openscad -o "$out" -D 'view="xor"' \
+    -D "upper_chamfer=$cs" -D "elephant_foot=$ef" "$source_file" >"$log" 2>&1; then
+    echo "OpenSCAD failed for cs=$cs, ef=$ef:" >&2
+    cat "$log" >&2
+    rm -f "$log" "$out"
+    exit 1
+  fi
   if ! grep -q 'Current top level object is empty' "$log"; then
     # CGAL can leave a microscopic tetrahedron at a shared hull facet,
     # even when the exact mathematical solids are equivalent.

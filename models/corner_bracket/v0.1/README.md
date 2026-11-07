@@ -74,10 +74,10 @@ From there the subjects are deliberately separated:
 - [Chamfer Guide](docs/chamfer-guide.md) — the **actual bracket**:
   complete polygon, inside radius, outside `cs` hull, elephant-foot
   `ef` hull and the current arm-tip junction.
-- [Elephant-foot Hull Experiment](docs/ef-hull-experiment.md) — the
-  **experiment only**: both EF hull surfaces, hull result, exact missing
-  volume, working reference, exact candidate surfaces, candidate hull,
-  XOR, overcut and undercut.
+- [Elephant-foot relief guide](docs/ef-hull-experiment.md) — the complete
+  **A/B walkthrough**: first the main EF hulls without correction, then the
+  same fixed-view steps with the working arm-tip correction. The local
+  two-surface simplification test follows only after those two sequences.
 - [Hull Guide](docs/hull-guide.md) — a **generic** rectangular-bar
   introduction to `hull()`; no duplicate bracket walkthrough.
 - [Polygon Guide](docs/polygon-guide.md) — the inside-radius construction

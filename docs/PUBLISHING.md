@@ -21,7 +21,7 @@ using NopSCADlib and publishes it to the `gh-pages` branch.
 ## Generator output
 
 The central [CAD drawing image](https://github.com/brainboxemb/docker.scad-toolchain)
-provides the tools needed by NopSCADlib. No repository-local Dockerfile exists.
+provides the tools needed by NopSCADlib. The generator defaults to the **immutable** `ghcr.io/brainboxemb/scad-toolchain-drawing:v0.6.2` release, rather than the moving `:edge` image. An explicit `SCAD_DRAWING_IMAGE` can override it for isolated experiments; production CI should use a verified release. No repository-local Dockerfile exists.
 
 NopSCADlib generates HTML/Markdown build notes, assembly images, STL previews
 and files, and the bill of materials. The corner bracket also generates:

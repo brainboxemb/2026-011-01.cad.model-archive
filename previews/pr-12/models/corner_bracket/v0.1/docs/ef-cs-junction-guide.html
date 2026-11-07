@@ -19,14 +19,17 @@
 <p>There is no elephant-foot correction in this scene.</p>
 <h2>1. The two <code>ef</code> inputs</h2>
 <p><img alt="Two ef inputs" src="../design/junction_01_ef_inputs.png" /></p>
-<p>This should now read exactly like the beam:</p>
+<p>This should now read exactly like the beam.</p>
+<p>For this illustration only, the two inputs are shown as an <strong>exploded view</strong> so
+the lower plate cannot disappear behind the upper volume:</p>
 <ul>
-<li><strong>blue:</strong> one thin <strong>L-shaped bottom plate</strong> on the print bed. It is derived
-  from the already-<code>cs</code>-chamfered footprint and then made <code>ef</code> smaller;</li>
+<li><strong>blue:</strong> one thin <strong>L-shaped bottom plate</strong>. It is derived from the
+  already-<code>cs</code>-chamfered footprint and then made <code>ef</code> smaller;</li>
 <li><strong>orange:</strong> the complete already-<code>cs</code>-chamfered <strong>L volume from height
   <code>ef</code> upward</strong>.</li>
 </ul>
-<p>So there are no abstract vertical profile planes in this explanation.</p>
+<p>The exploded spacing is visual only. The actual <code>hull()</code> uses both inputs at
+their real positions.</p>
 <h2>2. Hull result</h2>
 <p><img alt="Hull result" src="../design/junction_02_ef_hull.png" /></p>
 <p>A single global hull of a concave L would fill its inside corner. Therefore the

@@ -63,10 +63,7 @@ else if (chamfer_step == "07_intersection")
 else if (chamfer_step == "08_print_relief") {
     color("SteelBlue") body();
     translate([armH+16,0,0]) color("DarkOrange")
-        difference() {
-            body();
-            ef_cuts();
-        }
+        chamfered_body();
 }
 else if (chamfer_step == "09_final")
     color("SteelBlue") bracket();

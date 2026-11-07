@@ -53,6 +53,7 @@ cs       = 2;      // 45-degree side-edge chamfers; 0 disables
 
 /* [Print compensation] */
 ef       = 0.6;    // 45-degree elephant-foot relief on print-facing sides; 0 disables
+ef_corner_correction = true; // add the small arm-tip correction where ef meets cs
 r_in     = 2.0;    // inside corner radius: plywood must be rounded at least this much; 0 or >=1
 
 /* [Bolt and captive nut] */
@@ -269,7 +270,8 @@ module chamfered_body() {
         body();
         if (ef > 0) {
             inside_relief_envelope();
-            relief_corner_miters();
+            if (ef_corner_correction)
+                relief_corner_miters();
         }
     }
 }

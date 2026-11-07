@@ -33,6 +33,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           PAGES_PREVIEW_ROOT: previews/pr-${{ github.event.pull_request.number }}
+          PAGES_PREVIEW_BRANCH: ${{ github.head_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           bash scripts/ci/publish-pages.sh

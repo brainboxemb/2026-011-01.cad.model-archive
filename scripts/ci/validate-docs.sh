@@ -118,7 +118,7 @@ if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; t
 fi
 # The main walkthrough stays concise and points to the dedicated construction
 # and experiment pages instead of repeating their geometry.
-require_text 'Elephant-foot Hull Experiment' "$bracket/readme.md"
+require_text 'Elephant-foot relief guide' "$bracket/readme.md"
 require_text '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 require_text '## Printing and assembly' "$bracket/readme.md"
 require_text '## Further reading' "$bracket/readme.md"

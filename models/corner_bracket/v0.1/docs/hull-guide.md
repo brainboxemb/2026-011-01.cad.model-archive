@@ -225,3 +225,37 @@ For the **outer side-edge chamfers**, the code creates a broad and a slightly in
 See [Step 1 and Step 2 of the model design](../index.html) for the actual `profile()`, `side_chamfer_env()`, and `body()` code. The examples are for learning. Step 1 of the real design now uses the
 2D boolean approach; the `hull()` demonstration still applies to its
 outer side-edge chamfers.
+
+---
+
+## Experiment: both bevels in one hull()
+
+The real bracket currently creates **side-edge chamfers** with a hull-based
+limiting volume and **elephant-foot relief** with separate cuts. Can those be
+combined? For a **convex straight arm**, yes. The editable
+[combined chamfer experiment](../design/combined_chamfer_hull.scad) uses a
+single `hull()` around four horizontal rectangular layers:
+
+1. Bottom, inset by `ef = 0.6 mm`.
+2. At `z = ef`, full cross-section.
+3. Near the top, still full cross-section.
+4. Top, inset by `cs = 2 mm`.
+
+![Four layer outlines used for one hull](../design/combined_chamfer_layers.png)
+
+The left example below is made with **one hull**; the right example uses
+three separate hull segments as a geometrical reference. The XOR
+(symmetric difference) is empty for four tested parameter combinations.
+
+![Single hull compared with sectional reference](../design/combined_chamfer_comparison.png)
+
+**What this does not establish:** the full L bracket has a *concave inner
+corner*, a 2 mm inside radius, chamfered arm ends and features that must stay
+flat for plywood contact. Hull across the complete L would fill the opening.
+A full replacement for `side_chamfer_env()` plus `ef_cuts()` would need
+convex subregions and verified joins, including relief around the curved
+inside corner. **The production model is intentionally unchanged.**
+
+Run the experiment's independent checks in the Linux toolchain with
+`bash scripts/ci/verify-combined-chamfer-experiment.sh` from the model directory
+(the CI workflow does this automatically).

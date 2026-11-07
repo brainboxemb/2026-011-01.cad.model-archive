@@ -113,11 +113,25 @@ module clean_body_section_2d(y) {
 
 // INPUT 1: thin L-shaped BOTTOM PLATE.
 //
-// First take the real cs-aware footprint at the printed face. Only after that
-// make the complete L footprint ef smaller.
+// Do NOT project/cut clean_body() exactly at Y=W/2: that plane lies on the
+// boundary of the 3D solid and can collapse to an empty/degenerate section.
+//
+// The 2D shape at the outer printed face is already known directly:
+//   clean_profile() intersected with the cs-inset outer envelope.
+//
+// This is the exact L-shaped equivalent of the beam's chamfered bottom
+// footprint. Only after cs is present do we inset the complete footprint by ef.
+module outer_cs_face_2d() {
+    intersection() {
+        clean_profile();
+        offset(delta = -cs)
+            clean_outer_shape();
+    }
+}
+
 module lower_plate_2d() {
     offset(delta = -ef)
-        clean_body_section_2d(W / 2);
+        outer_cs_face_2d();
 }
 
 module lower_plate(thickness = eps) {

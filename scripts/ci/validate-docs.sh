@@ -56,7 +56,7 @@ if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
   exit 1
 fi
 
-# The main manual should remain concise and link to two focused guides.
+# The main manual is the short entry point and links to each focused guide.
 for page in mounting-options hull-guide polygon-guide chamfer-guide ef-hull-experiment; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
@@ -110,19 +110,13 @@ for svg in elephant-foot-section elephant-foot-edges; do
   require_text "figures/$svg.svg" "$bracket/readme.md"
   require_text "figures/$svg.svg" "$bracket/readme.html"
 done
-for svg in elephant-foot-hull-explained elephant-foot-junction; do
-  test -s "$bracket/figures/$svg.svg" || { echo "Missing SVG: $svg" >&2; exit 1; }
-  require_text "../figures/$svg.svg" "$bracket/docs/chamfer-guide.md"
-  require_text "../figures/$svg.svg" "$bracket/docs/chamfer-guide.html"
-done
 if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; then
   echo "Unreadable corner fragment illustration reintroduced" >&2
   exit 1
 fi
-# The main walkthrough summarizes the two main EF hulls and points to the
-# dedicated Chamfer Guide for the detailed junction geometry.
-require_text 'one per print side' "$bracket/readme.md"
-require_text 'inside_relief_envelope()' "$bracket/readme.md"
+# The main walkthrough stays concise and points to the dedicated construction
+# and experiment pages instead of repeating their geometry.
+require_text 'Elephant-foot Hull Experiment' "$bracket/readme.md"
 require_text '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 require_text '## Printing and assembly' "$bracket/readme.md"
 require_text '## Further reading' "$bracket/readme.md"
@@ -141,7 +135,7 @@ fi
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \
-  'module nut_top()' 'module chamfered_body()' \
+  'module nut_top()' \
   'module plug_local()' 'module plugs_in_place()'; do
   require_text "$source_module" "$bracket/readme.md"
   require_text "$source_module" "$bracket/readme.html"
@@ -157,7 +151,7 @@ for source_module in 'module sloped_hull()'; do
   require_text "$source_module" "$bracket/docs/hull-guide.md"
   require_text "$source_module" "$bracket/docs/hull-guide.html"
 done
-require_text '## 2. Where does this appear in the real bracket?' "$bracket/docs/hull-guide.md"
+require_text '## 2. Applying this to the Corner Bracket' "$bracket/docs/hull-guide.md"
 require_text 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
@@ -181,9 +175,6 @@ for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_acces
 done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
-done
-for stage in layers comparison; do
-  check_image "combined_chamfer_$stage" hull-guide
 done
 for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
   check_image "chamfer_$stage" chamfer-guide
@@ -227,3 +218,9 @@ if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
 fi
 
 echo "Verified generated documentation and all design illustrations."
+
+# The experiment page owns the detailed EF alternative analysis.
+require_text 'surface A → surface B → both surfaces → hull → result' "$bracket/docs/ef-hull-experiment.md"
+require_text '13. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
+require_text '14. Candidate overcut' "$bracket/docs/ef-hull-experiment.md"
+require_text '15. Candidate undercut' "$bracket/docs/ef-hull-experiment.md"

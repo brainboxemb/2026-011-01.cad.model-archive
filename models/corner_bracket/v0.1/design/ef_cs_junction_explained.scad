@@ -12,7 +12,7 @@
 // visually accepted.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_relief, 06_final_body]
+scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_raw_hull, 06_ef_relief, 07_final_body]
 
 /* [Geometry] */
 armH = 40;
@@ -353,16 +353,19 @@ else if (scene == "03_cs_shaped_L") {
 }
 
 else if (scene == "04_ef_inputs") {
-    // Blue: stays on the real inner L boundary, but is smaller across Y.
     color("DeepSkyBlue", 0.82)
         ef_boundary_L_sheet();
 
-    // Orange: complete cs body begins ef normal to the inner L boundary.
     color("DarkOrange", 0.28)
         ef_upper_body();
 }
 
-else if (scene == "05_ef_relief") {
+else if (scene == "05_ef_raw_hull") {
+    color("SeaGreen", 0.88)
+        ef_raw_hull();
+}
+
+else if (scene == "06_ef_relief") {
     color("SeaGreen", 0.90)
         ef_hull();
 

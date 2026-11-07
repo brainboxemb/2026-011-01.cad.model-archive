@@ -50,8 +50,7 @@ for stage in \
   B04_both_surfaces \
   B05_main_hull \
   B06_corner_correction \
-  B07_combined_relief \
-  B08_working_result \
+  B07_working_result \
   07_missing_tip_volume \
   10_exact_reference_inputs \
   11_exact_two_surface_hull \

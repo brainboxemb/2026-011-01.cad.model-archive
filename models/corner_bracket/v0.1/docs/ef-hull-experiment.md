@@ -184,6 +184,23 @@ This view contains only material removed by the working reference but
 
 ![Undercut left by the exact two-surface candidate](../design/efh_15_exact_candidate_undercut.png)
 
+## Measured result
+
+CI renders the same experiment as STL and measures the local cutting
+volumes. With the current exact `projection(cut=true)` input surfaces:
+
+| `cs` | `ef` | Reference | Two-surface candidate | XOR | Overcut | Undercut | Missing tip before correction |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2.0 | 0.6 | 1.2433 | 2.4922 | 1.9006 | 1.5743 | 0.3263 | 0.3772 |
+| 3.0 | 1.2 | 6.0395 | 9.1928 | 6.3398 | 4.7466 | 1.5932 | 2.0005 |
+| 2.0 | 0.3 | 0.3101 | 0.8152 | 0.7139 | 0.6095 | 0.1044 | 0.1108 |
+
+Volumes are in mm³ and refer only to the cropped horizontal arm-tip test
+region. The important point is not the absolute size but that the XOR is
+**not zero** even when the two candidate surfaces are sliced directly from
+the working cutter. The separate overcut and undercut views show where the
+difference comes from.
+
 ## What this experiment does — and does not — prove
 
 The experiment deliberately asks only one question: whether **two hull

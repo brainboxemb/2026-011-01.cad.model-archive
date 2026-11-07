@@ -217,10 +217,10 @@ if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   exit 1
 fi
 
-echo "Verified generated documentation and all design illustrations."
-
 # The experiment page owns the detailed EF alternative analysis.
 require_text 'surface A → surface B → both surfaces → hull → result' "$bracket/docs/ef-hull-experiment.md"
 require_text '13. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
 require_text '14. Candidate overcut' "$bracket/docs/ef-hull-experiment.md"
 require_text '15. Candidate undercut' "$bracket/docs/ef-hull-experiment.md"
+
+echo "Verified generated documentation and all design illustrations."

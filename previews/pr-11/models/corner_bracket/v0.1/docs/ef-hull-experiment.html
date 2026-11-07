@@ -98,32 +98,29 @@ small arm-tip correction added.</p>
 <h2>B5. Same main hull</h2>
 <p><img alt="B5 — same main elephant-foot hull" src="../design/efh_B05_main_hull.png" /></p>
 <p>Up to this point, B is geometrically identical to A.</p>
-<h2>B6. Add only the small arm-tip correction</h2>
-<p>Now the four local correction volumes are added. The red geometry shows
-only the material affected by those corrections.</p>
-<p><img alt="B6 — local arm-tip correction added to the main result" src="../design/efh_B06_corner_correction.png" /></p>
-<p>This is what <code>relief_corner_miters()</code> contributes.</p>
-<h2>B7. Main relief plus corner correction</h2>
-<p>The orange geometry is the main elephant-foot relief. The red geometry is
-the additional arm-tip correction.</p>
-<p><img alt="B7 — combined working relief geometry" src="../design/efh_B07_combined_relief.png" /></p>
-<p>So the working construction is conceptually:</p>
+<h2>B6. Add the correction at the four arm-tip locations</h2>
+<p>At whole-bracket scale the actual correction is too small to read clearly,
+so the same four red location markers are used:</p>
+<p><img alt="B6 — four locations where the arm-tip correction is added" src="../design/efh_B06_corner_correction.png" /></p>
+<p>The exact correction shape is shown later in <strong>C1</strong>, after zooming into one
+of these four locations.</p>
+<p>Conceptually the working construction is:</p>
 <p>```openscad
 difference() {
     body();</p>
 <pre><code>inside_relief_envelope(); // main EF hulls
-relief_corner_miters();   // four small arm-tip corrections
+relief_corner_miters();   // small arm-tip corrections
 </code></pre>
 <p>}
 ```</p>
-<h2>B8. Working bracket</h2>
-<p>Subtracting both gives the current working model:</p>
-<p><img alt="B8 — complete working bracket" src="../design/efh_B08_working_result.png" /></p>
+<h2>B7. Working bracket</h2>
+<p>With the correction enabled, the complete bracket becomes:</p>
+<p><img alt="B7 — complete working bracket" src="../design/efh_B07_working_result.png" /></p>
 <p>This corresponds to:</p>
 <p><code>openscad
 ef_corner_correction = true;</code></p>
 <p>Blocks A and B now establish exactly what changes: <strong>only the four small
-arm-tip corrections.</strong></p>
+arm-tip locations.</strong></p>
 <hr />
 <h1>C. Can the correction be absorbed into the original two hull surfaces?</h1>
 <p>Only now do we zoom into one horizontal arm end on the +Y print side.</p>

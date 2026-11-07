@@ -20,7 +20,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Experiment] */
-experiment_step = "A01_before_ef"; // [A01_before_ef, A02_surface_a, A03_surface_b, A04_both_surfaces, A05_main_hull, A06_main_result, A07_problem_locations, B01_before_ef, B02_surface_a, B03_surface_b, B04_both_surfaces, B05_main_hull, B06_corner_correction, B07_combined_relief, B08_working_result, 00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_relief_volume, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
+experiment_step = "A01_before_ef"; // [A01_before_ef, A02_surface_a, A03_surface_b, A04_both_surfaces, A05_main_hull, A06_main_result, A07_problem_locations, B01_before_ef, B02_surface_a, B03_surface_b, B04_both_surfaces, B05_main_hull, B06_corner_correction, B07_working_result, 00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_relief_volume, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
 
 /* [Hidden] */
 // Keep aligned with production defaults.
@@ -340,7 +340,9 @@ module whole_context_solid() {
 }
 
 module whole_context_ghost() {
-    color([0.72, 0.72, 0.72, 0.30]) whole_before_ef();
+    // Opaque light grey is deliberate: transparent OpenCSG previews produce
+    // distracting striped artifacts that obscure the hull input surfaces.
+    color([0.82, 0.82, 0.82]) whole_before_ef();
 }
 
 // -------- visual stages --------
@@ -397,15 +399,12 @@ else if (experiment_step == "B05_main_hull") {
     color("DarkOrange", 0.82) display_main_hull();
 }
 else if (experiment_step == "B06_corner_correction") {
-    color([0.72, 0.72, 0.72, 0.30]) whole_main_only();
-    color("Red") display_corner_correction();
+    // At whole-bracket scale, mark the four tiny correction locations.
+    // The exact correction volume is shown later in the local C sequence.
+    color("SteelBlue") whole_main_only();
+    color("Red") whole_problem_markers();
 }
-else if (experiment_step == "B07_combined_relief") {
-    whole_context_ghost();
-    color("DarkOrange", 0.78) display_main_relief_both_sides();
-    color("Red", 0.95) display_corner_correction();
-}
-else if (experiment_step == "B08_working_result")
+else if (experiment_step == "B07_working_result")
     color("SteelBlue") whole_working();
 
 // Existing overview/local experiment views retained below.

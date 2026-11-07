@@ -147,38 +147,32 @@ small arm-tip correction added.
 
 Up to this point, B is geometrically identical to A.
 
-## B6. Add only the small arm-tip correction
+## B6. Add the correction at the four arm-tip locations
 
-Now the four local correction volumes are added. The red geometry shows
-only the material affected by those corrections.
+At whole-bracket scale the actual correction is too small to read clearly,
+so the same four red location markers are used:
 
-![B6 — local arm-tip correction added to the main result](../design/efh_B06_corner_correction.png)
+![B6 — four locations where the arm-tip correction is added](../design/efh_B06_corner_correction.png)
 
-This is what `relief_corner_miters()` contributes.
+The exact correction shape is shown later in **C1**, after zooming into one
+of these four locations.
 
-## B7. Main relief plus corner correction
-
-The orange geometry is the main elephant-foot relief. The red geometry is
-the additional arm-tip correction.
-
-![B7 — combined working relief geometry](../design/efh_B07_combined_relief.png)
-
-So the working construction is conceptually:
+Conceptually the working construction is:
 
 ```openscad
 difference() {
     body();
 
     inside_relief_envelope(); // main EF hulls
-    relief_corner_miters();   // four small arm-tip corrections
+    relief_corner_miters();   // small arm-tip corrections
 }
 ```
 
-## B8. Working bracket
+## B7. Working bracket
 
-Subtracting both gives the current working model:
+With the correction enabled, the complete bracket becomes:
 
-![B8 — complete working bracket](../design/efh_B08_working_result.png)
+![B7 — complete working bracket](../design/efh_B07_working_result.png)
 
 This corresponds to:
 
@@ -187,7 +181,7 @@ ef_corner_correction = true;
 ```
 
 Blocks A and B now establish exactly what changes: **only the four small
-arm-tip corrections.**
+arm-tip locations.**
 
 ---
 

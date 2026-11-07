@@ -1,20 +1,16 @@
-// Beam analogue of one Corner Bracket arm tip.
+// Beam experiment: build cs and ef with the same basic idea.
 //
-// This demo deliberately shows each hull() in the same visual pattern:
+// Each operation is shown as:
+//   1. TWO transparent input solids;
+//   2. hull() of those solids;
+//   3. intersection() with the beam.
 //
-//   A. the TWO input objects, transparent and overlaid;
-//   B. the RESULT after hull().
-//
-// The beam includes the end face as well:
-//   * c  : normal upper chamfer on the end profile
-//   * cs : normal chamfer around the printed side faces
-//   * ef : lower end-profile relief + long bottom contact-edge relief
-//
-// The final issue is the lower 3D corner where ef reaches the diagonal cs
-// side bevel.
+// cs and ef use different directions, but the construction principle is the
+// same. This lets us inspect whether their lower corner joins naturally,
+// without adding a special local miter correction.
 
 /* [Demo] */
-scene = "00_plain"; // [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_problem, 06_miter_inputs, 07_fixed]
+scene = "00_plain"; // [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_combined, 06_corner]
 
 /* [Geometry] */
 length = 70;
@@ -25,46 +21,40 @@ cs = 3;
 ef = 1.2;
 
 /* [Hidden] */
-eps = 0.002;
-display_layer = 0.45;
+eps = 0.02;
 reach = 12;
 $fn = 48;
 
-// ---------- Real beam profile ----------
+// ---------- Base beam ----------
 
-module arm_profile_2d(normal_c = 0, tip_ef = 0) {
-    cc = max(0, min(normal_c, min(length, height) / 2));
-    ee = max(0, min(tip_ef, min(length, height) / 2));
-
+// The normal end-profile chamfer c is part of the beam itself.
+// The lower end remains square here; ef will be created by its own hull.
+module beam_profile_2d() {
     polygon([
-        [ee, 0],
-        [length - ee, 0],
-        [length, ee],
-        [length, height - cc],
-        [length - cc, height],
-        [cc, height],
-        [0, height - cc],
-        [0, ee]
+        [0, 0],
+        [length, 0],
+        [length, height - c],
+        [length - c, height],
+        [c, height],
+        [0, height - c]
     ]);
 }
 
+module beam() {
+    rotate([90, 0, 0])
+        linear_extrude(height = width, center = true)
+            beam_profile_2d();
+}
+
 module plain_beam() {
-    rotate([90, 0, 0])
-        linear_extrude(height = width, center = true)
-            square([length, height]);
+    cube([length, width, height]);
 }
 
-module profile_extrusion(tip_ef = 0) {
-    rotate([90, 0, 0])
-        linear_extrude(height = width, center = true)
-            arm_profile_2d(c, tip_ef);
-}
+// ---------- cs: chamfer around the printed side faces ----------
 
-// ---------- cs hull ----------
-
-// Convex helper for cs. It includes the upper end chamfers, but extends below
-// z=0 so the lower contact edge is left to the separate ef operation.
-module cs_outer_2d() {
+// Extend below z=0 so the cs helper does NOT chamfer the bottom edge.
+// The bottom is deliberately reserved for ef.
+module cs_outline_2d() {
     polygon([
         [0, -reach],
         [length, -reach],
@@ -75,231 +65,132 @@ module cs_outer_2d() {
     ]);
 }
 
-// INPUT 1 for cs hull:
-// full X/Z outline, but narrower across Y.
-module cs_input_full_outline() {
+// cs INPUT 1:
+// full X/Z outline, but stopping cs before each printed side face.
+module cs_input_inner() {
     rotate([90, 0, 0])
         linear_extrude(height = width - 2 * cs, center = true)
-            cs_outer_2d();
+            cs_outline_2d();
 }
 
-// INPUT 2 for cs hull:
-// inset X/Z outline, but full width across Y.
-module cs_input_inset_outline() {
+// cs INPUT 2:
+// inset X/Z outline, extending all the way to both printed side faces.
+module cs_input_outer() {
     rotate([90, 0, 0])
         linear_extrude(height = width, center = true)
             offset(delta = -cs)
-                cs_outer_2d();
+                cs_outline_2d();
 }
 
-// RESULT of hull(INPUT 1, INPUT 2).
-module cs_envelope() {
+module cs_hull() {
     hull() {
-        cs_input_full_outline();
-        cs_input_inset_outline();
+        cs_input_inner();
+        cs_input_outer();
     }
 }
 
-// Actual beam after intersecting the cs hull with the real arm profile.
-module normal_chamfered_body() {
+module cs_body() {
     intersection() {
-        profile_extrusion(0);
-        cs_envelope();
+        beam();
+        cs_hull();
     }
 }
 
-// Same normal geometry, but with ef also present across the lower end profile.
-module body_with_tip_ef() {
-    intersection() {
-        profile_extrusion(ef);
-        cs_envelope();
-    }
+// ---------- ef: chamfer around the complete bottom perimeter ----------
+//
+// This is now intentionally the SAME STYLE of construction:
+// two solids -> hull() -> intersection().
+//
+// At z=0 the footprint is inset by ef on ALL four sides, so the elephant-foot
+// relief includes both long bottom edges AND both kopse bottom edges.
+// At z=ef the full beam footprint is restored.
+
+// ef INPUT 1:
+// thin bottom footprint, inset by ef around the complete perimeter.
+module ef_input_bottom() {
+    translate([ef, -width / 2 + ef, 0])
+        cube([length - 2 * ef, width - 2 * ef, eps]);
 }
 
-// ---------- ef hull ----------
-
-// Empty region below the straight bottom contact face.
-module bottom_opening_2d() {
-    translate([-reach, -reach])
-        square([length + 2 * reach, reach]);
+// ef INPUT 2:
+// full footprint starting ef above the print bed and continuing upward.
+// Using a volume rather than a thin layer makes the hull itself the complete
+// envelope that can be intersected with the beam.
+module ef_input_upper() {
+    translate([0, -width / 2, ef])
+        cube([length, width, height + reach]);
 }
 
-module opening_layer(y, expansion = 0, thickness = eps) {
-    translate([0, y, 0])
-        rotate([90, 0, 0])
-            linear_extrude(height = thickness, center = true)
-                offset(delta = expansion)
-                    bottom_opening_2d();
-}
-
-// INPUT 1 for one ef hull:
-// original opening, one ef inward from the printed side.
-module ef_input_inner(side, display = false) {
-    opening_layer(
-        side * (width / 2 - ef),
-        0,
-        display ? display_layer : eps
-    );
-}
-
-// INPUT 2 for one ef hull:
-// expanded opening on the printed side face.
-module ef_input_outer(side, display = false) {
-    opening_layer(
-        side * width / 2,
-        ef,
-        display ? display_layer : eps
-    );
-}
-
-// RESULT for both printed sides.
-module ef_side_envelope() {
-    for (side = [-1, 1])
-        hull() {
-            ef_input_inner(side);
-            ef_input_outer(side);
-        }
-}
-
-module pre_miter_body() {
-    difference() {
-        body_with_tip_ef();
-        ef_side_envelope();
-    }
-}
-
-// ---------- local miter correction ----------
-
-module miter_triangle(A, U, V, D, distance, thickness = eps) {
-    multmatrix([[U[0], V[0], D[0], A[0]],
-                [U[1], V[1], D[1], A[1]],
-                [U[2], V[2], D[2], A[2]],
-                [0, 0, 0, 1]])
-        translate([0, 0, distance])
-            linear_extrude(height = thickness)
-                polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
-}
-
-module relief_miter_hull(A, U, V, D, len) {
+module ef_hull() {
     hull() {
-        miter_triangle(A, U, V, D, 0);
-        miter_triangle(A, U, V, D, len);
+        ef_input_bottom();
+        ef_input_upper();
     }
 }
 
-module right_end_miter_inputs(side, display = false) {
-    s2 = sqrt(2) / 2;
-    A = [length - cs - s2, side * (width / 2 + s2), 0];
-    U = [s2, side * s2, 0];
-    V = [0, 0, 1];
-    D = [s2, -side * s2, 0];
-    len = cs * sqrt(2) + 2;
-    thick = display ? display_layer : eps;
-
-    miter_triangle(A, U, V, D, 0, thick);
-    miter_triangle(A, U, V, D, len, thick);
-}
-
-module right_end_miters() {
-    s2 = sqrt(2) / 2;
-
-    for (side = [-1, 1])
-        relief_miter_hull(
-            [length - cs - s2, side * (width / 2 + s2), 0],
-            [s2, side * s2, 0],
-            [0, 0, 1],
-            [s2, -side * s2, 0],
-            cs * sqrt(2) + 2
-        );
-}
-
-module miter_corrections() {
-    right_end_miters();
-
-    translate([length, 0, 0])
-        mirror([1, 0, 0])
-            translate([-length, 0, 0])
-                right_end_miters();
-}
-
-module fixed_body() {
-    difference() {
-        body_with_tip_ef();
-        ef_side_envelope();
-        miter_corrections();
+module ef_body() {
+    intersection() {
+        beam();
+        ef_hull();
     }
 }
 
-module junction_crop() {
+// Apply BOTH independently constructed envelopes to the same real beam.
+module combined_body() {
+    intersection() {
+        beam();
+        cs_hull();
+        ef_hull();
+    }
+}
+
+// Focus on the lower-right/front corner where the ef bottom hull reaches the
+// diagonal cs side bevel. No special correction is added in this experiment.
+module corner_crop() {
     translate([length - cs - ef - 4, width / 2 - cs - ef - 4, -1])
-        cube([cs + ef + 8, cs + ef + 8, ef + 5]);
+        cube([cs + ef + 8, cs + ef + 8, cs + ef + 5]);
 }
 
 // ---------- scenes ----------
 
 if (scene == "00_plain") {
     color("SteelBlue")
-        plain_beam();
+        beam();
 }
 
 else if (scene == "01_cs_inputs") {
-    // Exactly the two objects passed to cs hull(), shown transparently.
-    color("SteelBlue", 0.38)
-        cs_input_full_outline();
-    color("DarkOrange", 0.38)
-        cs_input_inset_outline();
+    color("SteelBlue", 0.36)
+        cs_input_inner();
+    color("DarkOrange", 0.36)
+        cs_input_outer();
 }
 
 else if (scene == "02_cs_result") {
     color("SteelBlue")
-        normal_chamfered_body();
+        cs_body();
 }
 
 else if (scene == "03_ef_inputs") {
-    // Keep the already chamfered beam faintly visible as context.
-    color("LightSlateGray", 0.16)
-        body_with_tip_ef();
-
-    // Show the two actual inputs for ONE side's ef hull().
-    // The opposite side is identical.
-    color("SteelBlue", 0.42)
-        ef_input_inner(1, true);
-    color("DarkOrange", 0.42)
-        ef_input_outer(1, true);
+    color("SteelBlue", 0.38)
+        ef_input_bottom();
+    color("DarkOrange", 0.24)
+        ef_input_upper();
 }
 
 else if (scene == "04_ef_result") {
     color("SteelBlue")
-        pre_miter_body();
+        ef_body();
 }
 
-else if (scene == "05_problem") {
+else if (scene == "05_combined") {
     color("SteelBlue")
-        intersection() {
-            pre_miter_body();
-            junction_crop();
-        }
-}
-
-else if (scene == "06_miter_inputs") {
-    // The correction is itself another hull: show its two triangular inputs.
-    color("LightSlateGray", 0.16)
-        intersection() {
-            pre_miter_body();
-            junction_crop();
-        }
-
-    color("SteelBlue", 0.48)
-        intersection() {
-            right_end_miter_inputs(1, true);
-            junction_crop();
-        }
+        combined_body();
 }
 
 else {
     color("DarkOrange")
         intersection() {
-            fixed_body();
-            junction_crop();
+            combined_body();
+            corner_crop();
         }
 }

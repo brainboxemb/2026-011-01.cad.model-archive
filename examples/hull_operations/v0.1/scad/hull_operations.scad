@@ -1,23 +1,22 @@
-// Minimal beam analogue of the Corner Bracket chamfer junction.
+// Beam analogue of one Corner Bracket arm tip.
 //
-// This is not a generic rounded beam. It deliberately reproduces the local
-// geometry we are trying to understand:
+// The important point is that the end face is part of the story too:
 //
-//   1. cs bevels the OUTSIDE edges of both printed side faces.
-//   2. the bottom contact edge itself is NOT part of that cs envelope.
-//   3. ef then bevels that bottom contact edge.
-//   4. at each beam end, ef meets the diagonal cs side bevel.
-//   5. a short local miter hull blends that junction.
+//   * c  : normal upper chamfer on the END profile (kopse kant)
+//   * cs : normal chamfer around the printed SIDE faces
+//   * ef : lower end-profile relief AND the long bottom contact-edge relief
 //
-// The beam therefore models one straight arm of the real L bracket.
+// The difficult 3D junction is where the long ef relief reaches the diagonal
+// cs side bevel at the lower end corner. A small local miter hull corrects it.
 
 /* [Demo] */
-scene = "00_plain"; // [00_plain, 01_cs, 02_problem, 03_miter, 04_fixed, 05_final]
+scene = "00_plain"; // [00_plain, 01_normal_chamfers, 02_problem, 03_miter, 04_fixed, 05_final]
 
 /* [Geometry] */
 length = 70;
 width = 24;
 height = 14;
+c = 3;
 cs = 3;
 ef = 1.2;
 
@@ -26,46 +25,89 @@ eps = 0.002;
 reach = 12;
 $fn = 48;
 
-module beam_profile() {
-    square([length, height]);
+// 2D arm profile in X/Z.
+//
+// normal_c controls the normal chamfer at BOTH upper end corners.
+// tip_ef controls the lower end relief at BOTH lower end corners.
+// The latter is the part that was missing from the earlier beam demo.
+module arm_profile_2d(normal_c = 0, tip_ef = 0) {
+    cc = max(0, min(normal_c, min(length, height) / 2));
+    ee = max(0, min(tip_ef, min(length, height) / 2));
+
+    polygon([
+        [ee, 0],
+        [length - ee, 0],
+        [length, ee],
+
+        [length, height - cc],
+        [length - cc, height],
+        [cc, height],
+        [0, height - cc],
+
+        [0, ee]
+    ]);
 }
 
-// The cs helper deliberately extends BELOW the beam. This is the important
-// trick: offset() may bevel the outside end/top edges, while the real bottom
-// contact edge at z=0 is recovered by intersection with beam_profile().
-module outer_envelope_2d() {
-    translate([0, -reach])
-        square([length, height + reach]);
+// Convex helper for cs. It includes the upper end chamfers, but deliberately
+// extends below z=0. Intersecting it with the real profile therefore leaves the
+// bottom contact edge for the separate ef operation.
+module cs_outer_2d() {
+    polygon([
+        [0, -reach],
+        [length, -reach],
+        [length, height - c],
+        [length - c, height],
+        [c, height],
+        [0, height - c]
+    ]);
+}
+
+module profile_extrusion(tip_ef = 0) {
+    rotate([90, 0, 0])
+        linear_extrude(height = width, center = true)
+            arm_profile_2d(c, tip_ef);
 }
 
 module plain_beam() {
     rotate([90, 0, 0])
         linear_extrude(height = width, center = true)
-            beam_profile();
+            square([length, height]);
 }
 
 module cs_envelope() {
     rotate([90, 0, 0])
         hull() {
             linear_extrude(height = width - 2 * cs, center = true)
-                outer_envelope_2d();
+                cs_outer_2d();
             linear_extrude(height = width, center = true)
                 offset(delta = -cs)
-                    outer_envelope_2d();
+                    cs_outer_2d();
         }
 }
 
-// This is the beam after the normal side-edge chamfer.
-// Note that the long bottom contact edge is still sharp.
-module cs_body() {
+// Normal geometry before elephant-foot relief:
+// - upper end-profile chamfer c IS present on the kopse kanten;
+// - side-face chamfer cs IS present;
+// - lower end-profile relief ef is NOT present yet.
+module normal_chamfered_body() {
     intersection() {
-        plain_beam();
+        profile_extrusion(0);
         cs_envelope();
     }
 }
 
-// Empty space below the contact face. It extends past both beam ends so the
-// broad ef hull is concerned only with the long bottom contact edge.
+// Same normal chamfers, now also with the lower end-profile ef chamfers.
+// These lower diagonal faces run across the complete beam width, so the
+// elephant-foot correction is represented on the kopse kanten as well.
+module body_with_tip_ef() {
+    intersection() {
+        profile_extrusion(ef);
+        cs_envelope();
+    }
+}
+
+// Empty space below the straight bottom contact face. It extends beyond both
+// ends because the end-profile ef chamfers are already part of arm_profile_2d().
 module bottom_opening_2d() {
     translate([-reach, -reach])
         square([length + 2 * reach, reach]);
@@ -79,8 +121,8 @@ module opening_layer(y, expansion = 0) {
                     bottom_opening_2d();
 }
 
-// Broad ef cutter on both printed side faces.
-module ef_envelope() {
+// Broad ef relief along BOTH long bottom edges on the printed side faces.
+module ef_side_envelope() {
     for (side = [-1, 1])
         hull() {
             opening_layer(side * (width / 2 - ef));
@@ -88,18 +130,22 @@ module ef_envelope() {
         }
 }
 
-// Result BEFORE the local junction correction.
-// The broad ef relief runs correctly along the bottom edge, but terminates
-// poorly where it reaches the diagonal cs bevel at each beam end.
+// This is the real problem state:
+// - c exists at the upper end faces,
+// - cs exists around the side faces,
+// - ef exists across the lower end faces,
+// - ef also runs along the long lower contact edges,
+// but the endpoint of the broad ef side relief does not make the desired
+// continuous miter against the diagonal cs side bevel.
 module pre_miter_body() {
     difference() {
-        cs_body();
-        ef_envelope();
+        body_with_tip_ef();
+        ef_side_envelope();
     }
 }
 
-// Generic triangular profile swept along a diagonal. This is the same idea
-// used by the real Corner Bracket's relief_corner_miters().
+// Small triangular cutter swept along the local diagonal where cs and ef meet.
+// This mirrors the idea of relief_corner_miters() in the actual bracket.
 module relief_miter_hull(A, U, V, D, len) {
     module triangle_at(distance) {
         multmatrix([[U[0], V[0], D[0], A[0]],
@@ -110,6 +156,7 @@ module relief_miter_hull(A, U, V, D, len) {
                 linear_extrude(height = eps)
                     polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
     }
+
     hull() {
         triangle_at(0);
         triangle_at(len);
@@ -118,6 +165,7 @@ module relief_miter_hull(A, U, V, D, len) {
 
 module right_end_miters() {
     s2 = sqrt(2) / 2;
+
     for (side = [-1, 1])
         relief_miter_hull(
             [length - cs - s2, side * (width / 2 + s2), 0],
@@ -128,9 +176,9 @@ module right_end_miters() {
         );
 }
 
-// Mirror the right-end construction to the left end.
 module miter_corrections() {
     right_end_miters();
+
     translate([length, 0, 0])
         mirror([1, 0, 0])
             translate([-length, 0, 0])
@@ -139,23 +187,26 @@ module miter_corrections() {
 
 module fixed_body() {
     difference() {
-        cs_body();
-        ef_envelope();
+        body_with_tip_ef();
+        ef_side_envelope();
         miter_corrections();
     }
 }
 
-// Crop one lower corner so the cs/ef junction fills the image.
+// Focus on one lower end corner. This contains all three relevant surfaces:
+// the kopse ef face, the long ef side relief and the diagonal cs side bevel.
 module junction_crop() {
     translate([length - cs - ef - 4, width / 2 - cs - ef - 4, -1])
         cube([cs + ef + 8, cs + ef + 8, ef + 5]);
 }
 
 if (scene == "00_plain")
-    color("SteelBlue") plain_beam();
+    color("SteelBlue")
+        plain_beam();
 
-else if (scene == "01_cs")
-    color("SteelBlue") cs_body();
+else if (scene == "01_normal_chamfers")
+    color("SteelBlue")
+        normal_chamfered_body();
 
 else if (scene == "02_problem")
     color("SteelBlue")
@@ -179,4 +230,5 @@ else if (scene == "04_fixed")
         }
 
 else
-    color("SteelBlue") fixed_body();
+    color("SteelBlue")
+        fixed_body();

@@ -1,238 +1,221 @@
-# Chamfers on the Corner Bracket — from 2D vertices to 3D relief
+# Chamfers on the Corner Bracket
 
-This guide follows the **actual v0.1 model**, with ten illustrations
-generated from [chamfer_explained.scad](../design/chamfer_explained.scad).
-You can open that file in OpenSCAD and select `chamfer_step` to inspect
-each stage. The examples use the real model modules whenever possible.
+This is the **one detailed walkthrough** of chamfers in the *actual*
+[Corner Bracket model](../scad/corner_bracket.scad). It follows the
+construction order: **complete 2D polygon → rounded inside corner → 3D
+body → outside chamfers → elephant-foot relief → corner junctions**.
 
-Three different features are easily confused:
+The [Polygon Guide](polygon-guide.html) explains *how* the inside radius
+is built. The [Hull Guide](hull-guide.html) teaches the general
+`hull()` operation with a simple rectangular bar. **This page is where
+those ideas are applied to the real bracket.**
 
-| Setting | Default | Which edge changes? | Operation |
-| --- | ---: | --- | --- |
-| `c` | 3 mm | Ends of both arms | Coordinates in the **2D polygon** |
-| `ce` | 6 mm | Large outside corner joining the arms | Coordinates in the **2D polygon** |
-| `cs` | 2 mm | Long outside edges of the printed *side faces* | `offset()` + `hull()` + `intersection()` |
-| `ef` | 0.6 mm | Printed-side contact edges and junctions with the outer bevel | Two local opening hulls, plus corner-miter hulls |
+| Parameter | Default | Purpose |
+| --- | ---: | --- |
+| `c` | 3 mm | 45° cuts at the two arm ends, part of the original polygon |
+| `ce` | 6 mm | 45° cut at the outside corner, also part of the polygon |
+| `cs` | 2 mm | Bevel along the outside edges of the two broad printed faces |
+| `ef` | 0.6 mm | Print-bed relief along the plywood contact edges, on both printed faces |
+| `r_in` | 2 mm | Rounded *inside* corner of the L; not an edge chamfer |
 
-These operations run at different stages. `c` and `ce` are part of
-the initial **profile**, `cs` changes the **3D side edges**, and
-`ef` removes printing clearance near **both side faces**.
+## 1. The actual profile is already a complete polygon
 
-## 1. Begin with the plain L outline
+There is **no preliminary, plain L polygon in the production model**.
+`sharp_profile()` defines the *entire* outline of the bracket,
+including the outer corner (`ce`), both arm-end chamfers (`c`) and
+the short `ef` bevels at the wood-facing arm tips.
 
-An ordinary L-shaped `polygon()` starts with sharp ends and a sharp
-outer corner. This is a **teaching reference**, not the final model.
+![The real complete polygon, before the inside radius is added](../design/chamfer_02_profile_chamfers.png)
 
-![L outline without the end and outside corner chamfers](../design/chamfer_01_sharp_profile.png)
-
-## 2. Cut the arm ends and large outside corner in 2D
-
-The production `sharp_profile()` draws the arm-end chamfers and the
-large outside corner directly into the polygon. In the same 2D step,
-`inside_corner_2d(r_in)` adds the separate **concave radius** using a
-square-minus-circle shape. Its construction is explained in the
-[Polygon Guide](polygon-guide.html).
-
-![2D profile with end and outside corner chamfers](../design/chamfer_02_profile_chamfers.png)
-
-The following **actual source coordinates** control the 45° cuts:
+The critical points are already in that one `polygon()`:
 
 ```openscad
-[armH, t-c],       // one side of the top arm's end chamfer
-[armH-c, t],       // other side: c mm back
-[-t+ce, t],       // first point at the large outside corner
-[-t, t-ce],       // second point: ce mm down
-[-t, -armV+c],    // vertical arm-end chamfer
-[-t+c, -armV]     // second point at that end
-```
-
-For the defaults, `c = 3` means a 3 × 3 mm 45° cut at each
-arm end. Likewise, `ce = 6` creates a 6 × 6 mm 45° cut across
-the large outside corner. No `hull()` is involved here.
-The tiny `ef` corrections at the *wood-facing arm tips* are
-also represented by the `tip_top`/`tip_vert` point lists.
-They are distinct from these larger cuts.
-
-## 3. Extrude the finished profile across the width
-
-The rounded L becomes a **20 mm wide solid** through
-`linear_extrude(height = W, center = true)`. Rotation puts the
-width along the Y axis, so the broad side faces are at
-`Y = -10` and `Y = +10`.
-
-![2D profile extruded into the initial 3D bracket](../design/chamfer_03_extruded_profile.png)
-
-```openscad
-rotate([90,0,0])
-    linear_extrude(height=W, center=true)
-        profile();
-```
-
-The side-face edges are still square. We now create the **2 mm bevel**
-along those outside edges.
-
-## 4. Why make a convex outer outline?
-
-The temporary `outer_shape()` contains the entire outside perimeter
-of the bracket but fills the open space between its arms. This may
-look wrong, but the helper is **not** intended for printing.
-
-![Convex outer outline used as a cutting envelope](../design/chamfer_04_convex_outline.png)
-
-An `offset()` applied directly to the original L would also change
-its concave inside corner and the plywood contact region. Instead, we
-use the *outer* envelope solely to restrict the outside edges, then
-recover the original L by intersection.
-
-## 5. Prepare the two inputs to hull()
-
-The blue extrusion keeps the **full outside outline**, but is only
-`W-2*cs = 16` mm wide: `Y = -8 ... +8`.
-
-The orange extrusion extends across the **full 20 mm width**,
-but `offset(delta=-cs)` makes its X/Z outline **2 mm smaller**
-all around. Its outer faces are at `Y = -10` and `Y = +10`.
-
-![Full outline and offset outline, both extruded](../design/chamfer_05_hull_inputs.png)
-
-```openscad
-rotate([90,0,0]) {
-    // Full outline, narrower Y range
-    linear_extrude(height=W-2*cs, center=true)
-        outer_shape();
-    // Inset outline, full Y range
-    linear_extrude(height=W, center=true)
-        offset(delta=-cs) outer_shape();
+module sharp_profile() {
+    polygon(concat(tip_top, [
+        [armH, t - c], [armH - c, t], // top arm end, c
+        [-t + ce, t], [-t, t - ce],  // outer corner, ce
+        [-t, -armV + c], [-t + c, -armV] // upright arm end, c
+    ], tip_vert, [[0, 0]]));
 }
 ```
 
-This is different from two stacked flat plates: the **two extrusions
-overlap** in the centre and have different side-face extents.
+The name `sharp_profile()` only means that its **inside corner**
+at `[0,0]` is still sharp. It does **not** mean that its arm
+ends or outside corner are unchamfered.
 
-## 6. Hull joins the two outside envelopes
+`profile()` then makes **one addition** to this complete polygon:
+the small inside fillet made by `inside_corner_2d(r_in)`, using a
+2D square minus a circle. That fillet is added with `union()`.
+See the [Polygon Guide](polygon-guide.html) for its construction.
 
-`hull()` wraps both extrusions and connects their outer boundaries.
-From the unchanged middle at `Y = ±8` to the smaller outline at
-`Y = ±10`, it produces a sloping 2 mm side-edge transition.
+![The same polygon after adding only the rounded inside-corner piece](../design/chamfer_02_inside_radius_added.png)
 
-![Convex hull combining the full and inset envelopes](../design/chamfer_06_hull_envelope.png)
+The difference between these two pictures is **only** the small
+inside fillet. The arm ends and outside corner do not change.
+
+Finally, `linear_extrude(height = W, center = true)` and
+`rotate([90,0,0])` turn this profile into a 20 mm-wide solid:
+its broad printed faces lie at **Y = −10 and +10 mm**.
+
+![Extruded bracket before 3D side-edge chamfers](../design/chamfer_03_extruded_profile.png)
+
+## 2. Outside side-edge chamfers: `cs`
+
+The `c` and `ce` cuts above were drawn in **2D**. The outer
+side-edge bevel `cs` is different: it changes the **3D thickness
+edges** near Y = ±10.
+
+The model constructs a temporary **convex outer envelope**,
+`outer_shape()`. It *deliberately fills the open inside of the L*,
+because this is only a helper for the outside edges.
+
+![Convex outside helper used for the side chamfer](../design/chamfer_04_convex_outline.png)
+
+Two overlapping solids form the input to `hull()`:
+
+| First input | Second input |
+| --- | --- |
+| Full outside outline | Outline inset using `offset(delta = -cs)` |
+| Width `W - 2*cs = 16` mm | Full width `W = 20` mm |
+| Y from −8 to +8 mm | Y from −10 to +10 mm |
+
+![The two inputs of the side-edge hull](../design/chamfer_05_hull_inputs.png)
 
 ```openscad
-rotate([90,0,0]) hull() {
-    linear_extrude(height=W-2*cs, center=true)
-        outer_shape();
-    linear_extrude(height=W, center=true)
-        offset(delta=-cs) outer_shape();
+module side_chamfer_env() {
+    rotate([90,0,0]) hull() {
+        linear_extrude(height=W-2*cs, center=true)
+            outer_shape();                   // full outline, narrow Y
+        linear_extrude(height=W, center=true)
+            offset(delta=-cs) outer_shape(); // inset outline, full Y
+    }
 }
 ```
 
-The envelope is convex, so the **inside of the L is filled in**.
-This is expected and still not a printable part.
+The outer boundary moves inward by **2 mm** between Y = ±8
+and Y = ±10. `hull()` joins these boundaries with sloping
+faces. The resulting helper is still convex and fills the L opening.
 
-## 7. Intersect the hull with the real L
+![Convex hull envelope before clipping back to the real L](../design/chamfer_06_hull_envelope.png)
 
-`intersection()` keeps only the material shared by the true
-extruded L and the chamfer envelope. This removes the unwanted
-filled-in region and retains the actual concave inside radius.
+The **next operation is essential**:
+`intersection()` with the true extruded `profile()` removes
+the unwanted convex fill. Only the real L with its outside
+side-edge bevels remains.
 
-![Actual L bracket with outside side-edge chamfers](../design/chamfer_07_intersection.png)
+![Actual body after the outside side-edge hull and intersection](../design/chamfer_07_intersection.png)
+
+## 3. Elephant-foot relief: the second hull construction
+
+The bracket is printed on a broad Y-facing side. With the defaults,
+`W=20` and `ef=0.6`, each print side gets its own local transition
+between **Y=9.4 mm** and **Y=10.0 mm** (and mirrored at negative Y).
+
+This section deliberately follows the **same five-step pattern** as the
+outside `cs` hull above.
+
+### A. First hull surface — unchanged opening
+
+The cutter starts from the empty space between the two arms,
+`inside_opening_2d()`. The first thin surface is placed at Y=9.4 mm
+without an offset:
+
+![First elephant-foot hull surface](../design/efh_02_inner_main_input.png)
 
 ```openscad
-intersection() {
-    profile_extrusion();
-    side_chamfer_env();
+opening_layer(W/2 - ef);
+```
+
+### B. Second hull surface — expanded opening
+
+At the actual print face, Y=10.0 mm, the same opening is expanded by
+`ef=0.6`:
+
+![Second elephant-foot hull surface](../design/efh_03_outer_main_input.png)
+
+```openscad
+opening_layer(W/2, ef);
+```
+
+### C. Both hull surfaces together
+
+These are the two children passed to `hull()` for the +Y print side:
+
+![Both elephant-foot hull surfaces](../design/efh_04_both_main_inputs.png)
+
+The −Y side uses the mirrored pair.
+
+### D. Resulting hull volume
+
+`hull()` connects the two surfaces with the 45° transition:
+
+![Elephant-foot hull volume](../design/efh_05_main_hull.png)
+
+```openscad
+module inside_relief_envelope() {
+    if (ef > 0)
+        for (side=[-1,1])
+            hull() {
+                opening_layer(side*(W/2-ef));
+                opening_layer(side*W/2, ef);
+            }
 }
 ```
 
-This is the role of `body()` in the model. Changing `cs` changes
-the side-edge bevel; it does **not** replace the profile's `c`,
-`ce` or `r_in`.
+### E. Subtract the hull from the real body
 
-## 8. Apply hull-based elephant-foot relief
+Subtracting both local hulls from `body()` gives the main
+elephant-foot relief along the straight plywood-contact faces and the
+rounded inside corner:
 
-The bracket rests on a **side face** while printing. Bulging first
-layers could prevent the L's inner surfaces from seating against the
-plywood. The parameter `ef = 0.6` mm removes material near the
-wood-facing edges at `Y = -10` and `Y = +10`.
+![Bracket after the two main elephant-foot hulls](../design/efh_06_main_result.png)
 
-**Left:** `body()` with only the outer side-edge bevels.
-**Right:** `chamfered_body()` after the new inner-opening relief
-has been subtracted. Neither has nut holes yet.
+That is the complete **second hull walkthrough**: input A, input B,
+both inputs, hull, subtraction result.
 
-![Before and after wood-contact edge relief](../design/chamfer_08_print_relief.png)
+## 4. Arm-tip junction
 
-Instead of moving separate triangular cutters along each line and
-revolving another cutter around the arc, the production code:
+At the arm end, the main elephant-foot hull meets the existing diagonal
+`cs` side bevel. The two main hulls leave a small local mismatch:
 
-1. Builds the empty area between the arms with
-   `inside_opening_2d()`. This **convex opening** has a straight
-   boundary along both plywood faces and a circular inner transition.
-2. At `Y = ±9.4`, uses that original 2D opening; at `Y = ±10`,
-   expands it by 0.6 mm with `offset(delta=ef)`.
-3. Uses **one local hull per side** to connect those two profiles.
-4. Adds **two more short hulls per printed side** where the relief meets
-   the diagonal `cs` bevels at the arm ends. Those junctions otherwise
-   leave a visible flat termination at the corner.
-5. Subtracts the opening and miter hulls from the outside-chamfered
-   body with `difference()`.
+![Exact missing arm-tip cutting volume](../design/efh_07_missing_tip_volume.png)
 
-Why not just one hull from one printed side to the other? A global
-convex hull would bridge **both expanded ends**, enlarging the opening
-through the whole central width. Two local hulls avoid that mistake.
+The current production model adds a short local miter hull at that
+junction. This gives the working reference result:
+
+![Working arm-tip result](../design/efh_09_reference_result.png)
 
 ```openscad
 module chamfered_body() {
     difference() {
-        body();                      // outside: cs hull bevel
+        body();
         if (ef > 0) {
-            inside_relief_envelope(); // inner plywood-facing edges
-            relief_corner_miters();  // diagonal arm-tip junctions
+            inside_relief_envelope();
+            relief_corner_miters();
         }
     }
 }
 ```
 
-### Close-up: the corner where two chamfers meet
+Whether that local correction can be folded back into **only the two
+main hull surfaces** is deliberately kept out of this construction
+guide. It is tested step by step, including the exact input surfaces,
+candidate hull, XOR, overcut and undercut, in the
+[Elephant-foot Hull Experiment](ef-hull-experiment.html).
 
-The broad inner-opening hulls by themselves leave a small unwanted
-termination where the elephant-foot allowance meets a diagonal outer
-side-edge bevel. This is hard to see in a full model view and barely
-changes the overall mesh volume. A separate **small triangular profile**
-gets swept along each local diagonal with `hull()`.
+## 5. What is checked, and what is not
 
-![Before, small diagonal hull cutter and completed tip junction](../design/chamfer_10_corner_junction.png)
+The CI test `verify-elephant-foot-hull.sh` compares the
+complete bracket with the former per-edge cutter implementation,
+including its mounting holes. A second check isolates the
+four arm-tip junctions. Both tests passed for the supported
+parameter combinations in PR #10.
 
-**Left:** inner-opening hulls only. **Middle:** isolated diagonal miter
-cutting hull. **Right:** both opening and miter hulls applied. The
-figure crops the horizontal arm-tip corner for inspection; the production
-model also handles the opposite side and the other arm.
+The geometry has **not** yet been physically test-printed;
+clearance, strength and the visual quality of every bevel
+still need checking.
 
-A dedicated CI test clips the **symmetric difference** with the former
-model to just these four junctions. It verifies that adding the
-miter hulls removes at least 90% of the local defect volume across the
-supported nonzero `cs`/`ef` combinations. This supplements the
-whole-model 0.1% volume tolerance.
-
-The diagrams locate the small 45-degree contact-edge relief:
-
-![Simplified elephant-foot relief section](../figures/elephant-foot-section.svg)
-
-![Location of plywood-facing relief edges](../figures/elephant-foot-edges.svg)
-
-## 9. Final bracket and regression checks
-
-The final `bracket()` removes the nut access windows and bolt holes
-from `chamfered_body()`.
-
-![Final bracket with chamfers, pockets and relief](../design/chamfer_09_final.png)
-
-The earlier [single-hull straight-bar experiment](hull-guide.html#4-earlier-single-hull-experiment-on-a-straight-bar)
-is still documented, but the **actual L bracket has now changed**:
-the old `ef_cuts()` wedges were removed. A regression test compares
-the complete new and old solids at several `cs`, `ef` and `r_in`
-settings. Expect small differences at intersections of the old
-individual cutters; the new construction is an intentional geometric
-refactor, **not a physical fit or strength verification**.
-
-For the mathematical principle and its rectangular-bar introduction,
-see the separate [Hull Guide](hull-guide.html).
+For a first introduction to `hull()`, continue with the
+[short Hull Guide](hull-guide.html). For the mathematical
+construction of the inside radius, use the
+[Polygon Guide](polygon-guide.html).

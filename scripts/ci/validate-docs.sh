@@ -4,6 +4,14 @@
 set -euo pipefail
 trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 
+require_text() {
+  local pattern="$1" file="$2"
+  if ! grep -Fq "$pattern" "$file"; then
+    echo "Missing required text in $file: $pattern" >&2
+    exit 1
+  fi
+}
+
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"
 test -s "$spacer/stls/spacer.png"
@@ -27,7 +35,7 @@ test -s "$bracket/scad/corner_bracket.scad"
 test -s "$bracket/scad/inspection.scad"
 test ! -e "$bracket/scad/documentation.scad"
 test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
-for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull; do
+for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull ef_hull_experiment; do
   test -s "$bracket/design/$source.scad"
 done
 test -s "$bracket/docs/documentation.scad"
@@ -48,8 +56,8 @@ if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
   exit 1
 fi
 
-# The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+# The main manual is the short entry point and links to each focused guide.
+for page in mounting-options hull-guide polygon-guide chamfer-guide ef-hull-experiment; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
   grep -Fq "docs/$page.html" "$bracket/readme.md"
@@ -98,17 +106,27 @@ PY
 
 # Elephant-foot compensation has its own illustrated explanation in the manual.
 for svg in elephant-foot-section elephant-foot-edges; do
-  test -s "$bracket/figures/$svg.svg"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.md"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.html"
+  test -s "$bracket/figures/$svg.svg" || { echo "Missing SVG: $svg" >&2; exit 1; }
+  require_text "figures/$svg.svg" "$bracket/readme.md"
+  require_text "figures/$svg.svg" "$bracket/readme.html"
 done
-grep -Fq 'Y = +W/2' "$bracket/readme.md"
-grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
-grep -Fq '## Printing and assembly' "$bracket/readme.md"
-grep -Fq '## Further reading' "$bracket/readme.md"
+if grep -Fq 'chamfer_10_corner_junction.png' "$bracket/docs/chamfer-guide.md"; then
+  echo "Unreadable corner fragment illustration reintroduced" >&2
+  exit 1
+fi
+# The main walkthrough stays concise and points to the dedicated construction
+# and experiment pages instead of repeating their geometry.
+require_text 'Elephant-foot Hull Experiment' "$bracket/readme.md"
+require_text '### 2. Outer side-edge chamfers' "$bracket/readme.md"
+require_text '## Printing and assembly' "$bracket/readme.md"
+require_text '## Further reading' "$bracket/readme.md"
 # The hull primer is linked at Step 2 and in Further reading.
-grep -Fq 'New to `hull()`?' "$bracket/readme.md"
-test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
+require_text 'New to `hull()`?' "$bracket/readme.md"
+hull_guide_refs="$(grep -Fc 'hull-guide.html' "$bracket/readme.md")"
+if [[ "$hull_guide_refs" -lt 2 ]]; then
+  echo "Expected at least 2 hull-guide links in $bracket/readme.md, found $hull_guide_refs" >&2
+  exit 1
+fi
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
   exit 1
@@ -117,34 +135,38 @@ fi
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \
-  'module nut_top()' 'module chamfered_body()' \
+  'module nut_top()' \
   'module plug_local()' 'module plugs_in_place()'; do
-  grep -Fq "$source_module" "$bracket/readme.md"
-  grep -Fq "$source_module" "$bracket/readme.html"
+  require_text "$source_module" "$bracket/readme.md"
+  require_text "$source_module" "$bracket/readme.html"
 done
-grep -Fq '<pre><code>' "$bracket/readme.html"
+require_text '<pre><code>' "$bracket/readme.html"
 if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
   echo "Extended hull tutorial leaked back into the main design manual" >&2
   exit 1
 fi
 
 # The hull guide now progresses from a simple bar to the real bracket.
-for source_module in 'module sloped_hull()' 'module side_chamfer_env()' 'module body()'; do
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
+for source_module in 'module sloped_hull()'; do
+  require_text "$source_module" "$bracket/docs/hull-guide.md"
+  require_text "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq '## 2. How the real corner bracket uses hull' "$bracket/docs/hull-guide.md"
+require_text '## 2. Applying this to the Corner Bracket' "$bracket/docs/hull-guide.md"
+require_text 'There is **no preliminary, plain L polygon' "$bracket/docs/chamfer-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
   local file="$1" page="$2"
-  test -s "$bracket/design/$file.png"
+  test -s "$bracket/design/$file.png" || {
+    echo "Missing generated design image: $bracket/design/$file.png" >&2
+    exit 1
+  }
   if [[ "$page" == "readme" ]]; then
-    grep -Fq "design/$file.png" "$bracket/readme.md"
-    grep -Fq "design/$file.png" "$bracket/readme.html"
+    require_text "design/$file.png" "$bracket/readme.md"
+    require_text "design/$file.png" "$bracket/readme.html"
   else
-    grep -Fq "../design/$file.png" "$bracket/docs/$page.md"
-    grep -Fq "../design/$file.png" "$bracket/docs/$page.html"
+    require_text "../design/$file.png" "$bracket/docs/$page.md"
+    require_text "../design/$file.png" "$bracket/docs/$page.html"
   fi
 }
 
@@ -154,11 +176,27 @@ done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
 done
-for stage in layers comparison; do
-  check_image "combined_chamfer_$stage" hull-guide
-done
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
   check_image "chamfer_$stage" chamfer-guide
+done
+
+for stage in \
+  01_opening_profile \
+  02_inner_main_input \
+  03_outer_main_input \
+  04_both_main_inputs \
+  05_main_hull \
+  06_main_result \
+  07_missing_tip_volume \
+  08_reference_cutter \
+  09_reference_result \
+  10_exact_reference_inputs \
+  11_exact_two_surface_hull \
+  12_exact_candidate_result \
+  13_exact_candidate_xor \
+  14_exact_candidate_overcut \
+  15_exact_candidate_undercut; do
+  check_image "efh_$stage" ef-hull-experiment
 done
 
 # 2D and 3D rounding alternatives must both be illustrated in the
@@ -168,15 +206,21 @@ for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extrud
 done
 
 for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
+  require_text "$snippet" "$bracket/docs/polygon-guide.md"
+  require_text "$snippet" "$bracket/docs/polygon-guide.html"
 done
-grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
-grep -Fq 'chamfer-guide.html' "$bracket/readme.html"
-grep -Fq 'polygon-guide.html' "$bracket/readme.html"
+require_text 'polygon-guide.html' "$bracket/docs/hull-guide.html"
+require_text 'chamfer-guide.html' "$bracket/readme.html"
+require_text 'polygon-guide.html' "$bracket/readme.html"
 if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   echo "General polygon tutorial leaked into the bracket walkthrough" >&2
   exit 1
 fi
 
 echo "Verified generated documentation and all design illustrations."
+
+# The experiment page owns the detailed EF alternative analysis.
+require_text 'surface A → surface B → both surfaces → hull → result' "$bracket/docs/ef-hull-experiment.md"
+require_text '13. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
+require_text '14. Candidate overcut' "$bracket/docs/ef-hull-experiment.md"
+require_text '15. Candidate undercut' "$bracket/docs/ef-hull-experiment.md"

@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate generated preview navigation
+        run: python3 scripts/ci/test-preview-index.py
+
       - name: Generate and validate model documentation
         run: bash scripts/ci/generate-docs.sh
 
@@ -33,6 +36,7 @@ jobs:
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           PAGES_PREVIEW_ROOT: previews/pr-${{ github.event.pull_request.number }}
+          PAGES_PREVIEW_BRANCH: ${{ github.head_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           bash scripts/ci/publish-pages.sh

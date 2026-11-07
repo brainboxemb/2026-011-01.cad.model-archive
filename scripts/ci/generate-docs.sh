@@ -37,6 +37,11 @@ in_container /work/models/corner_bracket/v0.1 \
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/verify-elephant-foot-hull.sh
 
+# Test the proposed "two corrected hull surfaces only" EF simplification
+# independently from the production geometry.
+in_container /work/models/corner_bracket/v0.1 \
+  bash /work/scripts/ci/verify-ef-two-surface-experiment.sh
+
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/render-bracket-steps.sh
 
@@ -53,6 +58,6 @@ trap - EXIT
 
 # Generate guide HTML next to its Markdown in docs/.
 in_container /work/models/corner_bracket/v0.1/docs \
-  bash -c 'for page in mounting-options hull-guide polygon-guide chamfer-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
+  bash -c 'for page in mounting-options hull-guide polygon-guide chamfer-guide ef-hull-experiment; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
 bash scripts/ci/validate-docs.sh

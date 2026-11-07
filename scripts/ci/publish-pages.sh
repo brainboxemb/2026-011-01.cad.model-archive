@@ -44,14 +44,36 @@ else
   cp -a "$bracket/figures" "$target/$bracket/"
   mkdir -p "$target/$bracket/docs"
   cp "$bracket/docs/"*.md "$bracket/docs/documentation.scad" "$target/$bracket/docs/"
-  for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+  for page in mounting-options hull-guide polygon-guide chamfer-guide ef-hull-experiment; do
     cat site/guide-header.html "$bracket/docs/$page.html" > "$target/$bracket/docs/$page.html"
     printf '\n</main></body></html>\n' >> "$target/$bracket/docs/$page.html"
     test -s "$target/$bracket/docs/$page.html"
   done
   cp site/index.html site/site.css "$target/"
+  if [[ -n "$preview" ]]; then
+    # Save the branch identity for the public landing page. This is a PR
+    # number, not an arbitrary path. The Python index builder HTML-escapes
+    # the displayed branch name.
+    PREVIEW_META_PATH="$target/preview.json" PREVIEW_PATH="$preview" \
+      python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+number = int(os.environ["PREVIEW_PATH"].split("pr-")[1])
+branch = os.environ.get("PAGES_PREVIEW_BRANCH", "")
+Path(os.environ["PREVIEW_META_PATH"]).write_text(
+    json.dumps({"pr": number, "branch": branch}, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+  fi
   touch "$worktree/.nojekyll"
 fi
+
+# Always update the ROOT homepage, even when publishing/removing a PR
+# preview. Never replace the root homepage template from a PR branch:
+# the generator updates only the preview navigation region.
+python3 scripts/ci/update-preview-index.py "$worktree"
 
 git -C "$worktree" config user.name "github-actions[bot]"
 git -C "$worktree" config user.email "41898282+github-actions[bot]@users.noreply.github.com"

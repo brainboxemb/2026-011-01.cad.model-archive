@@ -9,6 +9,19 @@
 //! clearances, plywood corner relief and printed-part strength before use.
 //! All dimensions below are millimetres.
 //!
+//! ## Where to read what
+//!
+//! Keep the documentation split by purpose:
+//!
+//! - **This page:** short model walkthrough and assembly context.
+//! - [Chamfer Guide](docs/chamfer-guide.html): the actual `c`, `ce`,
+//!   `cs` and `ef` construction, step by step.
+//! - [Elephant-foot Hull Experiment](docs/ef-hull-experiment.html):
+//!   the separate two-surface experiment, with every input, result and XOR.
+//! - [Hull Guide](docs/hull-guide.html): only the general `hull()` concept.
+//! - [Polygon Guide](docs/polygon-guide.html): only the 2D inside-radius method.
+//! - [Mounting Options](docs/mounting-options.html): bolts, nuts and alternatives.
+//!
 //! ## Design walkthrough
 //!
 //! The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains **what happens and why**, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in [corner_bracket.scad](scad/corner_bracket.scad); you can explore the steps in [design.scad](design/design.scad). All dimensions are in millimetres.
@@ -18,10 +31,10 @@
 //! For a visual explanation of the **arm-end and outside corner chamfers**
 //! (`c` and `ce`), see the [Chamfer Guide](docs/chamfer-guide.html).
 //!
-//! **Start with a simple L shape.** `polygon()` connects the vertices
-//! around the bracket's outline. The two arm-end bevels and the outside
-//! corner chamfer are included directly. The inner corner is initially
-//! sharp at `(0, 0)`.
+//! **The original `polygon()` already contains the complete bracket
+//! outline.** Both arm-end bevels and the outside-corner chamfer are
+//! defined by its vertices. Only the inside corner at `(0,0)` is
+//! initially sharp; a small curved piece is added afterwards.
 //!
 //! **Add a small rounded piece using ordinary 2D shapes.** Place a
 //! `r_in × r_in` square just inside the sharp corner. Subtract a
@@ -76,8 +89,8 @@
 //!
 //! **New to `hull()`?** Read the [illustrated Hull Guide](docs/hull-guide.html)
 //! for the underlying operation, then the [Chamfer Guide](docs/chamfer-guide.html)
-//! for **nine pictures of this actual model**: the polygon bevels, both hull
-//! inputs, their convex envelope, clipping to the L and the print relief.
+//! for the complete **actual model construction**, including the
+//! polygon bevels, outside hull, elephant-foot hull and tip junction.
 //!
 //! The sharp *side* edges get a bevel. The code first creates two versions
 //! of the outside outline: one narrower in width and one with a smaller
@@ -170,101 +183,24 @@
 //!
 //! ### 4. Elephant-foot relief
 //!
-//! The [Chamfer Guide](docs/chamfer-guide.html) compares the side-edge
-//! bevel and the elephant-foot relief visually, before and after each cut.
+//! The bracket is printed on a broad Y-facing side. `ef = 0.6` leaves
+//! a small 45° allowance near both print faces so first-layer expansion
+//! does not interfere with the plywood-contact surfaces.
 //!
-//! **What is elephant foot?** The very first printed layers sometimes
-//! spread sideways where they touch the print bed. A nominally square edge
-//! can become slightly wider at the base. The bracket is printed on one
-//! of its flat **side faces**, so this bulge can interfere with the surfaces
-//! where the bracket should fit against the plywood.
+//! ![Why first-layer compensation is needed](figures/elephant-foot-section.svg)
+//! ![Where the affected edges are](figures/elephant-foot-edges.svg)
 //!
-//! The solution is not to change the entire bracket. We remove a very
-//! small **45-degree triangle** at the edges near the print bed. The
-//! parameter `ef = 0.6` mm sets the nominal size of this relief;
-//! the illustration deliberately exaggerates it so you can see the cut.
+//! The complete geometry is deliberately **not repeated here**.
+//! The [Chamfer Guide](docs/chamfer-guide.html) shows the same sequence as
+//! the outside `cs` hull: first surface, second surface, both surfaces,
+//! resulting hull and subtraction result.
 //!
-//! ![First layer bulge versus an intentional triangular relief](figures/elephant-foot-section.svg)
+//! The remaining arm-tip question is kept separate in the
+//! [Elephant-foot Hull Experiment](docs/ef-hull-experiment.html), where
+//! the current two-surface hull, the working reference, the strongest
+//! two-surface candidate and its XOR/overcut/undercut are shown individually.
 //!
-//! **Where are these triangles removed?** The bracket has three kinds of
-//! wood-facing edges: a straight edge along the horizontal arm, a straight
-//! edge along the vertical arm, and the rounded inside corner. Relief is
-//! applied at **both printed side faces** (`Y = +W/2` and `Y = -W/2`).
-//!
-//! ![Wood-facing relief edge locations on the bracket](figures/elephant-foot-edges.svg)
-//!
-//! **We now use the same hull principle as for the outer side bevels.**
-//! The opening between the arms is a convex 2D helper shape, with a
-//! quarter-circle boundary at the rounded inside corner. We create
-//! one normal copy at `Y = ±(W/2 - ef)` and one copy expanded by
-//! `ef` at `Y = ±W/2`. A `hull()` connects these two outlines.
-//!
-//! Two **separate hulls**, one for each printed side, are necessary:
-//! joining the two expanded outside slices in a *single* global hull
-//! would remove material through the entire middle of the bracket.
-//! With two local hulls, only the outer 0.6 mm on each side is affected.
-//! At the arm ends, where this relief meets the diagonal `cs` bevel,
-//! small additional `relief_corner_miters()` hulls finish the join.
-//! `difference()` then subtracts the resulting cutting volumes from
-//! `body()`. This naturally follows the straight plywood faces AND the
-//! rounded inner corner, replacing the former individual wedge cutters.
-//!
-//! Setting `ef = 0` disables this relief. `cs` still controls the
-//! larger outside chamfers in Step 2. The small 2D chamfers at the arm
-//! tips are part of Step 1, as before. The geometric regression tests
-//! compare the complete bracket against the former cutting method.
-//! The small differences are concentrated near relief intersections;
-//! actual print fit must still be checked.
-//!
-//! The following render shows the resulting bracket. The complete
-//! cutter modules used in the source code are listed underneath.
-
-//!
-//! ![Elephant-foot relief](design/04_print_relief.png)
-//!
-//! **Relevant OpenSCAD code (shortened):**
-//!
-//!     module inside_opening_2d() {
-//!         reach = max(5, cs + ef + 1);
-//!         difference() {
-//!             translate([0, -armV - reach])
-//!                 square([armH + reach, armV + reach]);
-//!             if (r_in > 0) inside_corner_2d(r_in);
-//!         }
-//!     }
-//!
-//!     module opening_layer(y, expansion = 0) {
-//!         translate([0, y, 0]) rotate([90, 0, 0])
-//!             linear_extrude(height = 0.002, center = true)
-//!                 offset(delta = expansion) inside_opening_2d();
-//!     }
-//!
-//!     module inside_relief_envelope() {
-//!         if (ef > 0)
-//!             for (side = [-1, 1])
-//!                 hull() {
-//!                     opening_layer(side * (W / 2 - ef));
-//!                     opening_layer(side * W / 2, ef);
-//!                 }
-//!     }
-//!
-//!     module chamfered_body() {
-//!         difference() {
-//!             body(); // already has the outside hull chamfers
-//!             if (ef > 0) {
-//!                 inside_relief_envelope();
-//!                 relief_corner_miters();
-//!             }
-//!         }
-//!     }
-//!
-//!     module bracket() {
-//!         difference() {
-//!             chamfered_body();
-//!             nut_top();
-//!             nut_side();
-//!         }
-//!     }
+//! ![Bracket after print relief](design/04_print_relief.png)
 //!
 //! ### 5. Access-window plugs
 //!

@@ -26,12 +26,29 @@ for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extrud
   render inside_corner_methods.scad demo_stage "$stage" "corner_$stage" "720,450"
 done
 
-# Single-hull experiment: both outside chamfer and elephant-foot relief.
-for stage in layers comparison; do
-  render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
+# Nine stages of the actual bracket geometry. The arm-tip junction is
+# documented by an editable, annotated SVG instead of an unreadable crop.
+for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done
 
-# Ten stages from 2D chamfers through side hulls, print relief and corner-miter close-up.
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
-  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
+
+# Fifteen local views of the elephant-foot two-surface hull experiment.
+for stage in \
+  01_opening_profile \
+  02_inner_main_input \
+  03_outer_main_input \
+  04_both_main_inputs \
+  05_main_hull \
+  06_main_result \
+  07_missing_tip_volume \
+  08_reference_cutter \
+  09_reference_result \
+  10_exact_reference_inputs \
+  11_exact_two_surface_hull \
+  12_exact_candidate_result \
+  13_exact_candidate_xor \
+  14_exact_candidate_overcut \
+  15_exact_candidate_undercut; do
+  render ef_hull_experiment.scad experiment_step "$stage" "efh_$stage" "900,600"
 done

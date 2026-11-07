@@ -16,15 +16,15 @@
 // remain one bottom L plate and one upper L volume.
 
 /* [Illustration] */
-junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
+junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_lower_plate, 02_upper_volume, 03_ef_inputs, 04_ef_hull, 05_result]
 
 /* [Hidden] */
 use <../scad/corner_bracket.scad>
 
 $fn = 48;
 eps = 0.02;
-display_thickness = 1.0;
-display_explode = 4;
+display_thickness = 2.0;
+display_explode = 6;
 
 // Same production defaults, explicit so the clean baseline is unambiguous.
 armH = 40;
@@ -226,24 +226,36 @@ if (junction_step == "00_l_with_cs") {
             clean_body();
 }
 
-else if (junction_step == "01_ef_inputs") {
-    // Exploded VIEW ONLY.
-    //
-    // IMPORTANT: separate the two inputs AFTER print_orientation(), in world Z.
-    // That makes the lower input visibly sit underneath the upper L, exactly
-    // like the beam demo.
-    color("DeepSkyBlue", 0.82)
+else if (junction_step == "01_lower_plate") {
+    // Show ONLY the lower input first. No transparency and no upper volume.
+    // This must read as one flat L-shaped plate.
+    color("DeepSkyBlue")
+        print_orientation()
+            lower_plate(display_thickness);
+}
+
+else if (junction_step == "02_upper_volume") {
+    // Show ONLY the upper input: the complete cs-chamfered L from ef upward.
+    color("DarkOrange")
+        print_orientation()
+            upper_l_volume();
+}
+
+else if (junction_step == "03_ef_inputs") {
+    // Exploded view after print rotation so the two real inputs are
+    // unmistakably separated in world Z.
+    color("DeepSkyBlue")
         translate([0, 0, -display_explode])
             print_orientation()
                 lower_plate(display_thickness);
 
-    color("DarkOrange", 0.24)
+    color("DarkOrange", 0.45)
         translate([0, 0, display_explode])
             print_orientation()
                 upper_l_volume();
 }
 
-else if (junction_step == "02_ef_hull") {
+else if (junction_step == "04_ef_hull") {
     print_orientation()
         color("SeaGreen")
             l_ef_hulls();

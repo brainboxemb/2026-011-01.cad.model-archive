@@ -221,56 +221,15 @@ module inside_relief_envelope() {
             }
 }
 
-// At each arm tip the EF chamfer meets the *diagonal* cs side chamfer.
-// The opening hull above follows the straight plywood faces and the inside
-// radius, but does not provide this third diagonal miter. This leaves a
-// short, flat termination (visible at the corner in the 3D preview).
-// Connect a triangular relief profile at BOTH ends of each diagonal edge
-// with another local hull(), so the bevel continues through the junction.
-// A profile is only 0.001 mm thick; the hull supplies the swept volume.
-module relief_miter_hull(A, U, V, D, len) {
-    module triangle_at(distance) {
-        multmatrix([[U[0], V[0], D[0], A[0]],
-                    [U[1], V[1], D[1], A[1]],
-                    [U[2], V[2], D[2], A[2]],
-                    [0, 0, 0, 1]])
-            translate([0, 0, distance])
-                linear_extrude(height = 0.001)
-                    polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
-    }
-    hull() {
-        triangle_at(0);
-        triangle_at(len);
-    }
-}
-
-// One diagonal junction at each end of each arm, repeated on both print
-// faces. The rest of the elephant-foot relief still uses the two opening
-// hulls, including the curved inside corner.
-module relief_corner_miters() {
-    s2 = sqrt(2) / 2;
-    if (ef > 0 && cs > 0)
-        for (m = [0, 1]) mirror([0, m, 0]) {
-            // Horizontal arm: diagonal across the side bevel near x=armH.
-            relief_miter_hull([armH - cs - s2, W / 2 + s2, 0],
-                              [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                              cs * sqrt(2) + 2);
-            // Upright arm: equivalent junction near z=-armV.
-            relief_miter_hull([0, W / 2 - cs - s2, -armV - s2],
-                              [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                              cs * sqrt(2) + 2);
-        }
-}
-
-// Keep the two broad inside-opening hulls and add local hulls at the
-// arm-tip/side-chamfer junctions. No per-edge wedge extrusions are needed.
+// Both kinds of chamfer now use hull-based limiting volumes: the outside
+// envelope in body() and these two narrow inner-opening transitions.
+// This replaces the separate straight, diagonal and rotate_extrude()
+// elephant-foot cutters, including the relief at the rounded inside corner.
 module chamfered_body() {
     difference() {
         body();
-        if (ef > 0) {
+        if (ef > 0)
             inside_relief_envelope();
-            relief_corner_miters();
-        }
     }
 }
 

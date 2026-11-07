@@ -32,7 +32,7 @@ and files, and the bill of materials. The corner bracket also generates:
 - six images explaining its actual geometry;
 - five images demonstrating `hull()` using a rectangular bar;
 - nine images comparing 2D versus 3D construction of the inside corner;
-- eight images walking through the actual polygon and chamfer steps;
+- nine images walking through the actual polygon and chamfer steps;
 - two editable SVG diagrams explaining the elephant-foot hull inputs
   and the arm-tip junction;
 - two images from the combined-hull experiment on a straight arm.

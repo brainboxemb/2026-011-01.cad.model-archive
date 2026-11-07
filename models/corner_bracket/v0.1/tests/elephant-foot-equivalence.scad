@@ -67,12 +67,20 @@ module tip_regions() {
 }
 // Reproduce the intermediate construction that caused a visible flat point
 // where the EF relief meets the side bevel at the arm ends.
+// Regression reference for the intermediate construction WITHOUT the
+// two arm-end hulls. Production inside_relief_envelope() now already
+// contains those hulls as part of relief_side().
 module without_corner_miters() {
     difference() {
         body();
         nut_top();
         nut_side();
-        inside_relief_envelope();
+        if (ef > 0)
+            for (side = [-1, 1])
+                hull() {
+                    opening_layer(side * (W / 2 - ef));
+                    opening_layer(side * W / 2, ef);
+                }
     }
 }
 module symmetric_difference() {

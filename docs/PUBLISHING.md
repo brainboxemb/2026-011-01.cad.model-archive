@@ -21,28 +21,39 @@ using NopSCADlib and publishes it to the `gh-pages` branch.
 ## Generator output
 
 The central [CAD drawing image](https://github.com/brainboxemb/docker.scad-toolchain)
-provides the tools needed by NopSCADlib. The generator defaults to the **immutable** `ghcr.io/brainboxemb/scad-toolchain-drawing:v0.6.3` release, rather than the moving `:edge` image. An explicit `SCAD_DRAWING_IMAGE` can override it for isolated experiments; production CI should use a verified release. No repository-local Dockerfile exists.
+provides the tools needed by NopSCADlib. The generator defaults to the **immutable**
+`ghcr.io/brainboxemb/scad-toolchain-drawing:v0.6.3` release, rather than
+moving `:edge`. `SCAD_DRAWING_IMAGE` can override this for isolated
+experiments; production CI should use a verified release. No
+repository-local Dockerfile exists.
 
 NopSCADlib generates HTML/Markdown build notes, assembly images, STL previews
 and files, and the bill of materials. The corner bracket also generates:
 - six images explaining its actual geometry;
 - five images demonstrating `hull()` using a rectangular bar;
-- seven images comparing `hull()` around circles with the **former sampled
-  quarter-circle** construction of the bracket's concave inside corner;
-- nine images comparing 2D and 3D constructions from ordinary shapes.
+- nine images comparing 2D versus 3D construction of the inside corner;
+- ten images walking through the different chamfers and a close-up of
+  the elephant-foot/side-bevel junction;
+- two images from the combined-hull experiment on a straight arm.
 
 The current bracket uses the **2D square-minus-circle construction**.
 Before generating the documentation, CI compares this profile with the
 former 19-point polygon profile for several radii and print-relief settings
 using [geometry equivalence checks](../scripts/ci/verify-corner-rounding.sh).
 
-The main design manual keeps only the **six actual bracket stages**.
-The extended bar and circle examples are published as `docs/hull-guide.html`;
-the nine-stage **2D versus 3D inside-corner construction** is published as
-`docs/polygon-guide.html`, with images generated from
-`design/inside_corner_methods.scad`. The `docs/mounting-options.html` comparison contains
-editable SVG cross-section diagrams for the alternative fixing arrangements.
-The main manual also has SVG illustrations explaining the elephant-foot cuts.
+The main design manual keeps only **six actual bracket stages**.
+The extended bar and real-bracket hull explanation live in
+`docs/hull-guide.html`; the nine-stage 2D/3D inside-corner comparison
+lives in `docs/polygon-guide.html`. The ten-stage chamfer walkthrough,
+including a focused junction close-up, lives in `docs/chamfer-guide.html`.
+The `docs/mounting-options.html` comparison contains editable SVG
+cross-section diagrams for fixing alternatives. The main manual also
+illustrates elephant-foot compensation with SVG diagrams.
+
+CI checks the printable bracket with the original per-edge relief method
+across nine parameter sets. A **local arm-tip XOR regression** additionally
+verifies that the miter hulls remove at least 90% of the local geometric
+mismatch where elephant-foot relief meets the outside side bevels.
 
 The source tree keeps just `scad/corner_bracket.scad` and
 `scad/inspection.scad` under `scad/`. Tutorials and generated PNGs are

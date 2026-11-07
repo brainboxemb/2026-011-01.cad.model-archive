@@ -98,23 +98,42 @@ module missing_tip_volume() {
     }
 }
 
-// Thin slab centred on a Y location. It turns the exact effective reference
-// cutter into a real 3D input surface for a new hull() experiment.
-module y_slab(y, thickness = section_thickness) {
-    translate([-100, y - thickness/2, -100])
-        cube([200, thickness, 200]);
-}
-
-module exact_reference_input(y) {
+// Full working cutter around this tip, before intersecting it with body().
+// Keeping the cutter itself (rather than the already-subtracted result)
+// lets us take exact Y-plane cross-sections at the two hull positions.
+module reference_tip_cutter() {
     intersection() {
-        reference_effective_cut();
-        y_slab(y);
+        union() {
+            main_positive_hull();
+            positive_horizontal_tip_miter();
+        }
+        tip_crop();
     }
 }
 
-// This is deliberately the strongest possible version of the user's idea:
-// do not guess the tip shape. Use the EXACT cross-sections of the working
-// cutter at the same two Y positions, then ask one hull() to connect them.
+// Exact X/Z section of the working cutter at world Y=y.
+// After translate(), rotate(-90 around X) maps world Y to projection Z,
+// while world Z becomes projection Y. projection(cut=true) therefore cuts
+// the requested Y plane and returns a 2D X/Z profile.
+module reference_section_2d(y) {
+    projection(cut = true)
+        rotate([-90, 0, 0])
+            translate([0, -y, 0])
+                reference_tip_cutter();
+}
+
+// Turn that exact 2D section back into the same kind of very thin 3D input
+// surface used by the production elephant-foot hull.
+module exact_reference_input(y) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = eps, center = true)
+                reference_section_2d(y);
+}
+
+// Strongest direct two-surface test:
+// use the EXACT working-cutter sections at the existing two Y positions,
+// then ask one hull() to connect only those two surfaces.
 module exact_two_surface_hull() {
     hull() {
         exact_reference_input(W/2 - ef);

@@ -1,4 +1,4 @@
 {
-    "corner_bracket.stl": 0.056,
-    "access_plugs.stl": 0.1
+    "corner_bracket.stl": 0.069,
+    "access_plugs.stl": 0.055
 }

@@ -40,6 +40,8 @@ jobs:
           echo "### Browser preview for PR #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
           echo "Beam hull demo:" >> "$GITHUB_STEP_SUMMARY"
           echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/examples/hull_operations/v0.1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Corner bracket cs/ef experiment:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/models/corner_bracket/v0.1/docs/ef-cs-junction-guide.html" >> "$GITHUB_STEP_SUMMARY"
           echo "Corner bracket chamfer guide:" >> "$GITHUB_STEP_SUMMARY"
           echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/models/corner_bracket/v0.1/docs/chamfer-guide.html" >> "$GITHUB_STEP_SUMMARY"
 

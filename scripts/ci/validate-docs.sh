@@ -48,8 +48,8 @@ if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
   exit 1
 fi
 
-# The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+# The main manual should remain concise and link to the focused guides.
+for page in mounting-options hull-guide polygon-guide chamfer-guide ef-cs-junction-guide; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
   grep -Fq "docs/$page.html" "$bracket/readme.md"
@@ -157,7 +157,22 @@ done
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+for stage in \
+  01_sharp_profile \
+  02_profile_chamfers \
+  03_extruded_profile \
+  04_convex_outline \
+  05_cs_hull_inputs \
+  06_cs_hull_envelope \
+  07_cs_body \
+  08_inside_opening \
+  09_ef_layer_inputs \
+  10_ef_one_side \
+  11_ef_both_sides \
+  12_before_end_correction \
+  13_end_correction \
+  14_final_relief \
+  15_final_bracket; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

@@ -18,7 +18,7 @@ render() {
 }
 
 render 00_plain   00_plain_beam
-render 01_cs      01_cs_side_bevel
+render 01_normal_chamfers 01_normal_chamfers
 render 02_problem 02_junction_problem
 render 03_miter   03_miter_cutter
 render 04_fixed   04_junction_fixed

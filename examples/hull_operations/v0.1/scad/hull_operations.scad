@@ -10,7 +10,7 @@
 // without adding a special local miter correction.
 
 /* [Demo] */
-scene = "00_plain"; // [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_combined, 06_corner]
+scene = "00_plain"; // [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_combined, 06_corner, 07_miter_inputs, 08_fixed]
 
 /* [Geometry] */
 length = 70;
@@ -151,6 +151,78 @@ module corner_crop() {
         cube([cs + ef + 8, cs + ef + 8, cs + ef + 5]);
 }
 
+// ---------- local junction correction ----------
+//
+// The separate cs_hull() and ef_hull() are both correct on their own, but
+// intersection() does not "blend" their meeting corner. It simply keeps the
+// material common to both envelopes, leaving the small flat termination seen
+// in scene 06_corner.
+//
+// The correction is therefore deliberately local: hull two tiny triangular
+// profiles along the diagonal cs/ef junction and subtract that hull.
+
+module miter_triangle(A, U, V, D, distance, thickness = eps) {
+    multmatrix([[U[0], V[0], D[0], A[0]],
+                [U[1], V[1], D[1], A[1]],
+                [U[2], V[2], D[2], A[2]],
+                [0, 0, 0, 1]])
+        translate([0, 0, distance])
+            linear_extrude(height = thickness)
+                polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
+}
+
+module right_front_miter_inputs(display = false) {
+    s2 = sqrt(2) / 2;
+    A = [length - cs - s2, width / 2 + s2, 0];
+    U = [s2, s2, 0];
+    V = [0, 0, 1];
+    D = [s2, -s2, 0];
+    len = cs * sqrt(2) + 2;
+    thick = display ? 0.35 : eps;
+
+    miter_triangle(A, U, V, D, 0, thick);
+    miter_triangle(A, U, V, D, len, thick);
+}
+
+module right_front_miter_hull() {
+    s2 = sqrt(2) / 2;
+    A = [length - cs - s2, width / 2 + s2, 0];
+    U = [s2, s2, 0];
+    V = [0, 0, 1];
+    D = [s2, -s2, 0];
+    len = cs * sqrt(2) + 2;
+
+    hull() {
+        miter_triangle(A, U, V, D, 0);
+        miter_triangle(A, U, V, D, len);
+    }
+}
+
+module all_miter_hulls() {
+    // Right/front.
+    right_front_miter_hull();
+
+    // Right/back.
+    mirror([0, 1, 0])
+        right_front_miter_hull();
+
+    // Left/front and left/back.
+    translate([length, 0, 0])
+        mirror([1, 0, 0])
+            translate([-length, 0, 0]) {
+                right_front_miter_hull();
+                mirror([0, 1, 0])
+                    right_front_miter_hull();
+            }
+}
+
+module fixed_body() {
+    difference() {
+        combined_body();
+        all_miter_hulls();
+    }
+}
+
 // ---------- scenes ----------
 
 if (scene == "00_plain") {
@@ -187,10 +259,32 @@ else if (scene == "05_combined") {
         combined_body();
 }
 
-else {
+else if (scene == "06_corner") {
     color("DarkOrange")
         intersection() {
             combined_body();
+            corner_crop();
+        }
+}
+
+else if (scene == "07_miter_inputs") {
+    color("LightSlateGray", 0.16)
+        intersection() {
+            combined_body();
+            corner_crop();
+        }
+
+    color("SteelBlue", 0.46)
+        intersection() {
+            right_front_miter_inputs(true);
+            corner_crop();
+        }
+}
+
+else {
+    color("DarkOrange")
+        intersection() {
+            fixed_body();
             corner_crop();
         }
 }

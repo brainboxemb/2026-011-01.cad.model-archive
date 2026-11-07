@@ -1,7 +1,7 @@
 // Interactive geometry walkthrough of the corner bracket.
 // Select "design_step" in the OpenSCAD Customizer or pass -D on the CLI.
 // Source geometry is shared with corner_bracket.scad; no second CAD model.
-use <corner_bracket.scad>
+use <../scad/corner_bracket.scad>
 
 design_step = "01_profile"; // [01_profile, 02_edge_chamfers, 03_nut_pockets, 04_print_relief, 05_access_plugs, 06_installed]
 

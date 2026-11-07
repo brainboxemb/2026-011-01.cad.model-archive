@@ -2,6 +2,7 @@ name: NopSCADlib generated documentation
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
   push:
     branches: [main]
 
@@ -10,6 +11,7 @@ permissions:
 
 jobs:
   documentation:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -27,6 +29,29 @@ jobs:
             models/corner_bracket/v0.1/
           retention-days: 14
 
-      - name: Publish GitHub Pages
+      - name: Publish separate web preview for this PR
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          PAGES_PREVIEW_ROOT: previews/pr-${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          bash scripts/ci/publish-pages.sh
+          echo "### Browser preview for PR #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/models/corner_bracket/v0.1/docs/chamfer-guide.html" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish GitHub Pages (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: bash scripts/ci/publish-pages.sh
+
+  remove-preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Delete preview of closed PR
+        env:
+          PAGES_PREVIEW_ROOT: previews/pr-${{ github.event.pull_request.number }}
+          PAGES_PREVIEW_REMOVE: "1"
         run: bash scripts/ci/publish-pages.sh

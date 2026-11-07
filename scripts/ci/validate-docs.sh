@@ -2,6 +2,7 @@
 # Fail the build if generated documentation, STL files, or tutorial
 # illustrations are absent from NopSCADlib outputs.
 set -euo pipefail
+trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"
@@ -21,33 +22,59 @@ test -s "$bracket/readme.html"
 test -s "$bracket/printme.html"
 grep -q 'Corner bracket' "$bracket/readme.md"
 
+# The source root holds exactly one model and one inspection helper.
+test -s "$bracket/scad/corner_bracket.scad"
+test -s "$bracket/scad/inspection.scad"
+test ! -e "$bracket/scad/documentation.scad"
+test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
+for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull; do
+  test -s "$bracket/design/$source.scad"
+done
+test -s "$bracket/docs/documentation.scad"
+test -s "$bracket/tests/inside-corner-equivalence.scad"
+test -s "$bracket/tests/elephant-foot-equivalence.scad"
+grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module inside_relief_envelope()' "$bracket/scad/corner_bracket.scad"
+grep -Fq 'module relief_corner_miters()' "$bracket/scad/corner_bracket.scad"
+if grep -Fq 'module ef_cuts()' "$bracket/scad/corner_bracket.scad"; then
+  echo "Obsolete per-edge elephant-foot cutters still in production model" >&2
+  exit 1
+fi
+grep -Fq 'module inside_corner_2d(r)' "$bracket/readme.md"
+grep -Fq 'module sharp_profile()' "$bracket/readme.md"
+if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
+  echo "Old sampled-point fillet returned to active model" >&2
+  exit 1
+fi
+
 # The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide; do
-  test -s "$bracket/$page.md"
-  test -s "$bracket/$page.html"
-  grep -Fq "$page.html" "$bracket/readme.md"
-  grep -Fq "$page.html" "$bracket/readme.html"
+for page in mounting-options hull-guide polygon-guide chamfer-guide; do
+  test -s "$bracket/docs/$page.md"
+  test -s "$bracket/docs/$page.html"
+  grep -Fq "docs/$page.html" "$bracket/readme.md"
+  grep -Fq "docs/$page.html" "$bracket/readme.html"
 done
 
 # Mounting diagrams are editable SVG files. The generated HTML must link to them.
 for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out mounting-e-pronged-t-nut m4-nuts-hex-square; do
   test -s "$bracket/figures/$svg.svg"
-  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.md"
-  grep -Fq "figures/$svg.svg" "$bracket/mounting-options.html"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.md"
+  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.html"
 done
-grep -Fq 'counter-bracket' "$bracket/mounting-options.html"
-grep -Fq 'B0F412QQ32' "$bracket/mounting-options.html"
-grep -Fq '6834946' "$bracket/mounting-options.html"
-grep -Fq '12120010' "$bracket/mounting-options.html"
-grep -Fq '12120360' "$bracket/mounting-options.html"
+grep -Fq 'counter-bracket' "$bracket/docs/mounting-options.html"
+grep -Fq 'B0F412QQ32' "$bracket/docs/mounting-options.html"
+grep -Fq '6834946' "$bracket/docs/mounting-options.html"
+grep -Fq '12120010' "$bracket/docs/mounting-options.html"
+grep -Fq '12120360' "$bracket/docs/mounting-options.html"
 grep -Fq 'Prongs point INTO plywood' "$bracket/figures/mounting-e-pronged-t-nut.svg"
-grep -Fq '<table>' "$bracket/mounting-options.html"
+grep -Fq '<table>' "$bracket/docs/mounting-options.html"
 # Explicit product photo URLs supplied for these three candidate components.
 for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg' 'as.89415179.jpg'; do
-  grep -Fq "$photo" "$bracket/mounting-options.md"
-  grep -Fq "$photo" "$bracket/mounting-options.html"
+  grep -Fq "$photo" "$bracket/docs/mounting-options.md"
+  grep -Fq "$photo" "$bracket/docs/mounting-options.html"
 done
-grep -Fq 'figures/m4-bolt-head-types.svg' "$bracket/mounting-options.html"
+grep -Fq '../figures/m4-bolt-head-types.svg' "$bracket/docs/mounting-options.html"
 test -s "$bracket/figures/m4-bolt-head-types.svg"
 for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out e-pronged-t-nut; do
   file="$bracket/figures/mounting-$section.svg"
@@ -79,9 +106,9 @@ grep -Fq 'Y = +W/2' "$bracket/readme.md"
 grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
 grep -Fq '## Printing and assembly' "$bracket/readme.md"
 grep -Fq '## Further reading' "$bracket/readme.md"
-# Keep a single unobtrusive reference to the extended tutorial outside the
-# six sequential model-construction steps.
-test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -eq 1
+# The hull primer is linked at Step 2 and in Further reading.
+grep -Fq 'New to `hull()`?' "$bracket/readme.md"
+test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
 if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
   echo "Redundant hull aside reintroduced into main design manual" >&2
   exit 1
@@ -90,7 +117,7 @@ fi
 # Main design documentation must retain real code, without the long hull tutorial.
 for source_module in \
   'module profile()' 'module side_chamfer_env()' \
-  'module nut_top()' 'module ef_cuts()' \
+  'module nut_top()' 'module chamfered_body()' \
   'module plug_local()' 'module plugs_in_place()'; do
   grep -Fq "$source_module" "$bracket/readme.md"
   grep -Fq "$source_module" "$bracket/readme.html"
@@ -101,19 +128,24 @@ if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
   exit 1
 fi
 
-# The separate hull guide owns both original step-by-step demonstrations.
-for source_module in 'module sloped_hull()' 'module hull_of_circles()' 'module sharp_L()'; do
-  grep -Fq "$source_module" "$bracket/hull-guide.md"
-  grep -Fq "$source_module" "$bracket/hull-guide.html"
+# The hull guide now progresses from a simple bar to the real bracket.
+for source_module in 'module sloped_hull()' 'module side_chamfer_env()' 'module body()'; do
+  grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
+  grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq 'cos(a)' "$bracket/hull-guide.md"
+grep -Fq '## 2. How the real corner bracket uses hull' "$bracket/docs/hull-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
   local file="$1" page="$2"
   test -s "$bracket/design/$file.png"
-  grep -Fq "design/$file.png" "$bracket/$page.md"
-  grep -Fq "design/$file.png" "$bracket/$page.html"
+  if [[ "$page" == "readme" ]]; then
+    grep -Fq "design/$file.png" "$bracket/readme.md"
+    grep -Fq "design/$file.png" "$bracket/readme.html"
+  else
+    grep -Fq "../design/$file.png" "$bracket/docs/$page.md"
+    grep -Fq "../design/$file.png" "$bracket/docs/$page.html"
+  fi
 }
 
 for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
@@ -122,8 +154,29 @@ done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
 done
-for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
-  check_image "rounding_$stage" hull-guide
+for stage in layers comparison; do
+  check_image "combined_chamfer_$stage" hull-guide
 done
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+  check_image "chamfer_$stage" chamfer-guide
+done
+
+# 2D and 3D rounding alternatives must both be illustrated in the
+# standalone polygon guide (never duplicated in the short model walkthrough).
+for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
+  check_image "corner_$stage" polygon-guide
+done
+
+for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
+  grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
+  grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
+done
+grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
+grep -Fq 'chamfer-guide.html' "$bracket/readme.html"
+grep -Fq 'polygon-guide.html' "$bracket/readme.html"
+if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
+  echo "General polygon tutorial leaked into the bracket walkthrough" >&2
+  exit 1
+fi
 
 echo "Verified generated documentation and all design illustrations."

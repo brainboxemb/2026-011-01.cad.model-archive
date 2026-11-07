@@ -1,8 +1,40 @@
 # Corner bracket — v0.1
 
-This is the **unmodified geometric construction** from the uploaded model,
-with English comments/Customizer labels and a local section-inspection helper.
-The bracket is a prototype and its dimensions have not been physically verified.
+The bracket has been refactored in two stages: the inside radius uses 2D
+`square()` and `circle()` operations instead of sampled arc points; the
+wood-contact elephant-foot relief now uses two local opening hulls and short diagonal miter hulls
+instead of individual straight, diagonal and circular cutting wedges.
+The original mounting and captive-nut system is unchanged.
+The bracket is a prototype; print tolerances and strength have not been physically verified.
+
+## Source layout
+
+```text
+scad/
+  corner_bracket.scad       Printable parametric model
+  inspection.scad           Optional cutaway/section helper
+design/
+  design.scad               Six-step model walkthrough
+  hull_explained.scad       3D hull tutorial
+  rounding_explained.scad   Circle and hull examples
+  inside_corner_methods.scad  2D/3D inside-corner demonstration
+  chamfer_explained.scad   Ten chamfer construction stages
+  combined_chamfer_hull.scad  Straight-arm single-hull experiment
+  *.png                     CI-generated tutorial images (not committed)
+docs/
+  documentation.scad        NopSCADlib documentation build source
+  hull-guide.md             Hull article
+  polygon-guide.md          2D vs 3D rounding article
+  chamfer-guide.md          2D profile bevels, side hull and print relief
+  mounting-options.md       Illustrated fastener alternatives
+figures/                    Editable vector diagrams
+tests/                      Profile and full-bracket geometry regression fixtures
+```
+
+Only the **two files in `scad/`** belong to the actual bracket design;
+the other OpenSCAD files are educational illustrations or documentation.
+The build temporarily places the documentation driver in `scad/` because
+NopSCADlib expects to discover it there; it is not a third model file.
 
 The model has a 20 mm bracket width, 10 mm nominal wall, 40 mm arms, a
 2 mm inside-corner radius and two M4 bolt/nut positions by default.
@@ -14,9 +46,10 @@ From the archive root after `bootstrap.ps1`:
 
 ```powershell
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/corner_bracket.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/design.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/hull_explained.scad"
-.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/rounding_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/design.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/hull_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/rounding_explained.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/inside_corner_methods.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential
@@ -27,28 +60,45 @@ The generated [design documentation](https://brainboxemb.github.io/2026-011-01.c
 focuses on the six model stages, including a more detailed explanation of
 elephant-foot relief.
 
-The extended [illustrated hull guide](hull-guide.md) is separate. It covers
-the simple rectangular-bar experiment and rounding an outside corner with
-circles. The original `hull_explained.scad` and
-`rounding_explained.scad` files remain available for interactive exploration.
+The separate [Hull Guide](docs/hull-guide.md) starts with a simple
+rectangular-bar example, then explains the **actual** outside and inner
+relief hulls used in the bracket. `hull_explained.scad` and
+`rounding_explained.scad` remain available as teaching examples.
 
 The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
-and the bracket's concave **inside** corner drawn from sampled points along
-a quarter-circle. It also shows why applying `hull()` to the entire L profile
-would incorrectly fill the opening between the arms.
+and a **historical** point-based method for the concave inside corner.
 
-The [documentation entry point](scad/documentation.scad) creates printable
+The [Chamfer Guide](docs/chamfer-guide.md) gives ten illustrated stages,
+including a close-up of the arm-tip junction where the elephant-foot
+and outside side-edge bevels meet. CI tests that small miter explicitly:
+without the added local hulls, a small flat termination remains even
+when the whole-bracket volume difference looks negligible.
+
+The [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
+straightforward constructions of the same **inside** radius:
+`square() - circle()` with `union()` **before** `linear_extrude()`
+(2D first), and `cube() - cylinder()` with `union()` in **3D**.
+Its [standalone OpenSCAD demo](design/inside_corner_methods.scad) has
+nine Customizer stages and CI-generated illustrations. The real
+`corner_bracket.scad` uses the **2D approach** with `$fn=72` on the
+corner circle to preserve the old 5-degree curve segmentation.
+An isolated [equivalence fixture](tests/inside-corner-equivalence.scad)
+compares the old polygon against the new 2D profile across several radius
+and print-relief values during CI. Whole-part STL renders were also compared
+locally and yielded matching geometry for the tested configurations.
+
+The [documentation entry point](docs/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design
-images are rendered from `design.scad` by the CI documentation workflow.
+images are rendered from `design/design.scad` by the CI documentation workflow.
 
 ## Mounting alternatives
 
-The [illustrated mounting options](mounting-options.md) compare inside-to-outside
+The [illustrated mounting options](docs/mounting-options.md) compare inside-to-outside
 and outside-to-inside M4 bolts, hex versus thin square nuts, accessible
 locking flange nuts, and a possible second **inside counter-bracket**.
 The conceptual section drawings are editable SVG files in `figures/`.
-The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/mounting-options.html)
+The [generated HTML comparison](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/docs/mounting-options.html)
 includes the supplied hardware references and explains which options
 would need CAD changes.
 

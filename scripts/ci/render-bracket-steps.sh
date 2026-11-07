@@ -5,7 +5,7 @@ set -euo pipefail
 render() {
   local file="$1" variable="$2" stage="$3" output="$4" imgsize="$5"
   xvfb-run -a openscad --imgsize="$imgsize" --viewall --autocenter \
-    -D "$variable=\"$stage\"" -o "design/$output.png" "scad/$file"
+    -D "$variable=\"$stage\"" -o "design/$output.png" "design/$file"
   test -s "design/$output.png"
 }
 
@@ -19,7 +19,19 @@ for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   render hull_explained.scad demo_stage "$stage" "hull_$stage" "720,450"
 done
 
-# Seven stages: circular outer corners vs the sampled inner arc of the L.
-for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
-  render rounding_explained.scad demo_stage "$stage" "rounding_$stage" "720,450"
+
+# Nine clear examples of a concave L fillet: 2D square/circle, 3D
+# cube/cylinder, and the existing point-list polygon approach.
+for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
+  render inside_corner_methods.scad demo_stage "$stage" "corner_$stage" "720,450"
+done
+
+# Single-hull experiment: both outside chamfer and elephant-foot relief.
+for stage in layers comparison; do
+  render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
+done
+
+# Ten stages from 2D chamfers through side hulls, print relief and corner-miter close-up.
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done

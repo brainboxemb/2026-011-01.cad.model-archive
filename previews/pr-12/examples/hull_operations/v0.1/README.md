@@ -1,4 +1,9 @@
-# Beam experiment: chamfer first, then build the elephant-foot hull
+# Beam tutorial: chamfer first, then build the elephant-foot hull
+> **Scope:** this is a deliberately simple **convex beam** used to explain the
+> `hull()` principle. It is not a replacement implementation for the concave
+> Corner Bracket. The production bracket keeps its existing continuous
+> elephant-foot relief plus the small local arm-tip miter correction.
+
 
 This version tests one specific idea:
 
@@ -77,9 +82,11 @@ hull() {
 
 ![corner close-up](renders/05_corner.png)
 
-This close-up is the actual test: does using the already-chamfered upper body as
-the second hull input remove the small termination at the `cs`/`ef` meeting
-corner?
+This close-up shows why the beam is useful as a teaching case: on this convex
+shape the two already-chamfered inputs can be joined directly. The Corner
+Bracket is concave and therefore uses the production approach documented in
+[`ef-cs-junction-guide.md`](../../../models/corner_bracket/v0.1/docs/ef-cs-junction-guide.md),
+including the small local correction where `cs` and `ef` meet at the arm tips.
 
 ## Source
 

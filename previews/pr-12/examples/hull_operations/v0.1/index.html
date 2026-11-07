@@ -9,7 +9,13 @@
 <body>
   <header><a href="../../../">← Model archive</a></header>
   <main>
-<h1>Beam experiment: chamfer first, then build the elephant-foot hull</h1>
+<h1>Beam tutorial: chamfer first, then build the elephant-foot hull</h1>
+<blockquote>
+<p><strong>Scope:</strong> this is a deliberately simple <strong>convex beam</strong> used to explain the
+<code>hull()</code> principle. It is not a replacement implementation for the concave
+Corner Bracket. The production bracket keeps its existing continuous
+elephant-foot relief plus the small local arm-tip miter correction.</p>
+</blockquote>
 <p>This version tests one specific idea:</p>
 <p><strong>do not feed a square upper block into the elephant-foot hull.</strong></p>
 <p>Instead:</p>
@@ -62,9 +68,11 @@ ef_input_upper_chamfered();
 ```</p>
 <h2>5. Inspect the meeting corner</h2>
 <p><img alt="corner close-up" src="renders/05_corner.png" /></p>
-<p>This close-up is the actual test: does using the already-chamfered upper body as
-the second hull input remove the small termination at the <code>cs</code>/<code>ef</code> meeting
-corner?</p>
+<p>This close-up shows why the beam is useful as a teaching case: on this convex
+shape the two already-chamfered inputs can be joined directly. The Corner
+Bracket is concave and therefore uses the production approach documented in
+<a href="../../../models/corner_bracket/v0.1/docs/ef-cs-junction-guide.md"><code>ef-cs-junction-guide.md</code></a>,
+including the small local correction where <code>cs</code> and <code>ef</code> meet at the arm tips.</p>
 <h2>Source</h2>
 <p><a href="scad/hull_operations.scad"><code>scad/hull_operations.scad</code></a></p>
 </main></body></html>

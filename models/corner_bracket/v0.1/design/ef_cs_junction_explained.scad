@@ -204,11 +204,50 @@ module ef_expanded_L_sheet() {
     }
 }
 
-// Final explanatory ef hull: both inputs already contain the cs corner shape.
-module ef_hull() {
+// The raw hull between two complete concave L shapes is convex and would fill
+// the open inside corner with a diagonal triangle.
+//
+// Keep one continuous L construction by restricting that raw hull to the
+// corridor swept by the inside boundary from 0 .. ef.  This corridor includes
+// the horizontal face, the complete rounded r_in corner and the vertical face.
+module ef_corridor_2d() {
+    intersection() {
+        difference() {
+            offset(delta = ef + sheet_thickness)
+                inside_opening_2d();
+
+            inside_opening_2d();
+        }
+
+        translate([-ef - sheet_thickness, -armV])
+            square([
+                armH + ef + sheet_thickness,
+                armV + ef + sheet_thickness
+            ]);
+    }
+}
+
+module ef_corridor() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W, center = true)
+            ef_corridor_2d();
+}
+
+module ef_raw_hull() {
     hull() {
         cs_shaped_inner_L_sheet();
         ef_expanded_L_sheet();
+    }
+}
+
+// Final ef transition:
+// raw hull, but only inside the continuous rounded-L corridor and the
+// previously accepted cs envelope.
+module ef_hull() {
+    intersection() {
+        ef_raw_hull();
+        ef_corridor();
+        cs_hull();
     }
 }
 

@@ -93,7 +93,7 @@ The orange extrusion extends across the **full 20 mm width**,
 but `offset(delta=-cs)` makes its X/Z outline **2 mm smaller**
 all around. Its outer faces are at `Y = -10` and `Y = +10`.
 
-![Full outline and offset outline, both extruded](../design/chamfer_05_hull_inputs.png)
+![Full outline and offset outline, both extruded](../design/chamfer_05_cs_hull_inputs.png)
 
 ```openscad
 rotate([90,0,0]) {
@@ -115,7 +115,7 @@ overlap** in the centre and have different side-face extents.
 From the unchanged middle at `Y = ±8` to the smaller outline at
 `Y = ±10`, it produces a sloping 2 mm side-edge transition.
 
-![Convex hull combining the full and inset envelopes](../design/chamfer_06_hull_envelope.png)
+![Convex hull combining the full and inset envelopes](../design/chamfer_06_cs_hull_envelope.png)
 
 ```openscad
 rotate([90,0,0]) hull() {
@@ -135,7 +135,7 @@ This is expected and still not a printable part.
 extruded L and the chamfer envelope. This removes the unwanted
 filled-in region and retains the actual concave inside radius.
 
-![Actual L bracket with outside side-edge chamfers](../design/chamfer_07_intersection.png)
+![Actual L bracket with outside side-edge chamfers](../design/chamfer_07_cs_body.png)
 
 ```openscad
 intersection() {
@@ -148,91 +148,99 @@ This is the role of `body()` in the model. Changing `cs` changes
 the side-edge bevel; it does **not** replace the profile's `c`,
 `ce` or `r_in`.
 
-## 8. Apply hull-based elephant-foot relief
+## 8. Apply elephant-foot relief along the complete inside L
 
-The bracket rests on a **side face** while printing. Bulging first
-layers could prevent the L's inner surfaces from seating against the
-plywood. The parameter `ef = 0.6` mm removes material near the
-wood-facing edges at `Y = -10` and `Y = +10`.
+After `body()` is finished, the outside `cs` chamfers are already correct.
+The next task is different: remove a small amount of material along the
+**wood-contact side of the L**.
 
-**Left:** `body()` with only the outer side-edge bevels.
-**Right:** `chamfered_body()` after the new inner-opening relief
-has been subtracted. Neither has nut holes yet.
+The current production implementation describes that complete inside path once
+with `inside_opening_2d()`.
 
-![Before and after wood-contact edge relief](../design/chamfer_08_print_relief.png)
+![Inside opening used as the ef reference](../design/chamfer_08_inside_opening.png)
 
-Instead of moving separate triangular cutters along each line and
-revolving another cutter around the arc, the production code:
+The boundary of this helper follows:
 
-1. Builds the empty area between the arms with
-   `inside_opening_2d()`. This **convex opening** has a straight
-   boundary along both plywood faces and a circular inner transition.
-2. At `Y = ±9.4`, uses that original 2D opening; at `Y = ±10`,
-   expands it by 0.6 mm with `offset(delta=ef)`.
-3. Uses **one local hull per side** to connect those two profiles.
-4. Adds **two more short hulls per printed side** where the relief meets
-   the diagonal `cs` bevels at the arm ends. Those junctions otherwise
-   leave a visible flat termination at the corner.
-5. Subtracts the opening hulls and local correction hulls from the outside-chamfered
-   body with `difference()`.
+```text
+horizontal inside face
+        ↓
+rounded r_in corner
+        ↓
+vertical inside face
+```
 
-Why not just one hull from one printed side to the other? A global
-convex hull would bridge **both expanded ends**, enlarging the opening
-through the whole central width. Two local hulls avoid that mistake.
+For one Y side, the model makes two very thin versions of that opening:
+
+- the normal opening at `W/2 - ef`;
+- the opening expanded by `ef` at `W/2`.
+
+![Two layers used for one ef hull](../design/chamfer_09_ef_layer_inputs.png)
+
+A short `hull()` between those layers creates the 45-degree transition.
+Only the part overlapping the real bracket is ultimately removed.
+
+![Relief volume on one side](../design/chamfer_10_ef_one_side.png)
+
+The same local operation is repeated on the opposite Y side.
+
+![Relief volume on both sides](../design/chamfer_11_ef_both_sides.png)
+
+After subtracting those two hulls, the main elephant-foot relief is complete:
+both straight inside faces and the rounded corner are handled as one
+continuous path.
+
+![Main ef relief before the tiny arm-end correction](../design/chamfer_12_before_end_correction.png)
+
+### The small remaining arm-tip junction
+
+At the very end of each arm, the `ef` relief meets the diagonal `cs`
+side chamfer. The broad inside-opening hull does not completely form that
+short diagonal meeting surface, leaving a small flat termination.
+
+The production model removes that last tiny piece with a separate local
+correction.
+
+![Before correction, correction volume and final junction](../design/chamfer_13_end_correction.png)
+
+The three crops are deliberately read left to right:
+
+**Left:** main elephant-foot relief already applied.  
+**Middle:** only the small additional cutting volume.  
+**Right:** final `cs` / `ef` junction.
+
+The complete relief is then:
 
 ```openscad
 module chamfered_body() {
     difference() {
-        body();                      // outside: cs hull bevel
+        body();
         if (ef > 0) {
-            inside_relief_envelope(); // inner plywood-facing edges
-            relief_corner_miters();  // diagonal arm-tip junctions
+            inside_relief_envelope(); // continuous main relief
+            relief_corner_miters();   // four small arm-tip corrections
         }
     }
 }
 ```
 
-### Close-up: the corner where two chamfers meet
+![Complete body after cs and ef](../design/chamfer_14_final_relief.png)
 
-The broad inner-opening hulls by themselves leave a small unwanted
-termination where the elephant-foot allowance meets a diagonal outer
-side-edge bevel. This is hard to see in a full model view and barely
-changes the overall mesh volume. A separate **small triangular profile**
-gets swept along each local diagonal with `hull()`.
-
-![Before, small diagonal hull cutter and completed tip junction](../design/chamfer_10_corner_junction.png)
-
-**Left:** inner-opening hulls only. **Middle:** isolated small diagonal
-correction volume. **Right:** both the opening relief and local correction applied. The
-figure crops the horizontal arm-tip corner for inspection; the production
-model also handles the opposite side and the other arm.
-
-A dedicated CI test clips the **symmetric difference** with the former
-model to just these four junctions. It verifies that adding the
-local correction removes at least 90% of the local defect volume across the
-supported nonzero `cs`/`ef` combinations. This supplements the
-whole-model 0.1% volume tolerance.
-
-The diagrams locate the small 45-degree contact-edge relief:
-
-![Simplified elephant-foot relief section](../figures/elephant-foot-section.svg)
-
-![Location of plywood-facing relief edges](../figures/elephant-foot-edges.svg)
+The dedicated
+[Elephant-foot guide](ef-cs-junction-guide.html)
+explains this construction in much more detail and compares it with the former
+explicit per-edge cutter implementation.
 
 ## 9. Final bracket and regression checks
 
 The final `bracket()` removes the nut access windows and bolt holes
 from `chamfered_body()`.
 
-![Final bracket with chamfers, pockets and relief](../design/chamfer_09_final.png)
+![Final bracket with chamfers, pockets and relief](../design/chamfer_15_final_bracket.png)
 
-The earlier [single-hull straight-bar experiment](hull-guide.html#4-earlier-single-hull-experiment-on-a-straight-bar)
-is still documented, but the **actual L bracket has now changed**:
-the old `ef_cuts()` wedges were removed. A regression test compares
-the complete new and old solids at several `cs`, `ef` and `r_in`
-settings. Expect small differences at intersections of the old
-individual cutters; the new construction is an intentional geometric
-refactor, **not a physical fit or strength verification**.
+The former explicit `ef_cuts()` implementation is preserved in the regression
+fixture rather than in the printable model. CI compares that independent
+reference with the current hull-based relief at several `cs`, `ef` and `r_in`
+settings. The comparison is intentionally geometric; it is **not** a physical
+fit or strength verification.
 
 For the mathematical principle and its rectangular-bar introduction,
 see the separate [Hull Guide](hull-guide.html).

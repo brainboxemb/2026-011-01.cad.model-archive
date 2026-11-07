@@ -1,52 +1,47 @@
-# Corner Bracket: same idea as the beam, now on a clean L
+# Corner Bracket: the beam construction on the real L
 
-The L is shown in print orientation and the walkthrough has only four steps.
+The L is shown in print orientation and the elephant-foot step now uses the
+**same two kinds of input as the beam demo**.
 
-One important detail is now explicit: the first scene is **not** the production
-`body()`, because that already contains the elephant-foot adjustment in
-`tip_top` and `tip_vert`.
-
-For this explanation the starting L is rebuilt with:
-
-- the same arm geometry;
-- the same end chamfers `c`;
-- the same outside corner chamfer `ce`;
-- the same side chamfer `cs`;
-- **no `ef` anywhere yet**.
-
-That gives a clean baseline.
+The starting L contains the normal `c`, `ce` and `cs` chamfers, but no
+`ef` yet.
 
 ## 0. Clean L with `cs` only
 
 ![Clean L with cs](../design/junction_00_l_with_cs.png)
 
-The arm tips are still sharp at the print/contact edge. If an elephant-foot
-bevel is visible here, the demo is wrong.
+There is no elephant-foot correction in this scene.
 
-## 1. Add the two `ef` inputs
+## 1. The two `ef` inputs
 
-![Two transparent ef inputs](../design/junction_01_ef_inputs.png)
+![Two ef inputs](../design/junction_01_ef_inputs.png)
 
-Now `ef` is introduced for the first time.
+This should now read exactly like the beam:
 
-Both colored inputs are derived from the already-`cs`-chamfered clean L:
+- **blue:** one thin **L-shaped bottom plate** on the print bed. It is derived
+  from the already-`cs`-chamfered footprint and then made `ef` smaller;
+- **orange:** the complete already-`cs`-chamfered **L volume from height
+  `ef` upward**.
 
-- blue: normal cs-aware L one `ef` inward from the printed side;
-- orange: cs-aware L at the printed side, then made `ef` smaller.
+So there are no abstract vertical profile planes in this explanation.
 
 ## 2. Hull result
 
 ![Hull result](../design/junction_02_ef_hull.png)
 
-The two local arm hulls create the elephant-foot transition while preserving the
-concave L corner.
+A single global hull of a concave L would fill its inside corner. Therefore the
+implementation hulls the horizontal and vertical arm separately and unions the
+two results.
+
+That split is only an internal implementation detail. The inputs shown in the
+previous image are still one bottom L plate and one upper L volume.
 
 ## 3. Resulting L
 
 ![Resulting L](../design/junction_03_result.png)
 
-Everything inward of the transition stays the clean `cs` body. Only the outer
-printed-side layer is replaced by the new `ef` transition.
+The result is the upper clean `cs` L plus the two local hull transitions down
+to the smaller bottom plate.
 
 ## Interactive source
 

@@ -148,45 +148,65 @@ This is the role of `body()` in the model. Changing `cs` changes
 the side-edge bevel; it does **not** replace the profile's `c`,
 `ce` or `r_in`.
 
-## 8. Apply elephant-foot relief on the contact edges
+## 8. Apply hull-based elephant-foot relief
 
-The bracket is printed on one of its flat side faces. A first-layer
-bulge can interfere with the plywood surfaces. The model therefore
-removes a small triangular section at the junction between the
-side faces and **wood-facing edges**, using `ef=0.6` mm.
+The bracket rests on a **side face** while printing. Bulging first
+layers could prevent the L's inner surfaces from seating against the
+plywood. The parameter `ef = 0.6` mm removes material near the
+wood-facing edges at `Y = -10` and `Y = +10`.
 
-**Left:** `body()`, before relief. **Right:** the same body after
-`difference() { body(); ef_cuts(); }` — with **no nut holes yet**.
+**Left:** `body()` with only the outer side-edge bevels.
+**Right:** `chamfered_body()` after the new inner-opening relief
+has been subtracted. Neither has nut holes yet.
 
 ![Before and after wood-contact edge relief](../design/chamfer_08_print_relief.png)
 
-The straight contact edges use extruded triangular cutters.
-The rounded inside corner uses a swept cutter
-(`rotate_extrude()`); angled end transitions have separate
-cutters. These details make `ef_cuts()` more complicated than the
-simple `cs` outer bevel.
+Instead of moving separate triangular cutters along each line and
+revolving another cutter around the arc, the production code:
 
-The existing diagrams show **where** the print-bed bulge and
-the relief occur:
+1. Builds the empty area between the arms with
+   `inside_opening_2d()`. This **convex opening** has a straight
+   boundary along both plywood faces and a circular inner transition.
+2. At `Y = ±9.4`, uses that original 2D opening; at `Y = ±10`,
+   expands it by 0.6 mm with `offset(delta=ef)`.
+3. Uses **one local hull per side** to connect those two profiles.
+4. Subtracts the resulting relief volumes from the already outer-
+   chamfered body using `difference()`.
 
-![Simplified 45-degree elephant-foot relief section](../figures/elephant-foot-section.svg)
+Why not just one hull from one printed side to the other? A global
+convex hull would bridge **both expanded ends**, enlarging the opening
+through the whole central width. Two local hulls avoid that mistake.
+
+```openscad
+module chamfered_body() {
+    difference() {
+        body();                      // outside: cs hull bevel
+        if (ef > 0)
+            inside_relief_envelope(); // inside: two local hull reliefs
+    }
+}
+```
+
+The diagrams locate the small 45-degree contact-edge relief:
+
+![Simplified elephant-foot relief section](../figures/elephant-foot-section.svg)
 
 ![Location of plywood-facing relief edges](../figures/elephant-foot-edges.svg)
 
-## 9. Final body and what is still experimental
+## 9. Final bracket and regression checks
 
-The final `bracket()` subtracts the nut access pockets, bolt holes
-and elephant-foot relief from the chamfered body.
+The final `bracket()` removes the nut access windows and bolt holes
+from `chamfered_body()`.
 
 ![Final bracket with chamfers, pockets and relief](../design/chamfer_09_final.png)
 
-We have also started a [combined hull experiment](hull-guide.html#3-experiment-can-hull-also-handle-elephant-foot-relief).
-For a **convex straight arm**, one hull can generate both a top
-bevel and a lower elephant-foot allowance by joining four
-horizontal outlines. That **does not yet prove** equivalence for
-the complete L with its rounded inner corner and diagonal joins.
-Until the full model is checked, `ef_cuts()` stays in the
-printable source.
+The earlier [single-hull straight-bar experiment](hull-guide.html#4-earlier-single-hull-experiment-on-a-straight-bar)
+is still documented, but the **actual L bracket has now changed**:
+the old `ef_cuts()` wedges were removed. A regression test compares
+the complete new and old solids at several `cs`, `ef` and `r_in`
+settings. Expect small differences at intersections of the old
+individual cutters; the new construction is an intentional geometric
+refactor, **not a physical fit or strength verification**.
 
 For the mathematical principle and its rectangular-bar introduction,
 see the separate [Hull Guide](hull-guide.html).

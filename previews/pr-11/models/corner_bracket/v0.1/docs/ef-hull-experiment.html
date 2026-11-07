@@ -123,6 +123,60 @@ the working reference:</p>
 <p>This view contains only material removed by the working reference but
 <strong>missed</strong> by the candidate:</p>
 <p><img alt="Undercut left by the exact two-surface candidate" src="../design/efh_15_exact_candidate_undercut.png" /></p>
+<h2>Measured result</h2>
+<p>CI renders the same experiment as STL and measures the local cutting
+volumes. With the current exact <code>projection(cut=true)</code> input surfaces:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;"><code>cs</code></th>
+<th style="text-align: right;"><code>ef</code></th>
+<th style="text-align: right;">Reference</th>
+<th style="text-align: right;">Two-surface candidate</th>
+<th style="text-align: right;">XOR</th>
+<th style="text-align: right;">Overcut</th>
+<th style="text-align: right;">Undercut</th>
+<th style="text-align: right;">Missing tip before correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">0.6</td>
+<td style="text-align: right;">1.2433</td>
+<td style="text-align: right;">2.4922</td>
+<td style="text-align: right;">1.9006</td>
+<td style="text-align: right;">1.5743</td>
+<td style="text-align: right;">0.3263</td>
+<td style="text-align: right;">0.3772</td>
+</tr>
+<tr>
+<td style="text-align: right;">3.0</td>
+<td style="text-align: right;">1.2</td>
+<td style="text-align: right;">6.0395</td>
+<td style="text-align: right;">9.1928</td>
+<td style="text-align: right;">6.3398</td>
+<td style="text-align: right;">4.7466</td>
+<td style="text-align: right;">1.5932</td>
+<td style="text-align: right;">2.0005</td>
+</tr>
+<tr>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">0.3</td>
+<td style="text-align: right;">0.3101</td>
+<td style="text-align: right;">0.8152</td>
+<td style="text-align: right;">0.7139</td>
+<td style="text-align: right;">0.6095</td>
+<td style="text-align: right;">0.1044</td>
+<td style="text-align: right;">0.1108</td>
+</tr>
+</tbody>
+</table>
+<p>Volumes are in mm³ and refer only to the cropped horizontal arm-tip test
+region. The important point is not the absolute size but that the XOR is
+<strong>not zero</strong> even when the two candidate surfaces are sliced directly from
+the working cutter. The separate overcut and undercut views show where the
+difference comes from.</p>
 <h2>What this experiment does — and does not — prove</h2>
 <p>The experiment deliberately asks only one question: whether <strong>two hull
 surfaces at the existing Y positions</strong> can reproduce the current working

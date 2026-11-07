@@ -29,7 +29,7 @@ in_container /work \
 in_container "/work/$demo" \
   bash -c 'python -m markdown -x tables -x sane_lists README.md > readme.html'
 test -s "$demo/readme.html"
-for image in 00_plain_beam 01_normal_chamfers 02_junction_problem 03_miter_cutter 04_junction_fixed 05_final_beam; do
+for image in 00_plain_beam 01_cs_inputs 02_cs_result 03_ef_inputs 04_ef_result 05_junction_problem 06_miter_inputs 07_junction_fixed; do
   test -s "$demo/renders/$image.png"
 done
 

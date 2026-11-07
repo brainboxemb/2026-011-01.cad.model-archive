@@ -23,8 +23,8 @@ use <../scad/corner_bracket.scad>
 
 $fn = 48;
 eps = 0.02;
-display_thickness = 0.35;
-display_explode = 3;
+display_thickness = 1.0;
+display_explode = 4;
 
 // Same production defaults, explicit so the clean baseline is unambiguous.
 armH = 40;
@@ -227,18 +227,20 @@ if (junction_step == "00_l_with_cs") {
 }
 
 else if (junction_step == "01_ef_inputs") {
-    // Exploded VIEW ONLY:
-    // pull the two real hull inputs apart so the lower plate is unmistakable.
-    // The actual hull geometry below still uses their true positions.
-    print_orientation() {
-        color("DeepSkyBlue", 0.78)
-            translate([0, -display_explode, 0])
+    // Exploded VIEW ONLY.
+    //
+    // IMPORTANT: separate the two inputs AFTER print_orientation(), in world Z.
+    // That makes the lower input visibly sit underneath the upper L, exactly
+    // like the beam demo.
+    color("DeepSkyBlue", 0.82)
+        translate([0, 0, -display_explode])
+            print_orientation()
                 lower_plate(display_thickness);
 
-        color("DarkOrange", 0.24)
-            translate([0, display_explode, 0])
+    color("DarkOrange", 0.24)
+        translate([0, 0, display_explode])
+            print_orientation()
                 upper_l_volume();
-    }
 }
 
 else if (junction_step == "02_ef_hull") {

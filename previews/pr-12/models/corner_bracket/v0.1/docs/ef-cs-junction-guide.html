@@ -9,46 +9,49 @@
 <body>
   <header><a href="../../../../">← Model archive</a></header>
   <main>
-<h1>Corner Bracket: same construction as the beam</h1>
-<p>This walkthrough now checks the two <code>ef</code> inputs <strong>separately first</strong>.</p>
-<p>That is deliberate: before looking at <code>hull()</code>, the lower input must clearly
-be a flat L-shaped plate, just like the plate under the beam.</p>
-<p>The clean starting L contains <code>c</code>, <code>ce</code> and <code>cs</code>, but no <code>ef</code>.</p>
-<h2>0. Clean L with <code>cs</code></h2>
-<p><img alt="Clean L with cs" src="../design/junction_00_l_with_cs.png" /></p>
-<p>No elephant-foot geometry is present yet.</p>
-<h2>1. Lower <code>ef</code> input only</h2>
-<p><img alt="Lower L plate" src="../design/junction_01_lower_plate.png" /></p>
-<p>This image shows <strong>nothing except the lower input</strong>.</p>
-<p>The construction is now literally the same as in the beam demo:</p>
-<ol>
-<li>put the complete already-<code>cs</code>-chamfered L in print orientation;</li>
-<li>take a thin slab exactly at print-bed <code>Z=0</code>;</li>
-<li>project that slab to obtain the real bottom footprint;</li>
-<li>apply <code>offset(-ef)</code>;</li>
-<li>extrude that result as the lower plate.</li>
-</ol>
-<p>So this plate is no longer an X/Z section that is rotated afterward. It is
-derived directly from the final print-oriented 3D L, which fixes both its
-orientation and its position.</p>
-<h2>2. Upper <code>ef</code> input only</h2>
-<p><img alt="Upper L volume" src="../design/junction_02_upper_volume.png" /></p>
-<p>This is the complete already-<code>cs</code>-chamfered L from height <code>ef</code> upward.</p>
-<h2>3. Both inputs, exploded</h2>
-<p><img alt="Exploded inputs" src="../design/junction_03_ef_inputs.png" /></p>
-<p>Now the same two inputs are shown together:</p>
+<h1>Corner Bracket: the beam construction on an L</h1>
+<p>This experiment is now written directly in <strong>print coordinates</strong>, just like the
+beam demo.</p>
+<p>That means:</p>
 <ul>
-<li>blue lower L plate;</li>
-<li>orange upper L volume.</li>
+<li>X/Y is the footprint on the print bed;</li>
+<li>Z is the print height / bracket width;</li>
+<li>no rotation is used inside the elephant-foot construction.</li>
 </ul>
-<p>They are moved apart only for this illustration.</p>
-<h2>4. Hull result</h2>
-<p><img alt="Hull result" src="../design/junction_04_ef_hull.png" /></p>
-<p>Because a global hull would fill the concave inside corner, the two arms are
-hulled separately internally and then united.</p>
-<h2>5. Resulting L</h2>
-<p><img alt="Resulting L" src="../design/junction_05_result.png" /></p>
-<p>This is the resulting one-sided elephant-foot experiment.</p>
+<p>The production model is still unchanged.</p>
+<h2>0. L with <code>cs</code></h2>
+<p><img alt="L with cs" src="../design/junction_00_l_with_cs.png" /></p>
+<p>This is <code>cs_body()</code>.</p>
+<p>It is built from the clean L profile and the normal <code>cs</code> hull. There is no
+<code>ef</code> in the profile or at the arm tips.</p>
+<h2>1. The two <code>ef</code> inputs</h2>
+<p><img alt="Two ef inputs" src="../design/junction_01_ef_inputs.png" /></p>
+<p>This is now the same construction as the beam:</p>
+<p><strong>Blue — <code>ef_input_bottom()</code></strong></p>
+<p>The actual bottom footprint of <code>cs_body()</code> is taken at the print bed. That
+already contains the <code>cs</code> geometry. Only then is <code>offset(-ef)</code> applied.</p>
+<p>The result is one thin L-shaped plate exactly underneath the bracket.</p>
+<p><strong>Orange — <code>ef_input_upper()</code></strong></p>
+<p>This is the complete <code>cs_body()</code> from <code>Z = ef</code> upward.</p>
+<p>So both inputs already contain the normal chamfer before the elephant-foot hull
+is created.</p>
+<h2>2. Hull result</h2>
+<p><img alt="EF hull result" src="../design/junction_02_ef_hull.png" /></p>
+<p>The only L-specific complication is the concave inside corner.</p>
+<p>A single global <code>hull()</code> would close that corner. Therefore the horizontal
+and vertical arm are hulled separately and the two hull results are united.</p>
+<p>That split happens only inside the hull operation. The visible inputs in step 1
+remain one lower L plate and one complete upper L volume.</p>
+<h2>3. Result</h2>
+<p><img alt="Result" src="../design/junction_03_result.png" /></p>
+<p>This is the upper <code>cs</code> L plus the two local transitions down to the lower
+plate.</p>
+<p>The key comparison with the beam is therefore direct:</p>
+<p><code>text
+beam:    cs_body -&gt; bottom footprint -&gt; offset(-ef) -&gt; upper cs body -&gt; hull
+bracket: cs_body -&gt; bottom footprint -&gt; offset(-ef) -&gt; upper cs L    -&gt; hull</code></p>
+<p>The shape changes from a straight beam to an L; the construction order does
+not.</p>
 <h2>Interactive source</h2>
 <p>Open
 <a href="../design/ef_cs_junction_explained.scad"><code>design/ef_cs_junction_explained.scad</code></a>

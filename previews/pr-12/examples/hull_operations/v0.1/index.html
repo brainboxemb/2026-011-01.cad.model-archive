@@ -9,62 +9,67 @@
 <body>
   <header><a href="../../../">← Model archive</a></header>
   <main>
-<h1>Beam experiment: build the bottom like the top</h1>
-<p>Yes: on the beam there is no need to explain <code>ef</code> as a completely different
-kind of operation.</p>
-<p>Both constructions can be shown with the same pattern:</p>
+<h1>Beam experiment: why <code>cs</code> and <code>ef</code> still need a local junction hull</h1>
+<p>This beam isolates the exact Corner Bracket problem.</p>
+<p>Both main operations are built the same way:</p>
 <p><strong>two solids → <code>hull()</code> → intersect with the beam</strong></p>
-<p>The only difference is the direction in which the transition is built.</p>
+<p>That works for the normal side chamfer <code>cs</code>, and it also works for the
+elephant-foot relief <code>ef</code> around the complete bottom perimeter.</p>
+<p>The remaining problem is not either hull by itself. It is the <strong>corner where
+the two hull envelopes meet</strong>.</p>
 <h2>0. Reference beam</h2>
 <p><img alt="Reference beam" src="renders/00_plain.png" /></p>
-<p>The normal end-profile chamfer <code>c</code> is already part of the beam. The complete
-bottom perimeter is still sharp.</p>
-<h2>1. <code>cs</code>: two transparent hull inputs</h2>
+<p>The normal end-profile chamfer <code>c</code> is already part of the beam.</p>
+<h2>1. <code>cs</code>: transparent hull inputs</h2>
 <p><img alt="Transparent cs inputs" src="renders/01_cs_inputs.png" /></p>
-<p>The two objects are:</p>
-<ul>
-<li>blue: the full side outline, stopping <code>cs</code> before the printed side face;</li>
-<li>orange: the inset outline, extending to the full printed-side width.</li>
-</ul>
-<p>The helper extends below the beam, so this hull does <strong>not</strong> touch the bottom
-edge. That edge is reserved for <code>ef</code>.</p>
-<h2>2. <code>cs</code>: hull result</h2>
+<p>Blue and orange are the two actual solids passed to <code>hull()</code>.</p>
+<h2>2. <code>cs</code>: result</h2>
 <p><img alt="cs hull result" src="renders/02_cs_result.png" /></p>
-<p>The hull creates the normal side-edge bevel. Intersecting it with the real beam
-keeps only the required solid.</p>
-<h2>3. <code>ef</code>: two transparent hull inputs</h2>
+<p>The side chamfer is correct.</p>
+<h2>3. <code>ef</code>: transparent hull inputs</h2>
 <p><img alt="Transparent ef inputs" src="renders/03_ef_inputs.png" /></p>
-<p>The bottom now uses the same idea instead of a separate opening/cutter model:</p>
-<ul>
-<li>blue: the bottom footprint, inset by <code>ef</code> on <strong>all four sides</strong>;</li>
-<li>orange: the full footprint starting <code>ef</code> above the print bed.</li>
-</ul>
-<p>That means the bottom hull includes both:</p>
-<ul>
-<li>the two long bottom edges;</li>
-<li>the two bottom edges on the <strong>kopse kanten</strong>.</li>
-</ul>
-<h2>4. <code>ef</code>: hull result</h2>
+<p>Again, these are the two actual solids passed to <code>hull()</code>.</p>
+<p>The lower footprint is inset by <code>ef</code> on all four sides, so this operation
+includes both the long bottom edges and the bottom edges on the kopse kanten.</p>
+<h2>4. <code>ef</code>: result</h2>
 <p><img alt="ef hull result" src="renders/04_ef_result.png" /></p>
-<p>The hull restores the full footprint over a height of <code>ef</code>. Intersecting this
-envelope with the beam gives a continuous elephant-foot relief around the
-complete bottom perimeter.</p>
-<h2>5. Combine the two hull envelopes</h2>
-<p><img alt="Combined cs and ef hulls" src="renders/05_combined.png" /></p>
-<p>The beam is now simply the intersection of three things:</p>
+<p>The bottom relief is correct on its own.</p>
+<h2>5. Combine both hull envelopes</h2>
+<p><img alt="Combined cs and ef envelopes" src="renders/05_combined.png" /></p>
+<p>The beam is now simply:</p>
+<p><code>openscad
+intersection() {
+    beam();
+    cs_hull();
+    ef_hull();
+}</code></p>
+<p>This looks almost right, but <code>intersection()</code> only clips the two envelopes.
+It does not construct a new blended surface where they cross.</p>
+<h2>6. The isolated defect</h2>
+<p><img alt="Close-up of the remaining defect" src="renders/06_corner.png" /></p>
+<p>This is the same small unwanted termination seen on the real Corner Bracket.</p>
+<p>That is useful: the problem already exists on a straight beam, so it is <strong>not
+caused by the L-shaped profile or the inside radius</strong>.</p>
+<p>It comes from the 3D meeting of the separate <code>cs</code> and <code>ef</code> hulls.</p>
+<h2>7. Local correction: two transparent hull inputs</h2>
+<p><img alt="Transparent miter hull inputs" src="renders/07_miter_inputs.png" /></p>
+<p>The correction is deliberately small.</p>
+<p>The two blue triangular profiles are the inputs to one additional local
+<code>hull()</code>. The beam is only shown faintly to make their position clear.</p>
+<p>So this correction follows the exact same visual rule as the other operations:</p>
+<p><strong>two inputs → <code>hull()</code></strong></p>
+<h2>8. Corrected meeting corner</h2>
+<p><img alt="Corrected meeting corner" src="renders/08_fixed.png" /></p>
+<p>The additional hull only removes the local corner defect. The broad <code>cs</code> and
+<code>ef</code> constructions remain unchanged.</p>
+<p>The resulting explanation is therefore:</p>
 <ol>
-<li>the real beam;</li>
-<li>the <code>cs</code> hull envelope;</li>
-<li>the <code>ef</code> hull envelope.</li>
+<li>build <code>cs</code> from two hull inputs;</li>
+<li>build <code>ef</code> from two hull inputs;</li>
+<li>combine them;</li>
+<li>observe that their intersection leaves one local defect;</li>
+<li>bridge that junction with one small third hull.</li>
 </ol>
-<p>No special corner correction has been added here.</p>
-<h2>6. Inspect the meeting corner</h2>
-<p><img alt="Close-up where cs and ef meet" src="renders/06_corner.png" /></p>
-<p>This is the important experiment: does constructing the bottom with its own
-hull make the <code>cs</code>/<code>ef</code> junction correct by construction?</p>
-<p>If this beam corner is clean, the next step is to test whether the same
-envelope approach can be transferred to the concave L-shaped Corner Bracket.
-The L shape is the complication there; the basic hull principle is not.</p>
 <h2>Source</h2>
 <p>The complete experiment is in
 <a href="scad/hull_operations.scad"><code>scad/hull_operations.scad</code></a>.</p>

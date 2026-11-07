@@ -1,190 +1,187 @@
-// Corner Bracket cs/ef junction demo.
+// Corner Bracket: beam-style elephant-foot experiment on the real L.
 //
-// Visual rule:
-//   * the SAME real L-shaped bracket stays in place;
-//   * NO detached section planes are shown;
-//   * the local horizontal arm tip is explained with two full 3D arm volumes,
-//     just like the successful beam demo.
+// The L is shown in PRINT ORIENTATION: one printed side lies horizontally.
+// This makes the construction directly comparable to the beam demo.
 //
-// This remains an experiment. The production corner_bracket.scad is unchanged.
+// Four scenes only:
+//   0. L with cs
+//   1. two transparent ef input shapes
+//   2. hull result
+//   3. final L result
+//
+// Important:
+// The L is split internally into its horizontal and vertical arms so each arm
+// gets its own local hull. Their union preserves the concave inside corner.
 
 /* [Illustration] */
-junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_current_result, 02_proposed_inputs, 03_proposed_hull, 04_proposed_result]
-
-/* [Display] */
-show_closeup = false;
+junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
 
 /* [Hidden] */
 use <../scad/corner_bracket.scad>
 
 $fn = 48;
 eps = 0.02;
+display_thickness = 0.35;
 
 armH = 40;
 armV = 40;
 t = 10;
 W = 20;
-cs = 2;
 ef = 0.6;
 
 // -----------------------------------------------------------------------------
-// View helpers
+// Actual cs-aware cross-section of body() at a chosen Y.
+// Returned as ordinary X/Z 2D geometry.
 // -----------------------------------------------------------------------------
 
-module tip_crop() {
-    translate([armH - cs - ef - 5, W / 2 - cs - ef - 5, -2])
-        cube([cs + ef + 10, cs + ef + 10, t + 4]);
+module body_section_2d(y) {
+    mirror([0, 1, 0])
+        projection(cut = true)
+            rotate([90, 0, 0])
+                translate([0, -y, 0])
+                    body();
 }
 
-module view_part() {
-    if (show_closeup)
+// Two overlapping masks split the concave L into two convex-ish arm regions.
+// This lets us hull each arm locally instead of globally hulling the whole L.
+module horizontal_arm_mask_2d() {
+    translate([-t - 2, -2])
+        square([armH + t + 4, t + 4]);
+}
+
+module vertical_arm_mask_2d() {
+    translate([-t - 2, -armV - 2])
+        square([t + 4, armV + t + 4]);
+}
+
+module arm_section_2d(y, which = "horizontal", shrink = 0) {
+    offset(delta = -shrink)
         intersection() {
-            children();
-            tip_crop();
+            body_section_2d(y);
+
+            if (which == "horizontal")
+                horizontal_arm_mask_2d();
+            else
+                vertical_arm_mask_2d();
         }
-    else
-        children();
-}
-
-// The arm tip we care about is the horizontal arm. Keep it as a genuine 3D
-// volume cut from the already-cs-chamfered real body().
-module horizontal_arm_cs() {
-    intersection() {
-        body();
-        translate([-1, -W, -1])
-            cube([armH + 2, 2 * W, t + 2]);
-    }
 }
 
 // -----------------------------------------------------------------------------
-// Current result: broad production ef hulls, before special corner miters.
+// Two ef inputs.
+//
+// Inner input: actual cs body one ef inward from the printed face.
+// Outer input: actual cs body AT the printed face, then inset by ef.
+//
+// These are the direct L equivalents of the two successful beam inputs.
 // -----------------------------------------------------------------------------
 
-module current_pre_miter_body() {
-    difference() {
-        body();
-        inside_relief_envelope();
-    }
+module input_layer(y, which, shrink = 0, thickness = eps) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = thickness, center = true)
+                arm_section_2d(y, which, shrink);
 }
 
-// -----------------------------------------------------------------------------
-// Proposed beam-style local construction on the real arm
-// -----------------------------------------------------------------------------
-//
-// The beam experiment worked when BOTH ef inputs already contained cs.
-//
-// Here we do exactly that on the horizontal arm tip:
-//
-//   lower input  = actual cs-chamfered horizontal arm, reduced by ef at the
-//                  print/contact boundary;
-//   upper input  = actual cs-chamfered horizontal arm from z=ef upward.
-//
-// Both are full 3D arm-shaped objects. No projection plates are displayed.
-
-// Keep the already-cs-chamfered arm from z=ef upward.
-module proposed_upper_arm() {
-    intersection() {
-        horizontal_arm_cs();
-        translate([-2, -W, ef])
-            cube([armH + 4, 2 * W, t + 4]);
-    }
+module inner_input(which, display = false) {
+    input_layer(
+        W / 2 - ef,
+        which,
+        0,
+        display ? display_thickness : eps
+    );
 }
 
-// Build the lower ef input from the actual cs arm itself.
-//
-// We remove an ef-wide shell from the bottom/contact perimeter by intersecting
-// the cs arm with an inset bounding region. The diagonal cs tip geometry is
-// therefore already present before hull().
-module proposed_lower_arm() {
-    intersection() {
-        horizontal_arm_cs();
-
-        // ef inset from both printed side faces and the arm tip/contact edges.
-        translate([ef, -W / 2 + ef, 0])
-            cube([
-                armH - 2 * ef,
-                W - 2 * ef,
-                ef + eps
-            ]);
-    }
+module outer_input(which, display = false) {
+    input_layer(
+        W / 2,
+        which,
+        ef,
+        display ? display_thickness : eps
+    );
 }
 
-// Hull only these two LOCAL horizontal-arm volumes.
-// The full L is never hulled globally, so its concave inside corner is not
-// filled in.
-module proposed_arm_hull() {
+module arm_ef_hull(which) {
     hull() {
-        proposed_lower_arm();
-        proposed_upper_arm();
+        inner_input(which);
+        outer_input(which);
     }
 }
 
-// Replace only the horizontal arm-tip region with the proposed local hull.
-// Everything else remains the existing cs body.
-//
-// This is intentionally a visual/minimal experiment, not yet production code.
-module proposed_body() {
+// The two local hulls together form one L-shaped transition without a global
+// hull across the concave inside corner.
+module l_ef_hulls() {
     union() {
-        // Keep the full real L except the local horizontal-arm volume.
-        difference() {
+        arm_ef_hull("horizontal");
+        arm_ef_hull("vertical");
+    }
+}
+
+// Keep the existing cs body and replace only the outer ef-deep printed-side
+// layer by the new beam-style transition.
+module result_body_one_side() {
+    union() {
+        // Everything inward of the transition remains the real body().
+        intersection() {
             body();
-            translate([-1, -W, -1])
-                cube([armH + 2, 2 * W, t + 2]);
+            translate([-100, -100, -100])
+                cube([200, 100 + W / 2 - ef, 200]);
         }
 
-        // Put the proposed cs-aware/ef hull back in that local arm region.
-        intersection() {
-            proposed_arm_hull();
-            translate([-1, -W, -1])
-                cube([armH + 2, 2 * W, t + 2]);
-        }
+        // New local transition at the +Y printed side.
+        l_ef_hulls();
     }
 }
 
 // -----------------------------------------------------------------------------
-// Scenes
+// Display in print orientation.
+//
+// rotate([-90,0,0]) maps +Y to downward Z. Translate by W/2 so the +Y printed
+// face lands on Z=0, just like the bottom of the beam demo.
 // -----------------------------------------------------------------------------
+
+module print_orientation() {
+    translate([0, 0, W / 2])
+        rotate([-90, 0, 0])
+            children();
+}
 
 if (junction_step == "00_l_with_cs") {
-    color("SteelBlue")
-        view_part()
+    print_orientation()
+        color("SteelBlue")
             body();
 }
 
-else if (junction_step == "01_current_result") {
-    color("SteelBlue")
-        view_part()
-            current_pre_miter_body();
-}
-
-else if (junction_step == "02_proposed_inputs") {
-    // Keep the entire L faintly visible.
-    color("SteelBlue", 0.14)
-        view_part()
+else if (junction_step == "01_ef_inputs") {
+    print_orientation() {
+        color("SteelBlue", 0.12)
             body();
 
-    // Two REAL 3D arm volumes, overlaid in place.
-    color("DeepSkyBlue", 0.46)
-        view_part()
-            proposed_lower_arm();
+        // BLUE = inner cs-aware L input.
+        color("DeepSkyBlue", 0.50) {
+            inner_input("horizontal", true);
+            inner_input("vertical", true);
+        }
 
-    color("DarkOrange", 0.30)
-        view_part()
-            proposed_upper_arm();
+        // ORANGE = outer cs-aware L input, additionally inset by ef.
+        color("DarkOrange", 0.50) {
+            outer_input("horizontal", true);
+            outer_input("vertical", true);
+        }
+    }
 }
 
-else if (junction_step == "03_proposed_hull") {
-    color("SteelBlue", 0.14)
-        view_part()
+else if (junction_step == "02_ef_hull") {
+    print_orientation() {
+        color("SteelBlue", 0.12)
             body();
 
-    color("SeaGreen", 0.52)
-        view_part()
-            proposed_arm_hull();
+        color("SeaGreen", 0.58)
+            l_ef_hulls();
+    }
 }
 
 else {
-    color("SeaGreen")
-        view_part()
-            proposed_body();
+    print_orientation()
+        color("SeaGreen")
+            result_body_one_side();
 }

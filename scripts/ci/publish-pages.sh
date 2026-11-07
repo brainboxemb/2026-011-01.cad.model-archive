@@ -46,7 +46,7 @@ else
   cp "$demo/README.md" "$target/$demo/README.md"
   cp -a "$demo/scad" "$demo/renders" "$target/$demo/"
   test -s "$target/$demo/index.html"
-  test -s "$target/$demo/renders/08_fixed.png"
+  test -s "$target/$demo/renders/05_corner.png"
 
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"

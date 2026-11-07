@@ -12,7 +12,7 @@
 // visually accepted.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_cs_shaped_L_with_body]
+scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_hull]
 
 /* [Geometry] */
 armH = 40;
@@ -158,6 +158,61 @@ module cs_shaped_inner_L_sheet() {
 }
 
 // -----------------------------------------------------------------------------
+// Elephant-foot step.
+//
+// Start from the already cs-shaped continuous L.
+//
+// The second ef input is made from the SAME continuous inside opening, expanded
+// by ef.  That moves the complete contact boundary into the bracket while
+// preserving the horizontal face, rounded corner and vertical face as one
+// continuous profile.
+//
+// Both inputs are then limited by the existing cs hull, so the side/end corner
+// treatment established in step 2 is retained.
+// -----------------------------------------------------------------------------
+
+module ef_expanded_L_band_2d() {
+    difference() {
+        offset(delta = sheet_thickness)
+            offset(delta = ef)
+                inside_opening_2d();
+
+        offset(delta = ef)
+            inside_opening_2d();
+    }
+}
+
+module clipped_ef_expanded_L_band_2d() {
+    intersection() {
+        ef_expanded_L_band_2d();
+
+        translate([-ef - sheet_thickness, -armV])
+            square([
+                armH + ef + sheet_thickness,
+                armV + ef + sheet_thickness
+            ]);
+    }
+}
+
+module ef_expanded_L_sheet() {
+    intersection() {
+        rotate([90, 0, 0])
+            linear_extrude(height = W, center = true)
+                clipped_ef_expanded_L_band_2d();
+
+        cs_hull();
+    }
+}
+
+// Final explanatory ef hull: both inputs already contain the cs corner shape.
+module ef_hull() {
+    hull() {
+        cs_shaped_inner_L_sheet();
+        ef_expanded_L_sheet();
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Scenes.
 // -----------------------------------------------------------------------------
 
@@ -174,11 +229,9 @@ else if (scene == "01_raw_L_sheet") {
 }
 
 else if (scene == "02_cs_hull_inputs") {
-    // Show the continuous L sheet as the object being shaped.
     color("DeepSkyBlue", 0.75)
         raw_inner_L_sheet();
 
-    // Show the two existing cs hull inputs transparently.
     color("SteelBlue", 0.18)
         cs_input_inner();
 
@@ -187,16 +240,24 @@ else if (scene == "02_cs_hull_inputs") {
 }
 
 else if (scene == "03_cs_shaped_L") {
-    // This is the important intermediate result:
-    // one continuous rounded L, now with the cs corner geometry applied.
     color("DeepSkyBlue", 0.92)
         cs_shaped_inner_L_sheet();
 }
 
-else {
-    color("DeepSkyBlue", 0.82)
+else if (scene == "04_ef_inputs") {
+    // Blue: the already cs-shaped L accepted in the previous step.
+    color("DeepSkyBlue", 0.78)
         cs_shaped_inner_L_sheet();
 
-    color("DarkOrange", 0.22)
+    // Orange: the ef-expanded version of that SAME continuous L.
+    color("DarkOrange", 0.40)
+        ef_expanded_L_sheet();
+}
+
+else {
+    color("SeaGreen", 0.90)
+        ef_hull();
+
+    color("DarkOrange", 0.18)
         cs_body();
 }

@@ -39,6 +39,15 @@ else
     cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$target/$version/"
   done
 
+  demo="examples/hull_operations/v0.1"
+  mkdir -p "$target/$demo"
+  cat site/model-header.html "$demo/readme.html" > "$target/$demo/index.html"
+  printf '\n</main></body></html>\n' >> "$target/$demo/index.html"
+  cp "$demo/README.md" "$target/$demo/README.md"
+  cp -a "$demo/scad" "$demo/renders" "$target/$demo/"
+  test -s "$target/$demo/index.html"
+  test -s "$target/$demo/renders/03_combined.png"
+
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"

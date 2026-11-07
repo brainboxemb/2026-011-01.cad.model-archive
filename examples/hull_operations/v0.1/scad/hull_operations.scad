@@ -14,8 +14,7 @@
 // side bevel.
 
 /* [Demo] */
-scene = "00_plain";
-// [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_problem, 06_miter_inputs, 07_fixed]
+scene = "00_plain"; // [00_plain, 01_cs_inputs, 02_cs_result, 03_ef_inputs, 04_ef_result, 05_problem, 06_miter_inputs, 07_fixed]
 
 /* [Geometry] */
 length = 70;

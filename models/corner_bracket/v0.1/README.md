@@ -18,15 +18,17 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
-  chamfer_explained.scad   Nine actual chamfer construction stages
-  combined_chamfer_hull.scad  Straight-arm single-hull experiment
-  *.png                     CI-generated tutorial images (not committed)
+  chamfer_explained.scad     Actual chamfer construction stages
+  ef_hull_experiment.scad    Detailed EF two-surface experiment
+  combined_chamfer_hull.scad Straight-bar hull experiment
+  *.png                      CI-generated tutorial images (not committed)
 docs/
-  documentation.scad        NopSCADlib documentation build source
-  hull-guide.md             Hull article
-  polygon-guide.md          2D vs 3D rounding article
-  chamfer-guide.md          2D profile bevels, side hull and print relief
-  mounting-options.md       Illustrated fastener alternatives
+  documentation.scad         Short NopSCADlib model walkthrough
+  chamfer-guide.md           Actual bracket chamfer construction
+  ef-hull-experiment.md      Detailed EF experiment and XOR results
+  hull-guide.md              General hull() introduction only
+  polygon-guide.md           2D vs 3D inside-radius article
+  mounting-options.md        Illustrated fastener alternatives
 figures/                    Editable vector diagrams
 tests/                      Profile and full-bracket geometry regression fixtures
 ```
@@ -50,43 +52,36 @@ From the archive root after `bootstrap.ps1`:
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/hull_explained.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/rounding_explained.scad"
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/inside_corner_methods.scad"
+.\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/ef_hull_experiment.scad"
 ```
 
 In `design.scad`, use the `design_step` dropdown to inspect six sequential
 stages: base profile, outside chamfers, nut pockets, print relief, plugs and
 fitted plywood preview.
 
-The generated [design documentation](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/)
-focuses on the six model stages, including a more detailed explanation of
-elephant-foot relief.
+## Documentation map
 
-The separate [Hull Guide](docs/hull-guide.md) starts with a simple
-rectangular-bar example, then explains the **actual** outside and inner
-relief hulls used in the bracket. `hull_explained.scad` and
-`rounding_explained.scad` remain available as teaching examples.
+The generated [model walkthrough](https://brainboxemb.github.io/2026-011-01.cad.model-archive/models/corner_bracket/v0.1/)
+is the short starting point.
 
-The `rounding_explained.scad` tutorial shows two different kinds of corner:
-four circles connected with `hull()` to make rounded **outside** corners,
-and a **historical** point-based method for the concave inside corner.
+From there the subjects are deliberately separated:
 
-The [Chamfer Guide](docs/chamfer-guide.md) gives eight actual geometry illustrations and two annotated diagrams,
-including a junction schematic where the elephant-foot
-and outside side-edge bevels meet. CI tests that small miter explicitly:
-without the added local hulls, a small flat termination remains even
-when the whole-bracket volume difference looks negligible.
+- [Chamfer Guide](docs/chamfer-guide.md) — the **actual bracket**:
+  complete polygon, inside radius, outside `cs` hull, elephant-foot
+  `ef` hull and the current arm-tip junction.
+- [Elephant-foot Hull Experiment](docs/ef-hull-experiment.md) — the
+  **experiment only**: both EF hull surfaces, hull result, exact missing
+  volume, working reference, exact candidate surfaces, candidate hull,
+  XOR, overcut and undercut.
+- [Hull Guide](docs/hull-guide.md) — a **generic** rectangular-bar
+  introduction to `hull()`; no duplicate bracket walkthrough.
+- [Polygon Guide](docs/polygon-guide.md) — the inside-radius construction
+  using 2D square/circle and the 3D comparison.
+- [Mounting Options](docs/mounting-options.md) — fastener and assembly
+  alternatives.
 
-The [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
-straightforward constructions of the same **inside** radius:
-`square() - circle()` with `union()` **before** `linear_extrude()`
-(2D first), and `cube() - cylinder()` with `union()` in **3D**.
-Its [standalone OpenSCAD demo](design/inside_corner_methods.scad) has
-nine Customizer stages and CI-generated illustrations. The real
-`corner_bracket.scad` uses the **2D approach** with `$fn=72` on the
-corner circle to preserve the old 5-degree curve segmentation.
-An isolated [equivalence fixture](tests/inside-corner-equivalence.scad)
-compares the old polygon against the new 2D profile across several radius
-and print-relief values during CI. Whole-part STL renders were also compared
-locally and yielded matching geometry for the tested configurations.
+The production SCAD remains under `scad/`. Everything in `design/`
+is explanatory or experimental and does not replace the printable model.
 
 The [documentation entry point](docs/documentation.scad) creates printable
 bracket and paired-plug STLs and NopSCADlib assembly documentation. Its design

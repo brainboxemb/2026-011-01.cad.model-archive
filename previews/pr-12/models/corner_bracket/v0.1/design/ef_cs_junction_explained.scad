@@ -1,16 +1,18 @@
-// Corner Bracket: unified L-profile elephant-foot experiment.
+// Corner Bracket: continuous L elephant-foot construction.
 //
-// The ef input is ONE continuous L-shaped profile following the complete
-// inside of the bracket:
+// Construction order:
 //
-//   horizontal inside face
-//        -> rounded inside corner r_in
-//        -> vertical inside face
+//   1. Make ONE continuous L-shaped sheet along the complete inside:
+//      horizontal -> inside radius -> vertical.
+//   2. Shape that complete sheet with the EXISTING cs hull.
+//      This adjusts the sheet at the side/end corners without splitting the L.
+//   3. Use that cs-shaped L sheet as the basis for the complete elephant-foot.
 //
-// No horizontal/vertical split is shown in this explanation.
+// This file deliberately stops before the final ef hull until step 2 is
+// visually accepted.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_inner_L_profile, 02_inner_L_sheet, 03_inner_L_with_body]
+scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_cs_shaped_L_with_body]
 
 /* [Geometry] */
 armH = 40;
@@ -75,40 +77,44 @@ module raw_body() {
             profile_2d();
 }
 
-module cs_envelope() {
-    rotate([90, 0, 0])
-        hull() {
-            linear_extrude(height = W - 2 * cs, center = true)
-                outer_shape_2d();
+// -----------------------------------------------------------------------------
+// The normal cs hull, exactly the same construction used by the bracket body.
+// -----------------------------------------------------------------------------
 
-            linear_extrude(height = W, center = true)
-                offset(delta = -cs)
-                    outer_shape_2d();
-        }
+module cs_input_inner() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W - 2 * cs, center = true)
+            outer_shape_2d();
+}
+
+module cs_input_outer() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W, center = true)
+            offset(delta = -cs)
+                outer_shape_2d();
+}
+
+module cs_hull() {
+    hull() {
+        cs_input_inner();
+        cs_input_outer();
+    }
 }
 
 module cs_body() {
     intersection() {
         raw_body();
-        cs_envelope();
+        cs_hull();
     }
 }
 
 // -----------------------------------------------------------------------------
-// ONE continuous inner L profile, including the rounded inside corner.
-//
-// This is deliberately constructed as a thin 2D band along the complete
-// wood-contact boundary. It is only an explanatory input shape for now.
+// ONE continuous inside L sheet, including r_in.
 // -----------------------------------------------------------------------------
 
-module inner_path_opening_2d() {
-    // The open quadrant ends EXACTLY on the two wood-contact faces:
-    //   X = 0   for the vertical inside face
-    //   Z = 0   for the horizontal inside face
-    //
-    // Extending beyond the arm tips is fine, but extending above Z=0 is not:
-    // that would move the horizontal boundary away from the real bracket.
+module inside_opening_2d() {
     difference() {
+        // Open quadrant ends exactly on X=0 and Z=0.
         translate([0, -armV - 5])
             square([armH + 5, armV + 5]);
 
@@ -117,33 +123,38 @@ module inner_path_opening_2d() {
     }
 }
 
-// Thin band following the full inside boundary:
-// horizontal -> rounded corner -> vertical.
-module inner_L_profile_2d() {
+module inner_L_band_2d() {
     difference() {
         offset(delta = sheet_thickness)
-            inner_path_opening_2d();
+            inside_opening_2d();
 
-        inner_path_opening_2d();
+        inside_opening_2d();
     }
 }
 
-// Clip the explanatory band to the real bracket extents.
-module clipped_inner_L_profile_2d() {
+module clipped_inner_L_band_2d() {
     intersection() {
-        inner_L_profile_2d();
+        inner_L_band_2d();
 
         translate([-sheet_thickness, -armV])
             square([armH + sheet_thickness, armV + sheet_thickness]);
     }
 }
 
-// Extrude the one-piece L profile over the bracket width.
-// In front view this reads as one bent sheet with the real rounded corner.
-module inner_L_sheet() {
+module raw_inner_L_sheet() {
     rotate([90, 0, 0])
         linear_extrude(height = W, center = true)
-            clipped_inner_L_profile_2d();
+            clipped_inner_L_band_2d();
+}
+
+// Step 2:
+// The complete continuous L sheet is shaped by the SAME cs hull as the body.
+// This is the first hull operation relevant to the ef construction.
+module cs_shaped_inner_L_sheet() {
+    intersection() {
+        raw_inner_L_sheet();
+        cs_hull();
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -157,20 +168,35 @@ if (scene == "00_cs_body") {
         cs_body();
 }
 
-else if (scene == "01_inner_L_profile") {
-    color("DeepSkyBlue")
-        clipped_inner_L_profile_2d();
+else if (scene == "01_raw_L_sheet") {
+    color("DeepSkyBlue", 0.90)
+        raw_inner_L_sheet();
 }
 
-else if (scene == "02_inner_L_sheet") {
-    color("DeepSkyBlue", 0.88)
-        inner_L_sheet();
+else if (scene == "02_cs_hull_inputs") {
+    // Show the continuous L sheet as the object being shaped.
+    color("DeepSkyBlue", 0.75)
+        raw_inner_L_sheet();
+
+    // Show the two existing cs hull inputs transparently.
+    color("SteelBlue", 0.18)
+        cs_input_inner();
+
+    color("DarkOrange", 0.18)
+        cs_input_outer();
+}
+
+else if (scene == "03_cs_shaped_L") {
+    // This is the important intermediate result:
+    // one continuous rounded L, now with the cs corner geometry applied.
+    color("DeepSkyBlue", 0.92)
+        cs_shaped_inner_L_sheet();
 }
 
 else {
-    color("DeepSkyBlue", 0.80)
-        inner_L_sheet();
+    color("DeepSkyBlue", 0.82)
+        cs_shaped_inner_L_sheet();
 
-    color("DarkOrange", 0.24)
+    color("DarkOrange", 0.22)
         cs_body();
 }

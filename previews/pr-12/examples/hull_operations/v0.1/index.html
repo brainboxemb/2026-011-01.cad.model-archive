@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Generated documentation</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header><a href="../../../">← Model archive</a></header>
+  <main>
+<h1>Hull operations on one simple beam</h1>
+<p>This page deliberately starts with <strong>one rectangular beam</strong>. The purpose is to
+understand the two operations before looking at the Corner Bracket.</p>
+<p>The camera, beam dimensions and orientation stay the same in every image.</p>
+<h2>0. Start: unchanged beam</h2>
+<p><img alt="Plain rectangular beam" src="renders/00_plain_beam.png" /></p>
+<p>There is no chamfer and no elephant-foot correction yet.</p>
+<h2>1. Operation A: side chamfer <code>cs</code></h2>
+<p><img alt="Beam with side chamfer only" src="renders/01_side_chamfer.png" /></p>
+<p>Only the long outside edges change.</p>
+<p>The construction is easiest to read as three cross-sections:</p>
+<ol>
+<li>a narrower section at the outer face;</li>
+<li>the normal full section farther inward;</li>
+<li><code>hull()</code> connects those sections.</li>
+</ol>
+<p>So the important sequence is:</p>
+<p><strong>beam → hull between two sections → beveled outside edge</strong></p>
+<p>Nothing about the elephant-foot correction is involved yet.</p>
+<h2>2. Operation B: elephant-foot relief <code>ef</code></h2>
+<p><img alt="Beam with elephant-foot relief only" src="renders/02_elephant_foot.png" /></p>
+<p>Now return to the original beam and ignore <code>cs</code>.</p>
+<p>The correction acts only in the small region at the print-bed edge. A short
+<code>hull()</code> defines the relief volume between the original edge and an inset
+section. That small volume is then removed from the beam.</p>
+<p>Read this operation as:</p>
+<p><strong>beam → make small relief volume → subtract it → corrected bottom edge</strong></p>
+<h2>3. Both operations on the same beam</h2>
+<p><img alt="Beam with both operations" src="renders/03_combined.png" /></p>
+<p>Only after the two operations are clear separately are they combined:</p>
+<ol>
+<li>start with the same beam;</li>
+<li>apply the side chamfer <code>cs</code>;</li>
+<li>apply the elephant-foot relief <code>ef</code>.</li>
+</ol>
+<p>This is the geometry relationship that should later be translated back to the
+real L-shaped Corner Bracket.</p>
+<h2>Source</h2>
+<p>The complete minimal OpenSCAD example is in
+<a href="scad/hull_operations.scad"><code>scad/hull_operations.scad</code></a>.</p>
+<p>Set <code>scene</code> to <code>0</code>, <code>1</code>, <code>2</code> or <code>3</code> to inspect the same four states
+locally.</p>
+</main></body></html>

@@ -1,27 +1,22 @@
-# Understanding `hull()` — a simple introduction
+# Understanding `hull()`
 
-**This page teaches only the basic `hull()` operation.** The
-[Chamfer Guide](chamfer-guide.html) is the **single detailed explanation**
-of the actual Corner Bracket: its already-chamfered polygon, outside
-edge bevels, elephant-foot relief and arm-tip junctions.
+This page has **one job**: explain the basic OpenSCAD `hull()`
+operation with a simple convex example.
 
-For the separate 2D construction of the rounded inside corner, see the
-[Polygon Guide](polygon-guide.html).
+It does **not** explain the Corner Bracket itself. For that, use:
 
-In OpenSCAD, `hull()` creates the **smallest convex shape containing
-all its children**. It connects shapes smoothly in the geometric sense
-of *straight, sloping connecting surfaces*; it does not automatically
-make rounded curves or preserve concave openings.
+- [Chamfer Guide](chamfer-guide.html) — the actual bracket construction,
+  including both real hull operations.
+- [Elephant-foot Hull Experiment](ef-hull-experiment.html) — the detailed
+  two-surface simplification experiment, including all intermediate shapes.
+- [Polygon Guide](polygon-guide.html) — the separate 2D inside-radius
+  construction.
 
-## 1. Connect two differently sized layers
+## 1. A simple bar
 
-This demonstration uses an ordinary rectangular block, **not the
-production bracket**. Its purpose is to make the hull operation easy to
-recognise before the more complicated L-shaped model.
+### A. Original bar
 
-### A. A bar with square edges
-
-![Rectangular bar before any bevel](../design/hull_01_original_bar.png)
+![Rectangular bar](../design/hull_01_original_bar.png)
 
 ```openscad
 module original_bar() {
@@ -30,9 +25,11 @@ module original_bar() {
 }
 ```
 
-### B. First input: a full-size, thin base layer
+### B. First hull surface
 
-![First, full-size layer](../design/hull_02_wide_layer.png)
+The lower surface has the full bar size.
+
+![First hull surface](../design/hull_02_wide_layer.png)
 
 ```openscad
 module wide_layer() {
@@ -41,23 +38,26 @@ module wide_layer() {
 }
 ```
 
-### C. Second input: a smaller layer at the top
+### C. Second hull surface
 
-The second layer is inset by `chamfer` on all four sides.
+The upper surface is inset by `chamfer`.
 
-![Wide and narrow layers, not yet connected](../design/hull_03_two_layers.png)
+![Both hull surfaces before connecting them](../design/hull_03_two_layers.png)
 
 ```openscad
 module narrow_layer() {
     translate([0, 0, height - slice_thickness/2])
-        cube([length-2*chamfer, width-2*chamfer,
+        cube([length - 2*chamfer,
+              width  - 2*chamfer,
               slice_thickness], center=true);
 }
 ```
 
-### D. Hull: the smallest convex solid around both layers
+### D. Connect the two surfaces
 
-![Hull connecting the two layers](../design/hull_04_hull.png)
+`hull()` creates the smallest convex solid containing both children.
+
+![Hull connecting the two surfaces](../design/hull_04_hull.png)
 
 ```openscad
 module sloped_hull() {
@@ -68,12 +68,15 @@ module sloped_hull() {
 }
 ```
 
-The visible slope comes from the **size difference and distance**
-between the two inputs. Nothing is rounded by `hull()` here.
+The slope comes entirely from the difference between the two input
+surfaces. `hull()` does not add a radius or smoothing operation.
 
-### E. Optional: clip with the original bar
+### E. Optional clipping
 
-![The result after clipping to the bar](../design/hull_05_result.png)
+The result can be intersected with another solid if the hull is only
+being used as a limiting envelope.
+
+![Hull clipped by the original bar](../design/hull_05_result.png)
 
 ```openscad
 intersection() {
@@ -82,44 +85,17 @@ intersection() {
 }
 ```
 
-In this simple example, the hull already stays inside the original
-bar, so clipping barely changes the result. For the **real L bracket**
-it matters much more: an outside convex hull temporarily fills the
-concave opening between the arms. Intersecting it with the original L
-preserves that opening.
+## 2. Applying this to the Corner Bracket
 
-## 2. Where does this appear in the real bracket?
+The Corner Bracket uses the same principle twice:
 
-The bracket uses two different *roles* for hulls:
+1. an outside `cs` hull creates a limiting envelope;
+2. an elephant-foot `ef` hull creates a cutting volume.
 
-- **Outside bevel `cs`:** connect a full outside outline with a
-  smaller outline. This hull is used as a *limiting envelope* and
-  intersected with the actual L.
-- **Elephant-foot relief `ef`:** connect two profiles of the *empty
-  space between the arms*, one expanded by 0.6 mm. The hull becomes a
-  *cutting volume* and is subtracted from the solid. There is one
-  per printed side; the current model also has small junction hulls
-  where the relief meets the outside bevel.
+The important part is the **input surfaces**. The
+[Chamfer Guide](chamfer-guide.html) shows those surfaces and the result
+for both operations in the same step-by-step format.
 
-These are different applications of the **same `hull()` principle**.
-For the actual input geometry, code and the reason the arm-tip junction
-needs its own small 3D hulls, **continue to the
-[Chamfer Guide](chamfer-guide.html)**.
-
-## 3. Optional experiment: a single hull for two bevels
-
-For a **straight convex bar**, four layers can be enclosed in one
-`hull()`: inset at the bottom, full-size in the centre and inset at
-the top. This forms both a bottom print allowance and a top bevel.
-
-![Four outlines for the optional bar experiment](../design/combined_chamfer_layers.png)
-
-![One hull compared with three separate hull sections](../design/combined_chamfer_comparison.png)
-
-The editable
-[combined-chamfer prototype](../design/combined_chamfer_hull.scad)
-demonstrates this for a **straight convex bar only**. At the Corner
-Bracket arm tip, the required EF cutter plus its `cs` junction is
-non-convex. Putting both into one `hull()` fills the convex envelope
-between them and removes too much material. See
-[Section 4 of the Chamfer Guide](chamfer-guide.html).
+If the question is specifically whether the elephant-foot arm-tip
+correction can be absorbed into only those two input surfaces, continue
+with the [Elephant-foot Hull Experiment](ef-hull-experiment.html).

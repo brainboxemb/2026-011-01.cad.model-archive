@@ -102,11 +102,15 @@ module cs_body() {
 // -----------------------------------------------------------------------------
 
 module inner_path_opening_2d() {
-    reach = max(armH, armV) + 10;
-
+    // The open quadrant ends EXACTLY on the two wood-contact faces:
+    //   X = 0   for the vertical inside face
+    //   Z = 0   for the horizontal inside face
+    //
+    // Extending beyond the arm tips is fine, but extending above Z=0 is not:
+    // that would move the horizontal boundary away from the real bracket.
     difference() {
         translate([0, -armV - 5])
-            square([armH + 5, armV + 10]);
+            square([armH + 5, armV + 5]);
 
         if (r_in > 0)
             inside_corner_2d(r_in);

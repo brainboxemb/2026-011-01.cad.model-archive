@@ -33,28 +33,38 @@ and files, and the bill of materials. The corner bracket also generates:
 - five images demonstrating `hull()` using a rectangular bar;
 - nine images comparing 2D versus 3D construction of the inside corner;
 - nine images walking through the actual polygon and chamfer steps;
-- two editable SVG diagrams explaining the elephant-foot hull inputs
-  and the arm-tip junction;
-- two images from the combined-hull experiment on a straight arm.
+- fifteen local images showing every stage of the elephant-foot two-surface
+  experiment: both input surfaces, hull, reference, candidate, XOR,
+  overcut and undercut;
+- editable SVG diagrams for mounting and print-orientation context.
 
 The current bracket uses the **2D square-minus-circle construction**.
 Before generating the documentation, CI compares this profile with the
 former 19-point polygon profile for several radii and print-relief settings
 using [geometry equivalence checks](../scripts/ci/verify-corner-rounding.sh).
 
-The main design manual keeps only **six actual bracket stages**.
-The extended bar and real-bracket hull explanation live in
-`docs/hull-guide.html`; the nine-stage 2D/3D inside-corner comparison
-lives in `docs/polygon-guide.html`. The unified chamfer explanation, including annotated elephant-foot hull
-and arm-tip diagrams, lives in `docs/chamfer-guide.html`.
-The `docs/mounting-options.html` comparison contains editable SVG
-cross-section diagrams for fixing alternatives. The main manual also
-illustrates elephant-foot compensation with SVG diagrams.
+The main design manual keeps only **six actual bracket stages** and a
+short map telling readers where each subject lives.
+
+- `docs/chamfer-guide.html` is the single construction guide for the real
+  bracket. It shows the outside `cs` hull and the elephant-foot `ef` hull
+  using the same input-A/input-B/both/hull/result sequence.
+- `docs/ef-hull-experiment.html` owns the alternative two-surface
+  experiment and all of its comparison/XOR material.
+- `docs/hull-guide.html` is only the generic rectangular-bar introduction
+  to `hull()`.
+- `docs/polygon-guide.html` owns the 2D/3D inside-radius explanation.
+- `docs/mounting-options.html` owns fixing and fastener alternatives.
+
+This separation is intentional: experimental geometry is not duplicated
+inside the production-model walkthrough.
 
 CI checks the printable bracket with the original per-edge relief method
 across nine parameter sets. A **local arm-tip XOR regression** additionally
-verifies that the miter hulls remove at least 90% of the local geometric
-mismatch where elephant-foot relief meets the outside side bevels.
+verifies the current miter correction. Separately,
+`verify-ef-two-surface-experiment.sh` renders and quantifies the
+reference/candidate/XOR/overcut/undercut volumes for the proposed
+two-surface simplification without changing the production model.
 
 The source tree keeps just `scad/corner_bracket.scad` and
 `scad/inspection.scad` under `scad/`. Tutorials and generated PNGs are

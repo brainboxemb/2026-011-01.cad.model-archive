@@ -183,18 +183,22 @@ for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_c
 done
 
 for stage in \
-  00_whole_main_only \
-  00_whole_problem_points \
-  00_whole_working \
-  01_opening_profile \
-  02_inner_main_input \
-  03_outer_main_input \
-  04_both_main_inputs \
-  05_main_hull \
-  06_main_result \
+  A01_before_ef \
+  A02_surface_a \
+  A03_surface_b \
+  A04_both_surfaces \
+  A05_main_hull \
+  A06_main_result \
+  A07_problem_locations \
+  B01_before_ef \
+  B02_surface_a \
+  B03_surface_b \
+  B04_both_surfaces \
+  B05_main_hull \
+  B06_corner_correction \
+  B07_combined_relief \
+  B08_working_result \
   07_missing_tip_volume \
-  08_reference_relief_volume \
-  09_reference_result \
   10_exact_reference_inputs \
   11_exact_two_surface_hull \
   12_exact_candidate_result \
@@ -223,11 +227,12 @@ if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
 fi
 
 # The experiment page owns the detailed EF alternative analysis.
-require_text '## 1. First verify the complete bracket' "$bracket/docs/ef-hull-experiment.md"
-require_text '00_whole_problem_points.png' "$bracket/docs/ef-hull-experiment.md"
-require_text '## 2. How one main EF hull is built' "$bracket/docs/ef-hull-experiment.md"
-require_text '### 4D. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
-require_text '### 4E. Overcut' "$bracket/docs/ef-hull-experiment.md"
-require_text '### 4F. Undercut' "$bracket/docs/ef-hull-experiment.md"
+require_text '# A. Elephant foot with the two main hulls' "$bracket/docs/ef-hull-experiment.md"
+require_text '# B. Repeat the same construction with the working correction' "$bracket/docs/ef-hull-experiment.md"
+require_text '# C. Can the correction be absorbed into the original two hull surfaces?' "$bracket/docs/ef-hull-experiment.md"
+require_text 'efh_A04_both_surfaces.png' "$bracket/docs/ef-hull-experiment.md"
+require_text 'efh_B04_both_surfaces.png' "$bracket/docs/ef-hull-experiment.md"
+require_text 'efh_B06_corner_correction.png' "$bracket/docs/ef-hull-experiment.md"
+require_text 'efh_13_exact_candidate_xor.png' "$bracket/docs/ef-hull-experiment.md"
 
 echo "Verified generated documentation and all design illustrations."

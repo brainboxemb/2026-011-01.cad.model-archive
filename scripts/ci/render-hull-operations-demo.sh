@@ -23,4 +23,6 @@ render 02_cs_result  02_cs_result
 render 03_ef_inputs  03_ef_inputs
 render 04_ef_result  04_ef_result
 render 05_combined   05_combined
-render 06_corner     06_corner
+render 06_corner       06_corner
+render 07_miter_inputs 07_miter_inputs
+render 08_fixed        08_fixed

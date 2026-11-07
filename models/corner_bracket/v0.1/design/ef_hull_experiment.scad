@@ -257,6 +257,14 @@ module whole_problem_markers() {
     }
 }
 
+// Light whole-bracket context used behind the EF input surfaces.
+// The colored geometry is the cutter/hull; the grey bracket is only a
+// positional reference so the reader can see exactly where Y=9.4/Y=10 sit.
+module bracket_context() {
+    color([0.72, 0.72, 0.72, 0.28])
+        whole_main_only();
+}
+
 // -------- visual stages --------
 
 if (experiment_step == "00_whole_main_only")
@@ -270,26 +278,32 @@ else if (experiment_step == "00_whole_working")
     color("SteelBlue") whole_working();
 
 else if (experiment_step == "01_opening_profile") {
-    // 2D source profile shown as a thin plate for a consistent 3D camera.
-    crop()
-        color("SteelBlue")
-            translate([0, W/2 - ef, 0])
-                rotate([90, 0, 0])
-                    linear_extrude(height=0.08, center=true)
-                        inside_opening_2d();
+    bracket_context();
+    // Show the source cutter profile at the inner EF Y plane so its
+    // relationship to the L-shaped bracket is immediately visible.
+    color("SteelBlue")
+        translate([0, W/2 - ef, 0])
+            rotate([90, 0, 0])
+                linear_extrude(height=0.08, center=true)
+                    inside_opening_2d();
 }
-else if (experiment_step == "02_inner_main_input")
-    crop() color("SteelBlue") opening_layer(W/2 - ef);
-
-else if (experiment_step == "03_outer_main_input")
-    crop() color("DarkOrange") opening_layer(W/2, ef);
-
+else if (experiment_step == "02_inner_main_input") {
+    bracket_context();
+    color("SteelBlue") opening_layer(W/2 - ef);
+}
+else if (experiment_step == "03_outer_main_input") {
+    bracket_context();
+    color("DarkOrange") opening_layer(W/2, ef);
+}
 else if (experiment_step == "04_both_main_inputs") {
-    crop() color("SteelBlue") opening_layer(W/2 - ef);
-    crop() color("DarkOrange") opening_layer(W/2, ef);
+    bracket_context();
+    color("SteelBlue") opening_layer(W/2 - ef);
+    color("DarkOrange") opening_layer(W/2, ef);
 }
-else if (experiment_step == "05_main_hull")
-    crop() color("DarkOrange", 0.85) main_positive_hull();
+else if (experiment_step == "05_main_hull") {
+    bracket_context();
+    color("DarkOrange", 0.80) main_positive_hull();
+}
 
 else if (experiment_step == "06_main_result")
     color("SteelBlue") main_result();

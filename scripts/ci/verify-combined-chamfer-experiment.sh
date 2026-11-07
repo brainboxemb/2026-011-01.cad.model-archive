@@ -6,14 +6,19 @@ for config in "2 0.6" "0 0.6" "2 0" "3 1.2"; do
   read -r cs ef <<< "$config"
   log="$(mktemp)"
   out="$(mktemp --suffix=.stl)"
-  if ! openscad -o "$out" -D 'view="xor"' \
-    -D "upper_chamfer=$cs" -D "elephant_foot=$ef" "$source_file" >"$log" 2>&1; then
+  # OpenSCAD normally exits 1 when STL output is empty. For an XOR test,
+  # precisely that is the success case, so inspect the log after rendering.
+  render_status=0
+  openscad -o "$out" -D 'view="xor"' \
+    -D "upper_chamfer=$cs" -D "elephant_foot=$ef" "$source_file" >"$log" 2>&1 || render_status=$?
+  if grep -q 'Current top level object is empty' "$log"; then
+    echo "cs=$cs, ef=$ef: exact empty XOR"
+  elif [[ "$render_status" -ne 0 ]]; then
     echo "OpenSCAD failed for cs=$cs, ef=$ef:" >&2
     cat "$log" >&2
     rm -f "$log" "$out"
     exit 1
-  fi
-  if ! grep -q 'Current top level object is empty' "$log"; then
+  else
     # CGAL can leave a microscopic tetrahedron at a shared hull facet,
     # even when the exact mathematical solids are equivalent.
     # Accept no more than 0.001 cubic mm of residual mesh volume.

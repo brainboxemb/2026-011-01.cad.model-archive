@@ -89,12 +89,44 @@ The sequence deliberately mirrors the outside `cs` hull walkthrough:
 
 **source profile → surface A → surface B → both surfaces → hull → result**
 
-### 2A. Source opening profile
+### 2A. Source cutting profile
 
-The main EF cutter starts from the empty quadrant between the two L arms,
-including the rounded inside-corner boundary:
+The elephant-foot relief is made by **subtracting material from the two
+wood-contact faces** of the bracket. We therefore do not hull the bracket
+itself. We first make a 2D **cutter profile** on the wood side of those
+faces.
 
-![Source opening profile](../design/efh_01_opening_profile.png)
+In the X/Z side view:
+
+- the horizontal wood-contact face lies along `z = 0`;
+- the vertical wood-contact face lies along `x = 0`;
+- the cutter occupies the open area at **x ≥ 0 and z ≤ 0**;
+- at the inside corner, its boundary follows the same `r_in` curve as the
+  bracket.
+
+So `inside_opening_2d()` is simply the large 2D shape immediately
+**inside the L**, touching both wood-contact edges. It extends beyond the
+arm ends on purpose; only the part that overlaps the bracket can remove
+material.
+
+![2D cutting profile beside the two wood-contact faces](../design/efh_01_opening_profile.png)
+
+```openscad
+module inside_opening_2d() {
+    reach = max(5, cs + ef + 1);
+
+    difference() {
+        translate([0, -armV - reach])
+            square([armH + reach, armV + reach]);
+
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
+}
+```
+
+The important point is: **this blue shape is a cutter, not part of the
+bracket**.
 
 ### 2B. First hull surface — Y = 9.4 mm
 

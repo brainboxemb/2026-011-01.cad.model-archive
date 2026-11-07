@@ -183,52 +183,52 @@ module body() {
 }
 
 // ---------- Unified hull-based side chamfers and print relief ----------
-// The broad outside edges are controlled by side_chamfer_env() above.
-// For the *concave*, wood-facing edges, use the complement: the open
-// quadrant between the two arms, less the small rounded corner fill.
-// Its boundary includes both straight contact faces and the inner arc.
-// We extend the quadrant beyond the arm ends so the bevel is not clipped.
-module inside_opening_2d() {
+// Cross-section of side_chamfer_env() at a given Y position.
+//
+// side_chamfer_env() is the hull between:
+//   * outer_shape() at |Y| = W/2-cs
+//   * offset(-cs) outer_shape() at |Y| = W/2
+//
+// Because outer_shape() is convex and both sections are parallel offsets,
+// the intermediate X/Z section is the same outline inset linearly by d.
+module side_chamfer_slice_2d(y) {
+    d = (cs > 0)
+        ? max(0, min(cs, abs(y) - (W / 2 - cs)))
+        : 0;
+
+    if (d > 0)
+        offset(delta = -d) outer_shape();
+    else
+        outer_shape();
+}
+
+// Open quadrant between the arms, clipped at the ACTUAL arm ends for this
+// Y position. The x=0 and z=0 wood-contact boundaries come from the square
+// and therefore do not move with cs; only the remote arm-end boundaries are
+// clipped by side_chamfer_slice_2d(y).
+module inside_opening_2d(y) {
     reach = max(5, cs + ef + 1);
     difference() {
-        translate([0, -armV - reach])
-            square([armH + reach, armV + reach]);
+        intersection() {
+            translate([0, -armV - reach])
+                square([armH + reach, armV + reach]);
+            side_chamfer_slice_2d(y);
+        }
         if (r_in > 0)
             inside_corner_2d(r_in);
     }
 }
 
-// Exact X/Z cross-section of the already side-chamfered bracket at Y=y.
-// This reuses body(), and therefore the same side_chamfer_env() hull that
-// defines cs on the printable model.
-module body_slice_2d(y) {
-    projection(cut = true)
-        rotate([-90, 0, 0])
-            translate([0, -y, 0])
-                body();
-}
-
-// Empty space next to the wood-contact edges, but now bounded by the actual
-// body cross-section at this Y position. Around the arm tips this automatically
-// follows the cs bevel instead of assuming the unchamfered arm length.
-module relief_source_2d(y) {
-    mask = cs + ef + 1;
-    difference() {
-        offset(delta = mask)
-            inside_opening_2d();
-        body_slice_2d(y);
-    }
-}
-
-// A thin 3D slice used as input to the elephant-foot hull.
-// The outer print-face slice is expanded by ef; both slices already contain
-// the correct cs-dependent arm-tip boundary before hull() connects them.
+// A thin 3D input slice for the EF hull. At each Y position the opening
+// already ends on the same cs boundary as the printable body. The outer
+// slice is then expanded by ef, so the two existing hulls create both the
+// contact-edge relief and the correct transition at the arm tips.
 module opening_layer(y, expansion = 0) {
     translate([0, y, 0])
         rotate([90, 0, 0])
             linear_extrude(height = 0.002, center = true)
                 offset(delta = expansion)
-                    relief_source_2d(y);
+                    inside_opening_2d(y);
 }
 
 // Why TWO hulls? A single convex hull joining expanded openings at BOTH

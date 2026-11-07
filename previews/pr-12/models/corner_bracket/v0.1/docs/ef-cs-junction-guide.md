@@ -25,7 +25,7 @@ That is why the current solution has two parts:
 ```text
 main ef relief along the complete inside L
                     +
-small local correction at the cs/ef arm-tip junctions
+small local correction where `ef` meets `cs` at the arm tips
 ```
 
 ## 1. Start with the real L-shaped bracket
@@ -135,71 +135,108 @@ corner.
 The orange/right-hand example includes the relief; the blue/left-hand example
 shows the body before it is removed.
 
-## 5. Why the main `ef` hull is almost, but not completely, enough
+## 5. What still goes wrong after the normal `ef` relief?
 
-Along the straight inside faces and around `r_in`, the opening hull works
-cleanly.
+At this point the **main elephant-foot relief is already finished**.
 
-At an **arm tip**, however, three pieces of geometry meet:
+Along the long horizontal inside face it works.
+
+Around the rounded inside corner it works.
+
+Along the long vertical inside face it works.
+
+So the remaining problem is **not the L shape itself**.
+
+The only place that still needs attention is the very end of each arm.
+
+At an arm tip, the inside `ef` relief arrives at an edge that is already
+sloping because of `cs`.
+
+That creates this situation:
 
 ```text
-inside ef relief
-      +
-arm-end geometry
-      +
-diagonal cs side chamfer
+normal ef relief
+      ↓
+--------------------                     \   cs side chamfer
+                      \
 ```
 
-The broad opening hull knows about the inside L boundary. It does **not**
-explicitly create the tiny diagonal miter where that relief reaches the
-`cs` bevel.
+The main `ef` hull follows the inside L correctly, but it does not automatically
+continue through that last small diagonal piece.
 
-Without an extra correction, the relief ends with a short flat termination at
-that junction.
+The result is a **short flat termination** at the meeting point.
 
-This is the small defect we were investigating. It is not a failure of the
-whole `ef` construction.
+That tiny flat piece is the defect we were trying to understand.
 
-## 6. The local arm-tip correction
+It is important to keep the scale of the problem clear:
 
-The production solution is `relief_corner_miters()`.
+> The complete elephant-foot construction works. Only the small meeting point
+> between `ef` and `cs` at an arm tip needs an extra correction.
 
-It creates a **small triangular relief profile** at one end of the diagonal
-`cs` edge and the same profile at the other end. A local `hull()` joins
-those two triangles.
+## 6. Show the problem before fixing it
 
-That produces only the little swept volume needed at the junction.
-
-The operation is repeated for:
-
-- the horizontal arm tip;
-- the vertical arm tip;
-- both Y sides of the bracket.
-
-Nothing else in the bracket is changed.
+The left-hand crop below shows the bracket **after the normal `ef` relief**,
+but **before** the extra local correction.
 
 ![The local cs/ef junction correction](../design/chamfer_10_corner_junction.png)
 
-The three cropped examples are:
+Read the three crops from left to right:
 
-**Left — before the local correction**
+**Left — normal `ef` only**
 
-Only the normal inside-opening relief has been applied. The small flat
-termination is still present.
+This is the important starting point.
 
-**Middle — correction volume only**
+The long `ef` relief is already present. The rounded inside corner is already
+correct. Only the very end of the relief stops too abruptly where it reaches
+the diagonal `cs` edge.
 
-This is the tiny triangular `hull()` made by
-`relief_corner_miters()`. It is a cutter, not part of the bracket.
+**Middle — the extra material to remove**
 
-**Right — final junction**
+The red shape is not part of the bracket. It is a tiny helper volume that will
+be subtracted.
 
-The main `ef` relief and the local miter correction have both been removed
-from the `cs` body.
+Its only purpose is to continue the relief through that short diagonal
+junction.
 
-## 7. The complete production operation
+**Right — final corner**
 
-The actual structure is therefore straightforward:
+After subtracting the red helper volume, the `ef` transition continues
+cleanly into the `cs` chamfer.
+
+Nothing else in the bracket changes.
+
+## 7. How the small local correction is made
+
+Only now do we need the slightly more technical construction.
+
+The correction uses two very small triangular helper profiles placed along the
+diagonal `cs` edge.
+
+A short `hull()` connects those two triangles.
+
+That creates a small swept volume exactly where the flat termination was.
+
+The same small operation is repeated at:
+
+- the horizontal arm tip;
+- the vertical arm tip;
+- the front Y side;
+- the rear Y side.
+
+So there are four equivalent local junctions in total.
+
+In the source code this helper is called:
+
+```openscad
+relief_corner_miters()
+```
+
+The name is less important than its job:
+
+> remove only the tiny leftover piece where the normal elephant-foot relief
+> reaches the diagonal side chamfer.
+
+The complete production operation is therefore:
 
 ```openscad
 module chamfered_body() {
@@ -208,30 +245,26 @@ module chamfered_body() {
 
         if (ef > 0) {
             inside_relief_envelope(); // main ef relief along the complete L
-            relief_corner_miters();   // tiny corrections at the arm tips
+            relief_corner_miters();   // only the four small end corrections
         }
     }
 }
 ```
 
-Or as a diagram:
+Or in plain language:
 
 ```text
-L profile
-   ↓
-extrude over W
-   ↓
-cs hull
-   ↓
-intersection with real L
-   ↓
-body()
-   ↓
-subtract main ef opening hulls
-   ↓
-subtract four tiny cs/ef junction corrections
-   ↓
-chamfered_body()
+make the L bracket
+      ↓
+apply cs
+      ↓
+apply the normal ef relief along the whole inside L
+      ↓
+inspect the arm tips
+      ↓
+remove four tiny leftover junction pieces
+      ↓
+finished chamfered body
 ```
 
 ## 8. Why not replace this with one giant hull?
@@ -249,7 +282,7 @@ correctly.
 The current production approach therefore stays deliberately local:
 
 - one short opening hull per Y side for the main `ef` relief;
-- one small miter hull per arm tip and Y side for the junction.
+- one small small local hull per arm tip and Y side for the junction.
 
 That is less elegant than a single universal hull, but it matches the geometry
 we actually need and keeps the correction confined to the problem area.

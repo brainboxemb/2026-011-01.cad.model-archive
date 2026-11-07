@@ -171,45 +171,36 @@
 //! ### 4. Elephant-foot relief
 //!
 //! The bracket is printed on a broad **Y side face**. The first print
-//! layers can spread slightly and stop the plywood-contact faces from
-//! seating properly. The small parameter `ef = 0.6` provides a
-//! 45° allowance close to both side faces.
+//! layers can spread slightly and interfere with the plywood-contact
+//! faces. `ef = 0.6` adds a 45° relief near both print faces.
 //!
 //! ![Why first-layer compensation is needed](figures/elephant-foot-section.svg)
 //! ![Where the affected edges are](figures/elephant-foot-edges.svg)
 //!
-//! **The detailed geometrical construction is explained in one place:**
-//! [Chamfer Guide — section 3](docs/chamfer-guide.html).
-//! Briefly, the program forms a cutting volume from the *empty space
-//! between the L arms*: `hull()` joins an unchanged opening and
-//! a 0.6 mm expanded opening close to each Y side face. The two
-//! hulls preserve the bracket's unmodified central width.
+//! The detailed geometry is explained once in the
+//! [Chamfer Guide](docs/chamfer-guide.html). In short:
 //!
-//! At each arm end that relief meets the outer `cs` bevel.
-//! The complete relief for one print side is therefore built from
-//! **three local hulls**: one for the opening/contact edges, one for
-//! the horizontal arm end and one for the vertical arm end. The other
-//! print side uses the mirrored construction.
+//! - two main `hull()` cutters make the relief along the straight
+//!   contact faces and rounded inside corner, one per print side;
+//! - at each arm end that relief meets the diagonal `cs` bevel;
+//! - a small local miter hull finishes each of those four junctions.
 //!
-//! This is one unified parametric relief, not a mesh post-process.
-//! A single hull cannot replace all three because `hull()` is convex:
-//! combining the concave L opening with the opposite-side arm-end
-//! regions would fill geometry that must remain empty.
+//! We tested folding the tip correction into the same main `hull()`.
+//! That over-cuts the junction because `hull()` fills the convex
+//! envelope between the main opening and the separate tip correction.
+//! Keeping the correction local preserves the intended geometry.
 //!
 //! ![Bracket after print relief](design/04_print_relief.png)
 //!
 //! **Relevant OpenSCAD code (summary):**
 //!
-//!     module inside_relief_envelope() {
-//!         if (ef > 0)
-//!             for (side = [-1, 1])
-//!                 relief_side(side); // 3 local hulls per print side
-//!     }
-//!
 //!     module chamfered_body() {
 //!         difference() {
 //!             body();
-//!             inside_relief_envelope();
+//!             if (ef > 0) {
+//!                 inside_relief_envelope();
+//!                 relief_corner_miters();
+//!             }
 //!         }
 //!     }
 //!

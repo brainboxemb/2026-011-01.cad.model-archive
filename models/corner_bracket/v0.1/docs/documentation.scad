@@ -186,27 +186,30 @@
 //! hulls preserve the bracket's unmodified central width.
 //!
 //! At each arm end that relief meets the outer `cs` bevel.
-//! The current model adds small local junction hulls to complete
-//! those transitions. They are **geometry**, not a separate mesh
-//! post-processing operation.
+//! The complete relief for one print side is therefore built from
+//! **three local hulls**: one for the opening/contact edges, one for
+//! the horizontal arm end and one for the vertical arm end. The other
+//! print side uses the mirrored construction.
 //!
-//! A simpler version was tested in which the complete 2D opening was
-//! expanded before `hull()`, with no local junction cutters. It does
-//! **not** describe the same shape: the `cs` arm-tip edge changes
-//! X/Z position as Y changes, while a 2D opening profile cannot encode
-//! that Y-dependent diagonal. The local 3D hulls are therefore retained.
+//! This is one unified parametric relief, not a mesh post-process.
+//! A single hull cannot replace all three because `hull()` is convex:
+//! combining the concave L opening with the opposite-side arm-end
+//! regions would fill geometry that must remain empty.
 //!
 //! ![Bracket after print relief](design/04_print_relief.png)
 //!
 //! **Relevant OpenSCAD code (summary):**
 //!
+//!     module inside_relief_envelope() {
+//!         if (ef > 0)
+//!             for (side = [-1, 1])
+//!                 relief_side(side); // 3 local hulls per print side
+//!     }
+//!
 //!     module chamfered_body() {
 //!         difference() {
 //!             body();
-//!             if (ef > 0) {
-//!                 inside_relief_envelope(); // the two opening hulls
-//!                 relief_corner_miters();  // local bevel junctions
-//!             }
+//!             inside_relief_envelope();
 //!         }
 //!     }
 //!

@@ -19,10 +19,6 @@ for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   render hull_explained.scad demo_stage "$stage" "hull_$stage" "720,450"
 done
 
-# Seven stages: circular outer corners vs the sampled inner arc of the L.
-for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
-  render rounding_explained.scad demo_stage "$stage" "rounding_$stage" "720,450"
-done
 
 # Nine clear examples of a concave L fillet: 2D square/circle, 3D
 # cube/cylinder, and the existing point-list polygon approach.
@@ -33,4 +29,9 @@ done
 # Single-hull experiment: both outside chamfer and elephant-foot relief.
 for stage in layers comparison; do
   render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
+done
+
+# Nine stages from 2D end chamfers through side-edge hull and print relief.
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+  render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done

@@ -29,3 +29,8 @@ done
 for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
   render inside_corner_methods.scad demo_stage "$stage" "corner_$stage" "720,450"
 done
+
+# Single-hull experiment: both outside chamfer and elephant-foot relief.
+for stage in layers comparison; do
+  render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
+done

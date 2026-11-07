@@ -183,6 +183,9 @@ for stage in 02_profile_chamfers 02_inside_radius_added 03_extruded_profile 04_c
 done
 
 for stage in \
+  00_whole_main_only \
+  00_whole_problem_points \
+  00_whole_working \
   01_opening_profile \
   02_inner_main_input \
   03_outer_main_input \
@@ -220,9 +223,11 @@ if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
 fi
 
 # The experiment page owns the detailed EF alternative analysis.
-require_text 'surface A → surface B → both surfaces → hull → result' "$bracket/docs/ef-hull-experiment.md"
-require_text '13. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
-require_text '14. Candidate overcut' "$bracket/docs/ef-hull-experiment.md"
-require_text '15. Candidate undercut' "$bracket/docs/ef-hull-experiment.md"
+require_text '## 1. First verify the complete bracket' "$bracket/docs/ef-hull-experiment.md"
+require_text '00_whole_problem_points.png' "$bracket/docs/ef-hull-experiment.md"
+require_text '## 2. How one main EF hull is built' "$bracket/docs/ef-hull-experiment.md"
+require_text '### 4D. XOR against the working reference' "$bracket/docs/ef-hull-experiment.md"
+require_text '### 4E. Overcut' "$bracket/docs/ef-hull-experiment.md"
+require_text '### 4F. Undercut' "$bracket/docs/ef-hull-experiment.md"
 
 echo "Verified generated documentation and all design illustrations."

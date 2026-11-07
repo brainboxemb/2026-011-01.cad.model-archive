@@ -2,8 +2,8 @@
 
 The bracket has been refactored in two stages: the inside radius uses 2D
 `square()` and `circle()` operations instead of sampled arc points; the
-wood-contact elephant-foot relief now uses two local opening hulls and short diagonal miter hulls
-instead of individual straight, diagonal and circular cutting wedges.
+wood-contact elephant-foot relief now uses two local opening hulls plus four
+small arm-tip correction hulls instead of separate straight, curved and diagonal cutters.
 The original mounting and captive-nut system is unchanged.
 The bracket is a prototype; print tolerances and strength have not been physically verified.
 
@@ -18,7 +18,7 @@ design/
   hull_explained.scad       3D hull tutorial
   rounding_explained.scad   Circle and hull examples
   inside_corner_methods.scad  2D/3D inside-corner demonstration
-  chamfer_explained.scad   Ten chamfer construction stages
+  chamfer_explained.scad   Fifteen cs/ef construction stages
   combined_chamfer_hull.scad  Straight-arm single-hull experiment
   *.png                     CI-generated tutorial images (not committed)
 docs/
@@ -69,11 +69,17 @@ The `rounding_explained.scad` tutorial shows two different kinds of corner:
 four circles connected with `hull()` to make rounded **outside** corners,
 and a **historical** point-based method for the concave inside corner.
 
-The [Chamfer Guide](docs/chamfer-guide.md) gives ten illustrated stages,
-including a close-up of the arm-tip junction where the elephant-foot
-and outside side-edge bevels meet. CI tests that small miter explicitly:
-without the added local hulls, a small flat termination remains even
-when the whole-bracket volume difference looks negligible.
+The [Chamfer Guide](docs/chamfer-guide.md) gives fifteen illustrated stages,
+from the 2D profile through `cs`, the complete elephant-foot construction,
+the local arm-tip correction and the finished bracket.
+
+The dedicated [Elephant-foot relief guide](docs/ef-cs-junction-guide.md)
+compares the former explicit per-edge cutters with the current hull-based
+implementation. The conclusion is intentionally nuanced: the current method
+is retained because the horizontal face, rounded inside corner and vertical
+face share one geometric definition, not because the total code is obviously
+simpler. The former method remains in the regression fixture as an independent
+reference.
 
 The [Polygon and rounded-corner guide](docs/polygon-guide.md) compares two
 straightforward constructions of the same **inside** radius:

@@ -11,7 +11,7 @@
 // of one EF hull and its local arm-tip defect,
 // then constructs a strongest-possible "two surfaces only" candidate:
 // take the exact removed-material cross-sections of the proven reference
-// cutter at the same two Y positions and hull those two sections.
+// relief volume at the same two Y positions and hull those two sections.
 //
 // If that candidate still differs from the reference, the difference is
 // caused by hull() convexification rather than by choosing the wrong simple
@@ -20,7 +20,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Experiment] */
-experiment_step = "00_whole_main_only"; // [00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_cutter, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
+experiment_step = "00_whole_main_only"; // [00_whole_main_only, 00_whole_problem_points, 00_whole_working, 01_opening_profile, 02_inner_main_input, 03_outer_main_input, 04_both_main_inputs, 05_main_hull, 06_main_result, 07_missing_tip_volume, 08_reference_relief_volume, 09_reference_result, 10_exact_reference_inputs, 11_exact_two_surface_hull, 12_exact_candidate_result, 13_exact_candidate_xor, 14_exact_candidate_overcut, 15_exact_candidate_undercut]
 
 /* [Hidden] */
 // Keep aligned with production defaults.
@@ -74,7 +74,7 @@ module positive_horizontal_tip_miter() {
                       cs * sqrt(2) + 2);
 }
 
-// Only cutting volume that can actually remove material from body() matters.
+// Only relief volume that can actually remove material from body() matters.
 module main_effective_cut() {
     intersection() {
         body();
@@ -101,10 +101,10 @@ module missing_tip_volume() {
     }
 }
 
-// Full working cutter around this tip, before intersecting it with body().
+// Full working relief volume around this tip, before intersecting it with body().
 // Keeping the cutter itself (rather than the already-subtracted result)
 // lets us take exact Y-plane cross-sections at the two hull positions.
-module reference_tip_cutter() {
+module reference_tip_relief_volume() {
     intersection() {
         union() {
             main_positive_hull();
@@ -114,7 +114,7 @@ module reference_tip_cutter() {
     }
 }
 
-// Exact X/Z section of the working cutter at world Y=y.
+// Exact X/Z section of the working relief volume at world Y=y.
 // After translate(), rotate(-90 around X) maps world Y to projection Z,
 // while world Z becomes projection Y. projection(cut=true) therefore cuts
 // the requested Y plane and returns a 2D X/Z profile.
@@ -122,7 +122,7 @@ module reference_section_2d(y) {
     projection(cut = true)
         rotate([-90, 0, 0])
             translate([0, -y, 0])
-                reference_tip_cutter();
+                reference_tip_relief_volume();
 }
 
 // Turn that exact 2D section back into the same kind of very thin 3D input
@@ -135,7 +135,7 @@ module exact_reference_input(y) {
 }
 
 // Strongest direct two-surface test:
-// use the EXACT working-cutter sections at the existing two Y positions,
+// use the EXACT working-relief sections at the existing two Y positions,
 // then ask one hull() to connect only those two surfaces.
 module exact_two_surface_hull() {
     hull() {
@@ -233,7 +233,7 @@ module whole_working() {
 // On the whole bracket this reveals all four problematic arm-tip junctions.
 module whole_missing_corner_material() {
     // Material that still exists in the main-only bracket and is touched by
-    // the four local correction cutters. This is exactly what the corner
+    // the four local correction relief volumes. This is exactly what the corner
     // correction removes from the real bracket.
     intersection() {
         whole_main_only();
@@ -241,7 +241,7 @@ module whole_missing_corner_material() {
     }
 }
 
-// Overview markers only. These are intentionally NOT cutter geometry:
+// Overview markers only. These are intentionally NOT relief geometry:
 // their purpose is to make the four problem locations readable on the
 // complete 40 mm bracket before the exact local geometry is shown.
 module whole_problem_markers() {
@@ -258,7 +258,7 @@ module whole_problem_markers() {
 }
 
 // Whole bracket BEFORE elephant-foot relief. Nut pockets stay present;
-// only the EF cutter has not yet been subtracted.
+// only the EF relief volume has not yet been subtracted.
 module whole_before_ef() {
     difference() {
         body();
@@ -268,7 +268,7 @@ module whole_before_ef() {
 }
 
 // Light whole-bracket context used behind the EF input surfaces.
-// The colored geometry is the cutter/hull; the grey bracket is only a
+// The colored geometry is the relief geometry; the grey bracket is only a
 // positional reference so the reader can see exactly where Y=9.4/Y=10 sit.
 module bracket_context() {
     color([0.72, 0.72, 0.72, 0.28])
@@ -289,7 +289,7 @@ else if (experiment_step == "00_whole_working")
 
 else if (experiment_step == "01_opening_profile") {
     bracket_context();
-    // Show the source cutter profile at the inner EF Y plane so its
+    // Show the source relief profile at the inner EF Y plane so its
     // relationship to the L-shaped bracket is immediately visible.
     color("SteelBlue")
         translate([0, W/2 - ef, 0])
@@ -321,7 +321,7 @@ else if (experiment_step == "06_main_result")
 else if (experiment_step == "07_missing_tip_volume")
     color("Red") missing_tip_volume();
 
-else if (experiment_step == "08_reference_cutter") {
+else if (experiment_step == "08_reference_relief_volume") {
     color("DarkOrange", 0.75) main_effective_cut();
     color("Red", 0.95) missing_tip_volume();
 }

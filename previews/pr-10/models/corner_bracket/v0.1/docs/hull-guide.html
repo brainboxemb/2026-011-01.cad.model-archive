@@ -200,10 +200,10 @@ and plywood-facing surfaces remain governed by the original profile.</p>
 </tr>
 </tbody>
 </table>
-<p>This explains <strong>why the existing code still has a separate
-elephant-foot step</strong>: the <code>cs</code> envelope is built around the
-<em>outside convex perimeter</em>, while the <code>ef</code> relief also follows
-the <strong>concave inner corner</strong> and its transitions.</p>
+<p>The separate <code>ef</code> hulls are necessary because the outer <code>cs</code> envelope
+is made around the <strong>outside convex perimeter</strong>, whereas the relief
+must follow the wood-facing edges and join those outer bevels at
+the arm tips.</p>
 <h2>3. How elephant-foot relief now uses hull on the real bracket</h2>
 <p>The revised production model also uses hull-based geometry for the
 wood-facing edges, <strong>including the rounded inside corner</strong>. However,
@@ -239,8 +239,9 @@ module inside_relief_envelope() {
             }
 }</code></p>
 <p>The <a href="chamfer-guide.html">Chamfer Guide</a> shows this on the actual bracket,
-including a close-up of the miter cutter before and after subtraction. The old straight, diagonal and circular
-elephant-foot cutters are kept <em>only in the regression fixture</em>.
+including a close-up of the miter cutter before and after subtraction.
+The old straight, diagonal and circular elephant-foot cutters are
+kept <em>only in the regression fixture</em>.
 For supported configurations, CI compares the full old and new solids,
 including nut pockets and bolt holes. This is a near-equivalence test:
 minor changes around transitions are measured, not claimed to be

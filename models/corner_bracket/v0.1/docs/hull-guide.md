@@ -230,10 +230,10 @@ Three settings can be easy to confuse:
 | `cs` | Outer edges on the two broad Y side faces | `hull()` envelope and `intersection()` |
 | `ef` | Printed-side contact edges, the inner radius, and arm-tip junctions | Two opening hulls plus local miter hulls, removed with `difference()` |
 
-This explains **why the existing code still has a separate
-elephant-foot step**: the `cs` envelope is built around the
-*outside convex perimeter*, while the `ef` relief also follows
-the **concave inner corner** and its transitions.
+The separate `ef` hulls are necessary because the outer `cs` envelope
+is made around the **outside convex perimeter**, whereas the relief
+must follow the wood-facing edges and join those outer bevels at
+the arm tips.
 
 ## 3. How elephant-foot relief now uses hull on the real bracket
 
@@ -274,8 +274,9 @@ module inside_relief_envelope() {
 ```
 
 The [Chamfer Guide](chamfer-guide.html) shows this on the actual bracket,
-including a close-up of the miter cutter before and after subtraction. The old straight, diagonal and circular
-elephant-foot cutters are kept *only in the regression fixture*.
+including a close-up of the miter cutter before and after subtraction.
+The old straight, diagonal and circular elephant-foot cutters are
+kept *only in the regression fixture*.
 For supported configurations, CI compares the full old and new solids,
 including nut pockets and bolt holes. This is a near-equivalence test:
 minor changes around transitions are measured, not claimed to be
@@ -303,6 +304,7 @@ This example remains useful to understand **why** two bevels can be
 combined for a convex solid. For the concave full L, the production
 implementation instead uses an outer hull, two local inner-opening hulls
 and additional short miter hulls at the arm tips.
+
 ## Where to read next
 
 For the rounded inside corner, the previous `sin()/cos()`

@@ -1,24 +1,18 @@
-// Corner Bracket: generic cs + ef hull experiment.
+// Corner Bracket: beam-style generic elephant-foot experiment.
 //
-// No print orientation is used here.
+// This version follows examples/hull_operations/v0.1/scad/hull_operations.scad
+// literally:
 //
-// Natural bracket coordinates:
-//   X/Z = L profile
-//   Y   = bracket width W
+//   1. Build the complete 3D bracket with cs.
+//   2. Take its ACTUAL horizontal bottom footprint.
+//   3. inset that footprint by ef.
+//   4. keep the already-cs body from ef above the bottom upward.
+//   5. hull those two 3D inputs.
 //
-// First create the normal cs geometry.
-// Then add ef generically across the same Y direction:
-//
-//   inner layer at Y = W/2 - ef : normal cs L at that Y
-//   outer layer at Y = W/2      : same cs-aware L, additionally inset by ef
-//
-// hull() connects those two layers.
-// The opposite side is simply the mirrored equivalent.
-//
-// STOP after the input layers until their geometry is visually correct.
+// ef is therefore NOT applied to the L side profile.
 
-/* [Illustration] */
-junction_step = "00_cs_body"; // [00_cs_body, 01_inner_cs_L, 02_outer_ef_L, 03_both_inputs]
+/* [Demo] */
+scene = "00_cs_result"; // [00_cs_result, 01_ef_inputs, 02_combined_result]
 
 /* [Geometry] */
 armH = 40;
@@ -33,11 +27,10 @@ r_in = 2.0;
 
 /* [Hidden] */
 $fn = 48;
-display_thickness = 0.35;
+eps = 0.02;
+reach = 12;
 
-// -----------------------------------------------------------------------------
-// Base L: c / ce / inside radius, NO ef.
-// -----------------------------------------------------------------------------
+// ---------- Base bracket, NO ef ----------
 
 module inside_corner_2d(r) {
     difference() {
@@ -46,7 +39,7 @@ module inside_corner_2d(r) {
     }
 }
 
-module clean_profile() {
+module bracket_profile_2d() {
     union() {
         polygon([
             [armH, 0],
@@ -65,7 +58,7 @@ module clean_profile() {
     }
 }
 
-module outer_shape() {
+module bracket_outer_2d() {
     polygon([
         [armH, -armV],
         [armH, t - c],
@@ -77,107 +70,123 @@ module outer_shape() {
     ]);
 }
 
-// -----------------------------------------------------------------------------
-// Normal cs body.
-// -----------------------------------------------------------------------------
-
-module cs_envelope() {
+module bracket_raw() {
     rotate([90, 0, 0])
-        hull() {
-            linear_extrude(height = W - 2 * cs, center = true)
-                outer_shape();
+        linear_extrude(height = W, center = true)
+            bracket_profile_2d();
+}
 
-            linear_extrude(height = W, center = true)
-                offset(delta = -cs)
-                    outer_shape();
-        }
+// Same cs construction as production, but without production ef.
+module cs_outline_2d() {
+    // Extend downward so cs controls the side/end edges but does not define
+    // the generic bottom relief itself; same principle as the beam demo.
+    polygon([
+        [armH, -armV - reach],
+        [armH, t - c],
+        [armH - c, t],
+        [-t + ce, t],
+        [-t, t - ce],
+        [-t, -armV - reach]
+    ]);
+}
+
+module cs_input_inner() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W - 2 * cs, center = true)
+            cs_outline_2d();
+}
+
+module cs_input_outer() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W, center = true)
+            offset(delta = -cs)
+                cs_outline_2d();
+}
+
+module cs_hull() {
+    hull() {
+        cs_input_inner();
+        cs_input_outer();
+    }
 }
 
 module cs_body() {
     intersection() {
-        rotate([90, 0, 0])
-            linear_extrude(height = W, center = true)
-                clean_profile();
-
-        cs_envelope();
+        bracket_raw();
+        cs_hull();
     }
 }
 
-// -----------------------------------------------------------------------------
-// Exact 2D cs cross-section at a Y position.
-//
-// For the 45-degree cs hull:
-//   inset = cs - distance_from_outer_side
-//
-// At Y=W/2:
-//   inset = cs
-//
-// At Y=W/2-ef:
-//   inset = cs-ef
-// -----------------------------------------------------------------------------
+// ---------- ef: literal beam construction on the GLOBAL BOTTOM ----------
 
-function cs_inset_at_y(y) =
-    max(0, cs - (W/2 - y));
+bottom_z = -armV;
 
-module cs_L_at_y(y) {
+// Actual XY footprint of the already-cs bracket at its lowest Z plane.
+module cs_bottom_footprint_2d() {
+    projection()
+        intersection() {
+            translate([0, 0, -bottom_z])
+                cs_body();
+
+            translate([-reach, -W, -eps / 2])
+                cube([armH + t + 2 * reach, W * 2, eps]);
+        }
+}
+
+// Lower ef input: actual cs bottom footprint, then ef inset.
+module ef_input_bottom() {
+    translate([0, 0, bottom_z])
+        linear_extrude(height = eps)
+            offset(delta = -ef)
+                cs_bottom_footprint_2d();
+}
+
+// Upper ef input: the already-cs bracket from ef above its bottom upward.
+module ef_input_upper_chamfered() {
     intersection() {
-        clean_profile();
+        cs_body();
 
-        offset(delta = -cs_inset_at_y(y))
-            outer_shape();
+        translate([-reach, -W, bottom_z + ef])
+            cube([
+                armH + t + 2 * reach,
+                W * 2,
+                armV + t + reach
+            ]);
     }
 }
 
-// INPUT A: normal cs L, ef inward from the outer side.
-module inner_cs_L_2d() {
-    cs_L_at_y(W/2 - ef);
+module combined_hull() {
+    hull() {
+        ef_input_bottom();
+        ef_input_upper_chamfered();
+    }
 }
 
-// INPUT B: first take the normal cs L on the outer side,
-// then apply the generic ef inset to that complete L.
-module outer_ef_L_2d() {
-    offset(delta = -ef)
-        cs_L_at_y(W/2);
+module combined_body() {
+    intersection() {
+        bracket_raw();
+        combined_hull();
+    }
 }
 
-// Thin X/Z layers only for visualizing the two hull inputs.
-module layer_at_y(y, which = "inner", thickness = display_thickness) {
-    translate([0, y, 0])
-        rotate([90, 0, 0])
-            linear_extrude(height = thickness, center = true)
-                if (which == "inner")
-                    inner_cs_L_2d();
-                else
-                    outer_ef_L_2d();
-}
+// ---------- scenes ----------
 
-// -----------------------------------------------------------------------------
-// Scenes.
-// Camera looks onto the complete L profile, with enough Y perspective to see
-// that the two complete L layers are at different Y positions.
-// -----------------------------------------------------------------------------
+$vpr = [62, 0, 35];
 
-$vpr = [78, 0, 18];
-
-if (junction_step == "00_cs_body") {
+if (scene == "00_cs_result") {
     color("SteelBlue")
         cs_body();
 }
 
-else if (junction_step == "01_inner_cs_L") {
-    color("DarkOrange")
-        layer_at_y(W/2 - ef, "inner");
-}
+else if (scene == "01_ef_inputs") {
+    color("SteelBlue", 0.55)
+        ef_input_bottom();
 
-else if (junction_step == "02_outer_ef_L") {
-    color("DeepSkyBlue")
-        layer_at_y(W/2, "outer");
+    color("DarkOrange", 0.28)
+        ef_input_upper_chamfered();
 }
 
 else {
-    color("DarkOrange", 0.55)
-        layer_at_y(W/2 - ef, "inner");
-
-    color("DeepSkyBlue", 0.72)
-        layer_at_y(W/2, "outer");
+    color("SteelBlue")
+        combined_body();
 }

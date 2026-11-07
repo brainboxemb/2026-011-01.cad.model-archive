@@ -99,8 +99,8 @@ The bracket uses two different *roles* for hulls:
   where the relief meets the outside bevel.
 
 These are different applications of the **same `hull()` principle**.
-For the actual input geometry, code and an explanation of the
-remaining corner-junction design question, **continue to the
+For the actual input geometry, code and the reason the arm-tip junction
+needs its own small 3D hulls, **continue to the
 [Chamfer Guide](chamfer-guide.html)**.
 
 ## 3. Optional experiment: a single hull for two bevels
@@ -115,7 +115,8 @@ the top. This forms both a bottom print allowance and a top bevel.
 
 The editable
 [combined-chamfer prototype](../design/combined_chamfer_hull.scad)
-demonstrates this for a **straight bar only**. It is *not evidence*
-that one global hull will preserve the full bracket's concave inside
-radius and all arm-tip junctions. That issue is addressed in
+demonstrates this for a **straight convex bar only**. The Corner Bracket
+is different: its inside is concave, and the arm-tip junction with
+`cs` moves in X/Z as Y changes. A single prepared 2D profile therefore
+cannot describe that full 3D junction. See
 [Section 4 of the Chamfer Guide](chamfer-guide.html).

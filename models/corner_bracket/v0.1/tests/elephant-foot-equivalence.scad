@@ -12,7 +12,7 @@ ef=0.6;
 r_in=2;
 $fn=48;
 
-test_view="xor"; // [old, new, xor, tip_xor]
+test_view="xor"; // [old, new, xor, tip_xor, tip_xor_before]
 
 module former_wedge_profile() {
     polygon([[W/2-ef-1,-1], [W/2+1,-1], [W/2+1,ef+1]]);
@@ -65,6 +65,16 @@ module tip_regions() {
             cube([ef+2, cs+ef+5, cs+ef+5]);
     }
 }
+// Reproduce the intermediate construction that caused a visible flat point
+// where the EF relief meets the side bevel at the arm ends.
+module without_corner_miters() {
+    difference() {
+        body();
+        nut_top();
+        nut_side();
+        inside_relief_envelope();
+    }
+}
 module symmetric_difference() {
     union() {
         difference() { former_bracket(); children(); }
@@ -81,5 +91,10 @@ else if(test_view=="xor") bracket_xor();
 else if(test_view=="tip_xor")
     intersection() {
         bracket_xor();
+        tip_regions();
+    }
+else if(test_view=="tip_xor_before")
+    intersection() {
+        symmetric_difference() without_corner_miters();
         tip_regions();
     }

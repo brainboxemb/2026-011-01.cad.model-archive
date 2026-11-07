@@ -41,7 +41,6 @@ r_in = 2.0;
 $fn = 48;
 eps = 0.02;
 display_thickness = 0.35;
-display_gap = 4;
 
 // -----------------------------------------------------------------------------
 // Base L footprint — equivalent to beam_profile_2d()
@@ -234,23 +233,23 @@ module result_body() {
 // Four scenes — same visual order as the beam
 // -----------------------------------------------------------------------------
 
+// Low oblique default view: enough side angle to see the bottom plate under
+// the upper L. Users can still rotate freely in OpenSCAD.
+$vpr = [68, 0, 38];
+
 if (junction_step == "00_l_with_cs") {
     color("SteelBlue")
         cs_body();
 }
 
 else if (junction_step == "01_ef_inputs") {
-    // Visual exploded view ONLY:
-    // BLUE stays at its real X/Y position on the print bed.
-    // ORANGE moves only upward in Z, never sideways.
-    //
-    // The real hull below still uses ef_input_upper() at z=ef.
+    // Real hull-input positions, exactly like the beam:
+    // blue plate at the print bed, orange cs-body beginning at z=ef.
     color("DeepSkyBlue")
         ef_input_bottom(display_thickness);
 
-    color("DarkOrange", 0.45)
-        translate([0, 0, display_gap])
-            ef_input_upper();
+    color("DarkOrange", 0.14)
+        ef_input_upper();
 }
 
 else if (junction_step == "02_ef_hull") {

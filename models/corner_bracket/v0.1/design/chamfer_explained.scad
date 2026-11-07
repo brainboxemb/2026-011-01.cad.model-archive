@@ -4,7 +4,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Illustration] */
-chamfer_step = "01_sharp_profile"; // [01_sharp_profile, 02_profile_chamfers, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final, 10_corner_junction]
+chamfer_step = "02_profile_chamfers"; // [02_profile_chamfers, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final]
 /* [Hidden] */
 // Initial sharp profile is only a reference, not a printable production part.
 // Defaults correspond to corner_bracket.scad v0.1.
@@ -16,12 +16,6 @@ ce = 6;
 W = 20;
 cs = 2;
 $fn = 48;
-
-module initial_sharp_outline() {
-    polygon([
-        [armH,0], [armH,t], [-t,t], [-t,-armV], [0,-armV], [0,0]
-    ]);
-}
 
 // Place translucent 3D layers side by side in the same geometry space.
 // Orange: full-width but inset outside outline. Blue: full outline, inner 16 mm.
@@ -36,11 +30,7 @@ module show_hull_inputs() {
     }
 }
 
-if (chamfer_step == "01_sharp_profile")
-    color("SteelBlue")
-        rotate([90,0,0]) linear_extrude(height=0.6) initial_sharp_outline();
-
-else if (chamfer_step == "02_profile_chamfers")
+if (chamfer_step == "02_profile_chamfers")
     color("SteelBlue")
         rotate([90,0,0]) linear_extrude(height=0.6) profile();
 
@@ -67,29 +57,3 @@ else if (chamfer_step == "08_print_relief") {
 }
 else if (chamfer_step == "09_final")
     color("SteelBlue") bracket();
-
-// A focused close-up of the two-sided elephant-foot/side-chamfer junction.
-// Left: basic opening hulls; centre: additional diagonal hull cutting volume;
-// right: completed bevel. Only a small local region is shown.
-module tip_junction_crop() {
-    translate([armH-cs-ef-3, W/2-cs-ef-3, -1.5])
-        cube([cs+ef+6, cs+ef+6, ef+5]);
-}
-module pre_miter_body() {
-    difference() {
-        body();
-        inside_relief_envelope();
-    }
-}
-
-if (chamfer_step == "10_corner_junction") {
-    translate([-20-armH+2, -W/2+2, 0])
-        color("SteelBlue")
-            intersection() { pre_miter_body(); tip_junction_crop(); }
-    translate([-armH+2, -W/2+2, 0])
-        color("IndianRed")
-            intersection() { relief_corner_miters(); tip_junction_crop(); }
-    translate([20-armH+2, -W/2+2, 0])
-        color("DarkOrange")
-            intersection() { chamfered_body(); tip_junction_crop(); }
-}

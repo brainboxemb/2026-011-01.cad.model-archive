@@ -11,15 +11,14 @@
 // rotating it afterward.
 
 /* [Illustration] */
-junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_lower_plate, 02_upper_volume, 03_ef_inputs, 04_ef_hull, 05_result]
+junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
 
 /* [Hidden] */
 use <../scad/corner_bracket.scad>
 
 $fn = 48;
 eps = 0.02;
-display_thickness = 1.0;
-display_explode = 4;
+display_thickness = 0.35;
 
 armH = 40;
 armV = 40;
@@ -204,27 +203,18 @@ if (junction_step == "00_l_with_cs") {
         print_body();
 }
 
-else if (junction_step == "01_lower_plate") {
-    color("DeepSkyBlue")
+else if (junction_step == "01_ef_inputs") {
+    // EXACTLY like the beam demo:
+    // blue = bottom footprint at the real print-bed position;
+    // orange = complete already-cs-chamfered L from z=ef upward.
+    color("DeepSkyBlue", 0.62)
         lower_plate(display_thickness);
-}
 
-else if (junction_step == "02_upper_volume") {
-    color("DarkOrange")
+    color("DarkOrange", 0.28)
         upper_l_volume();
 }
 
-else if (junction_step == "03_ef_inputs") {
-    color("DeepSkyBlue")
-        translate([0, 0, -display_explode])
-            lower_plate(display_thickness);
-
-    color("DarkOrange", 0.40)
-        translate([0, 0, display_explode])
-            upper_l_volume();
-}
-
-else if (junction_step == "04_ef_hull") {
+else if (junction_step == "02_ef_hull") {
     color("SeaGreen")
         l_ef_hulls();
 }

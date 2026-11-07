@@ -9,27 +9,51 @@ and two removable plugs that conceal the access windows after assembly.</p>
 clearances, plywood corner relief and printed-part strength before use.
 All dimensions below are millimetres.</p>
 <h2>Design walkthrough</h2>
-<p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="scad/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
-<h3>1. L-shaped polygon profile</h3>
-<p><strong>First draw the bracket from the side.</strong> Imagine marking points on graph paper and connecting them with straight lines. In OpenSCAD, <code>polygon()</code> connects those points and fills the area. <code>concat()</code> joins three groups of points: the top end (<code>tip_top</code>), the main outside edges and bottom end (<code>tip_vert</code>), and the rounded inside corner (<code>corner_arc</code>). The curve is made from several nearby points rather than one perfect arc.</p>
-<p><strong>Then give the flat drawing thickness.</strong> <code>linear_extrude()</code> turns the 2D shape into a 3D part, 20 mm wide (<code>W</code>). <code>rotate()</code> puts that width in the correct direction. The small diagonal cuts at the arm ends and outer corner (<code>c</code> and <code>ce</code>) are already part of the drawing.</p>
+<p>The six pictures show how the bracket is built, from a flat drawing to the finished part. Each step first explains <strong>what happens and why</strong>, then shows the corresponding OpenSCAD code. You do not need to understand every line at once. The complete model is in <a href="scad/corner_bracket.scad">corner_bracket.scad</a>; you can explore the steps in <a href="design/design.scad">design.scad</a>. All dimensions are in millimetres.</p>
+<h3>1. Draw the L profile and round its inside corner in 2D</h3>
+<p>For a visual explanation of the <strong>arm-end and outside corner chamfers</strong>
+(<code>c</code> and <code>ce</code>), see the <a href="docs/chamfer-guide.html">Chamfer Guide</a>.</p>
+<p><strong>Start with a simple L shape.</strong> <code>polygon()</code> connects the vertices
+around the bracket's outline. The two arm-end bevels and the outside
+corner chamfer are included directly. The inner corner is initially
+sharp at <code>(0, 0)</code>.</p>
+<p><strong>Add a small rounded piece using ordinary 2D shapes.</strong> Place a
+<code>r_in × r_in</code> square just inside the sharp corner. Subtract a
+<code>circle(r = r_in)</code> whose centre is at <code>(r_in, -r_in)</code>.
+The remaining piece curves into the corner. <code>union()</code> joins it
+to the L without affecting the opposite edges.</p>
+<p><strong>Then give the finished 2D outline thickness.</strong> <code>linear_extrude()</code>
+produces the 20 mm wide bracket (<code>W</code>), and <code>rotate()</code> orients it.
+The <code>$fn = 72</code> setting on this circle gives 5-degree steps, matching
+the old 19-point inside radius. <code>r_in = 0</code> leaves a sharp corner.</p>
 <p><img alt="L-shaped polygon profile" src="design/01_profile.png" /></p>
 <p><strong>Relevant OpenSCAD code:</strong></p>
-<pre><code>corner_arc = (r_in &gt; 0)
-? [for (a = [180 : -5 : 90]) [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-: [[0, 0]];
+<pre><code>module inside_corner_2d(r) {
+    difference() {
+        translate([0, -r]) square([r, r]);
+        translate([r, -r]) circle(r = r, $fn = 72);
+    }
+}
+
 tip_top  = (ef &gt; 0) ? [[armH - ef, 0], [armH, ef]] : [[armH, 0]];
 tip_vert = (ef &gt; 0) ? [[-ef, -armV], [0, -armV + ef]] : [[0, -armV]];
 
-module profile() {
+module sharp_profile() {
     polygon(concat(tip_top, [
-        [armH, t - c],            // 45-degree top-arm end
+        [armH, t - c],           // top-arm end
         [armH - c, t],
         [-t + ce, t],
-        [-t, t - ce],             // 45-degree outside corner
+        [-t, t - ce],            // outside corner
         [-t, -armV + c],
-        [-t + c, -armV]           // 45-degree vertical-arm end
-    ], tip_vert, corner_arc));    // rounded inside corner from (0,-r) to (r,0)
+        [-t + c, -armV]          // vertical-arm end
+    ], tip_vert, [[0, 0]]));
+}
+
+module profile() {
+    union() {
+        sharp_profile();
+        if (r_in &gt; 0) inside_corner_2d(r_in);
+    }
 }
 
 module profile_extrusion() {
@@ -39,6 +63,10 @@ module profile_extrusion() {
 }
 </code></pre>
 <h3>2. Outer side-edge chamfers</h3>
+<p><strong>New to <code>hull()</code>?</strong> Read the <a href="docs/hull-guide.html">illustrated Hull Guide</a>
+for the underlying operation, then the <a href="docs/chamfer-guide.html">Chamfer Guide</a>
+for <strong>nine pictures of this actual model</strong>: the polygon bevels, both hull
+inputs, their convex envelope, clipping to the L and the print relief.</p>
 <p>The sharp <em>side</em> edges get a bevel. The code first creates two versions
 of the outside outline: one narrower in width and one with a smaller
 perimeter. <code>hull()</code> connects them with sloping surfaces.
@@ -121,6 +149,8 @@ difference() {
 }
 </code></pre>
 <h3>4. Elephant-foot relief</h3>
+<p>The <a href="docs/chamfer-guide.html">Chamfer Guide</a> compares the side-edge
+bevel and the elephant-foot relief visually, before and after each cut.</p>
 <p><strong>What is elephant foot?</strong> The very first printed layers sometimes
 spread sideways where they touch the print bed. A nominally square edge
 can become slightly wider at the base. The bracket is printed on one
@@ -136,73 +166,69 @@ wood-facing edges: a straight edge along the horizontal arm, a straight
 edge along the vertical arm, and the rounded inside corner. Relief is
 applied at <strong>both printed side faces</strong> (<code>Y = +W/2</code> and <code>Y = -W/2</code>).</p>
 <p><img alt="Wood-facing relief edge locations on the bracket" src="figures/elephant-foot-edges.svg" /></p>
-<p>The OpenSCAD code constructs the cutting shapes in stages:</p>
-<ol>
-<li><code>ef_wedge_profile()</code> draws a tiny <strong>triangle in 2D</strong> using
-   <code>polygon()</code>. It is the cross-section of the material to remove.</li>
-<li><code>linear_extrude()</code> stretches that triangle along each <strong>straight</strong>
-   contact edge, like pulling a triangular knife along the bracket.
-   <code>mirror()</code> repeats the operation on the other printed side.</li>
-<li>At the short <strong>diagonal corners</strong>, <code>ef_edge_wedge()</code> uses
-   <code>multmatrix()</code> to position the same triangular cutter at an angle.</li>
-<li>For the <strong>rounded inside corner</strong>, <code>rotate_extrude()</code> sweeps a
-   triangular cutter around a circular path rather than along a line.</li>
-<li>Finally, <code>difference()</code> inside <code>bracket()</code> subtracts all these
-   cutters from the body, along with the nut pockets and bolt holes.</li>
-</ol>
-<p>Setting <code>ef = 0</code> disables the relief. The diagonal cutters depend on
-<code>cs &gt; 0</code>, and the rounded cutter is used when <code>r_in &gt;= 1</code>. This is
-an allowance for printing, <strong>not</strong> a substitute for checking fit on
-an actual print.</p>
+<p><strong>We now use the same hull principle as for the outer side bevels.</strong>
+The opening between the arms is a convex 2D helper shape, with a
+quarter-circle boundary at the rounded inside corner. We create
+one normal copy at <code>Y = ±(W/2 - ef)</code> and one copy expanded by
+<code>ef</code> at <code>Y = ±W/2</code>. A <code>hull()</code> connects these two outlines.</p>
+<p>Two <strong>separate hulls</strong>, one for each printed side, are necessary:
+joining the two expanded outside slices in a <em>single</em> global hull
+would remove material through the entire middle of the bracket.
+With two local hulls, only the outer 0.6 mm on each side is affected.
+At the arm ends, where this relief meets the diagonal <code>cs</code> bevel,
+small additional <code>relief_corner_miters()</code> hulls finish the join.
+<code>difference()</code> then subtracts the resulting cutting volumes from
+<code>body()</code>. This naturally follows the straight plywood faces AND the
+rounded inner corner, replacing the former individual wedge cutters.</p>
+<p>Setting <code>ef = 0</code> disables this relief. <code>cs</code> still controls the
+larger outside chamfers in Step 2. The small 2D chamfers at the arm
+tips are part of Step 1, as before. The geometric regression tests
+compare the complete bracket against the former cutting method.
+The small differences are concentrated near relief intersections;
+actual print fit must still be checked.</p>
 <p>The following render shows the resulting bracket. The complete
 cutter modules used in the source code are listed underneath.</p>
 <p><img alt="Elephant-foot relief" src="design/04_print_relief.png" /></p>
-<p><strong>Relevant OpenSCAD code:</strong></p>
-<pre><code>module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates
-    polygon([[W / 2 - ef - 1, -1], [W / 2 + 1, -1], [W / 2 + 1, ef + 1]]);
+<p><strong>Relevant OpenSCAD code (shortened):</strong></p>
+<pre><code>module inside_opening_2d() {
+    reach = max(5, cs + ef + 1);
+    difference() {
+        translate([0, -armV - reach])
+            square([armH + reach, armV + reach]);
+        if (r_in &gt; 0) inside_corner_2d(r_in);
+    }
 }
 
-module ef_edge_wedge(A, U, V, D, len) {
-    multmatrix([[U[0], V[0], D[0], A[0]],
-                [U[1], V[1], D[1], A[1]],
-                [U[2], V[2], D[2], A[2]],
-                [0, 0, 0, 1]])
-        linear_extrude(height = len)
-            polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
+module opening_layer(y, expansion = 0) {
+    translate([0, y, 0]) rotate([90, 0, 0])
+        linear_extrude(height = 0.002, center = true)
+            offset(delta = expansion) inside_opening_2d();
 }
 
-module ef_cuts() {
-    s2 = sqrt(2) / 2;
-    if (ef &gt; 0) for (m = [0, 1]) mirror([0, m, 0]) {
-        // Diagonal corners where side and end chamfers meet.
-        if (cs &gt; 0) {
-            // Top arm: (armH-cs, W/2) to (armH, W/2-cs) at z=0.
-            ef_edge_wedge([armH - cs - s2, W / 2 + s2, 0], [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                          cs * sqrt(2) + 2);
-            // Vertical arm: (W/2-cs, -armV) to (W/2, -armV+cs) at x=0.
-            ef_edge_wedge([0, W / 2 - cs - s2, -armV - s2], [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                          cs * sqrt(2) + 2);
+module inside_relief_envelope() {
+    if (ef &gt; 0)
+        for (side = [-1, 1])
+            hull() {
+                opening_layer(side * (W / 2 - ef));
+                opening_layer(side * W / 2, ef);
+            }
+}
+
+module chamfered_body() {
+    difference() {
+        body(); // already has the outside hull chamfers
+        if (ef &gt; 0) {
+            inside_relief_envelope();
+            relief_corner_miters();
         }
-        // Edge along the top arm (z=0, x=r_in..armH).
-        translate([r_in, 0, 0]) rotate([90, 0, 90])
-            linear_extrude(height = armH + 1 - r_in) ef_wedge_profile();
-        // Edge along the vertical arm (x=0, z=-r_in..-armV).
-        translate([0, 0, -armV - 1]) rotate([0, 0, 90])
-            linear_extrude(height = armV + 1 - r_in) ef_wedge_profile();
-        // Edge along the rounded inside corner.
-        if (r_in &gt;= 1)
-            translate([r_in, 0, -r_in]) rotate([90, 0, 0]) rotate([0, 0, 89])
-                rotate_extrude(angle = 92)
-                    polygon([[r_in - 1, W / 2 - ef - 1], [r_in - 1, W / 2 + 1], [r_in + ef + 1, W / 2 + 1]]);
     }
 }
 
 module bracket() {
     difference() {
-        body();
+        chamfered_body();
         nut_top();
         nut_side();
-        ef_cuts();
     }
 }
 </code></pre>
@@ -278,11 +304,14 @@ else if (design_step == "06_installed") {
 <li><a href="#main_assembly">Main Assembly</a></li>
 </ol>
 <h2>Further reading</h2>
-<p>The separate <a href="hull-guide.html">illustrated guide to OpenSCAD hull()</a>
-shows how the operation connects simple shapes and creates rounded
-outer corners. It also explains the quarter-circle calculation used
-for the bracket's inside corner. These general examples are kept
-outside the six-step bracket design walkthrough.</p>
+<p>A separate <a href="docs/hull-guide.html">OpenSCAD hull() guide</a> shows how that
+operation creates sloping sides and rounded <em>outside</em> corners.
+The <a href="docs/polygon-guide.html">Polygon and rounded-corner guide</a> compares
+the <strong>2D square-minus-circle method now used in the bracket</strong> with an
+equivalent 3D cube-minus-cylinder approach and the former
+point-based <code>polygon()</code> construction. Only the inside-corner
+implementation changed; the intended shape, chamfers and other
+bracket features were preserved.</p>
 <h2>Alternative mounting arrangements</h2>
 <p>The current model uses bolts from the <strong>inside</strong> of the plywood into
 <strong>captured nuts</strong> in the outside bracket. There are other possibilities:
@@ -291,7 +320,7 @@ with thin square nuts, or add a second <strong>inside counter-bracket</strong>.<
 <p>The options, simple bolt-path diagrams, differences between nut types,
 the supplied stainless-steel product references, and the bolt-length
 constraints are compared in the separate
-<strong><a href="mounting-options.html">Mounting options and fastener comparison</a></strong>.</p>
+<strong><a href="docs/mounting-options.html">Mounting options and fastener comparison</a></strong>.</p>
 <p>These are design alternatives. In v0.1, the <strong>bolt-from-inside,
 captive-nut</strong> configuration is the only implemented bolt direction;
 the other arrangements require new CAD and physical testing.</p>

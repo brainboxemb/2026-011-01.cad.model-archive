@@ -52,7 +52,7 @@ c        = 3;      // 45-degree chamfer at outer arm ends
 cs       = 2;      // 45-degree side-edge chamfers; 0 disables
 
 /* [Print compensation] */
-ef       = 0.6;    // 45-degree elephant-foot relief around wood-facing edges; 0 disables
+ef       = 0.6;    // 45-degree elephant-foot relief on print-facing sides; 0 disables
 r_in     = 2.0;    // inside corner radius: plywood must be rounded at least this much; 0 or >=1
 
 /* [Bolt and captive nut] */
@@ -113,18 +113,25 @@ module wood() {
 }
 
 // ---------- Bracket side profile ----------
-// The rounded inside corner (r_in) adds material around the plywood corner,
-// reducing stress concentration. Round the corresponding plywood corner.
-corner_arc = (r_in > 0)
-    ? [for (a = [180 : -5 : 90]) [r_in + r_in * cos(a), -r_in + r_in * sin(a)]]
-    : [[0, 0]];
+// Make the inside fillet from ordinary 2D shapes, before extrusion.
+// The square sits in the open part of the L, at the sharp inner corner.
+// Subtracting a circle leaves only the small curved region to add.
+// Keep 72 segments (5 degrees each) to match the legacy 19-point arc.
+module inside_corner_2d(r) {
+    difference() {
+        translate([0, -r]) square([r, r]);
+        translate([r, -r]) circle(r = r, $fn = 72);
+    }
+}
 
 // End edges also receive elephant-foot relief so the wood-facing bevel
 // continues around side edges, ends, and the inside corner.
 tip_top  = (ef > 0) ? [[armH - ef, 0], [armH, ef]] : [[armH, 0]];
 tip_vert = (ef > 0) ? [[-ef, -armV], [0, -armV + ef]] : [[0, -armV]];
 
-module profile() {
+// Draw the unchanged L outline with a sharp inside corner at (0,0).
+// The arm-end and outside-corner chamfers are part of this outline.
+module sharp_profile() {
     polygon(concat(tip_top, [
         [armH, t - c],            // 45-degree top-arm end
         [armH - c, t],
@@ -132,7 +139,16 @@ module profile() {
         [-t, t - ce],             // 45-degree outside corner
         [-t, -armV + c],
         [-t + c, -armV]           // 45-degree vertical-arm end
-    ], tip_vert, corner_arc));    // rounded inside corner from (0,-r) to (r,0)
+    ], tip_vert, [[0, 0]]));
+}
+
+// Complete the side profile in 2D, then extrude it in profile_extrusion().
+// Radius zero leaves the original sharp corner without creating a square.
+module profile() {
+    union() {
+        sharp_profile();
+        if (r_in > 0) inside_corner_2d(r_in);
+    }
 }
 
 // Convex envelope of the bracket with its inside corner filled in. Side
@@ -166,46 +182,95 @@ module body() {
     }
 }
 
-// ---------- Elephant-foot relief on wood-facing edges ----------
-module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates
-    polygon([[W / 2 - ef - 1, -1], [W / 2 + 1, -1], [W / 2 + 1, ef + 1]]);
+// ---------- Unified hull-based side chamfers and print relief ----------
+// The broad outside edges are controlled by side_chamfer_env() above.
+// For the *concave*, wood-facing edges, use the complement: the open
+// quadrant between the two arms, less the small rounded corner fill.
+// Its boundary includes both straight contact faces and the inner arc.
+// We extend the quadrant beyond the arm ends so the bevel is not clipped.
+module inside_opening_2d() {
+    reach = max(5, cs + ef + 1);
+    difference() {
+        translate([0, -armV - reach])
+            square([armH + reach, armV + reach]);
+        if (r_in > 0)
+            inside_corner_2d(r_in);
+    }
 }
 
-// Generic 45-degree relief along a straight wood-facing edge:
-// A = starting point, U = outward in plane, V = into material,
-// D = edge direction, len = edge length (U x V = D).
-module ef_edge_wedge(A, U, V, D, len) {
-    multmatrix([[U[0], V[0], D[0], A[0]],
-                [U[1], V[1], D[1], A[1]],
-                [U[2], V[2], D[2], A[2]],
-                [0, 0, 0, 1]])
-        linear_extrude(height = len)
-            polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
+// A thin 3D slice of the open space at one position across the Y width.
+// A larger 2D opening at the printed side removes an ef-sized amount
+// from the wood-contact boundary without changing the middle of the part.
+module opening_layer(y, expansion = 0) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = 0.002, center = true)
+                offset(delta = expansion)
+                    inside_opening_2d();
 }
 
-module ef_cuts() {
+// Why TWO hulls? A single convex hull joining expanded openings at BOTH
+// outside Y faces would also enlarge the opening all through the middle.
+// Each side must have its own local transition from normal to expanded.
+module inside_relief_envelope() {
+    if (ef > 0)
+        for (side = [-1, 1])
+            hull() {
+                opening_layer(side * (W / 2 - ef));
+                opening_layer(side * W / 2, ef);
+            }
+}
+
+// At each arm tip the EF chamfer meets the *diagonal* cs side chamfer.
+// The opening hull above follows the straight plywood faces and the inside
+// radius, but does not provide this third diagonal miter. This leaves a
+// short, flat termination (visible at the corner in the 3D preview).
+// Connect a triangular relief profile at BOTH ends of each diagonal edge
+// with another local hull(), so the bevel continues through the junction.
+// A profile is only 0.001 mm thick; the hull supplies the swept volume.
+module relief_miter_hull(A, U, V, D, len) {
+    module triangle_at(distance) {
+        multmatrix([[U[0], V[0], D[0], A[0]],
+                    [U[1], V[1], D[1], A[1]],
+                    [U[2], V[2], D[2], A[2]],
+                    [0, 0, 0, 1]])
+            translate([0, 0, distance])
+                linear_extrude(height = 0.001)
+                    polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
+    }
+    hull() {
+        triangle_at(0);
+        triangle_at(len);
+    }
+}
+
+// One diagonal junction at each end of each arm, repeated on both print
+// faces. The rest of the elephant-foot relief still uses the two opening
+// hulls, including the curved inside corner.
+module relief_corner_miters() {
     s2 = sqrt(2) / 2;
-    if (ef > 0) for (m = [0, 1]) mirror([0, m, 0]) {
-        // Diagonal corners where side and end chamfers meet.
-        if (cs > 0) {
-            // Top arm: (armH-cs, W/2) to (armH, W/2-cs) at z=0.
-            ef_edge_wedge([armH - cs - s2, W / 2 + s2, 0], [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                          cs * sqrt(2) + 2);
-            // Vertical arm: (W/2-cs, -armV) to (W/2, -armV+cs) at x=0.
-            ef_edge_wedge([0, W / 2 - cs - s2, -armV - s2], [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                          cs * sqrt(2) + 2);
+    if (ef > 0 && cs > 0)
+        for (m = [0, 1]) mirror([0, m, 0]) {
+            // Horizontal arm: diagonal across the side bevel near x=armH.
+            relief_miter_hull([armH - cs - s2, W / 2 + s2, 0],
+                              [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
+                              cs * sqrt(2) + 2);
+            // Upright arm: equivalent junction near z=-armV.
+            relief_miter_hull([0, W / 2 - cs - s2, -armV - s2],
+                              [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
+                              cs * sqrt(2) + 2);
         }
-        // Edge along the top arm (z=0, x=r_in..armH).
-        translate([r_in, 0, 0]) rotate([90, 0, 90])
-            linear_extrude(height = armH + 1 - r_in) ef_wedge_profile();
-        // Edge along the vertical arm (x=0, z=-r_in..-armV).
-        translate([0, 0, -armV - 1]) rotate([0, 0, 90])
-            linear_extrude(height = armV + 1 - r_in) ef_wedge_profile();
-        // Edge along the rounded inside corner.
-        if (r_in >= 1)
-            translate([r_in, 0, -r_in]) rotate([90, 0, 0]) rotate([0, 0, 89])
-                rotate_extrude(angle = 92)
-                    polygon([[r_in - 1, W / 2 - ef - 1], [r_in - 1, W / 2 + 1], [r_in + ef + 1, W / 2 + 1]]);
+}
+
+// Keep the two broad inside-opening hulls and add local hulls at the
+// arm-tip/side-chamfer junctions. No per-edge wedge extrusions are needed.
+module chamfered_body() {
+    difference() {
+        body();
+        if (ef > 0) {
+            inside_relief_envelope();
+            relief_corner_miters();
+        }
     }
 }
 
@@ -246,10 +311,9 @@ module nut_side() {
 
 module bracket() {
     difference() {
-        body();
+        chamfered_body();
         nut_top();
         nut_side();
-        ef_cuts();
     }
 }
 

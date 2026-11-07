@@ -1,19 +1,19 @@
-// Corner Bracket: beam-style elephant-foot experiment on a clean L.
+// Corner Bracket: the SAME elephant-foot construction as the beam.
 //
-// IMPORTANT:
-// The production body() cannot be used as the "cs only" starting point because
-// corner_bracket.scad already folds ef into tip_top/tip_vert before body().
+// Clean baseline:
+//   - real L geometry;
+//   - normal c / ce / cs chamfers;
+//   - NO ef at the arm tips yet.
 //
-// This demo therefore rebuilds ONLY the clean L profile + cs side chamfer,
-// with NO elephant-foot geometry at the arm tips.
+// Then exactly like the beam:
+//   INPUT 1 = one thin L-shaped bottom plate at the print bed,
+//             already carrying cs and inset by ef;
+//   INPUT 2 = the complete already-cs-chamfered L volume from ef height upward.
 //
-// Four scenes only:
-//   0. clean L with cs only
-//   1. two transparent ef input L-shapes
-//   2. local hull result
-//   3. resulting L
-//
-// The L is shown in print orientation.
+// The complete concave L cannot be put through one global hull(), because that
+// would fill its inside corner. Internally only, the horizontal and vertical
+// arms are hulled separately and then united. The displayed inputs themselves
+// remain one bottom L plate and one upper L volume.
 
 /* [Illustration] */
 junction_step = "00_l_with_cs"; // [00_l_with_cs, 01_ef_inputs, 02_ef_hull, 03_result]
@@ -25,7 +25,7 @@ $fn = 48;
 eps = 0.02;
 display_thickness = 0.35;
 
-// Same production defaults, copied here so the baseline is explicit.
+// Same production defaults, explicit so the clean baseline is unambiguous.
 armH = 40;
 armV = 40;
 t = 10;
@@ -40,8 +40,6 @@ r_in = 2.0;
 // 0. CLEAN BASELINE: L + cs, NO ef
 // -----------------------------------------------------------------------------
 
-// Same production side profile, except the two end/contact points are sharp:
-// [armH,0] and [0,-armV]. No tip_top/tip_vert elephant-foot adjustment.
 module clean_sharp_profile() {
     polygon([
         [armH, 0],
@@ -65,7 +63,6 @@ module clean_profile() {
     }
 }
 
-// Same convex helper used for cs. It contains no ef.
 module clean_outer_shape() {
     polygon([
         [armH, -armV],
@@ -100,10 +97,7 @@ module clean_body() {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Actual cs-aware X/Z section from the CLEAN body at a chosen Y.
-// -----------------------------------------------------------------------------
-
+// Actual X/Z cross-section of the already-cs-chamfered clean L.
 module clean_body_section_2d(y) {
     mirror([0, 1, 0])
         projection(cut = true)
@@ -112,8 +106,44 @@ module clean_body_section_2d(y) {
                     clean_body();
 }
 
-// Split the concave L into its two arms only for the local hull operation.
-// Visually the two parts are still shown together as one L.
+// -----------------------------------------------------------------------------
+// 1. THE TWO EF INPUTS — now literally the same pattern as the beam
+// -----------------------------------------------------------------------------
+
+// INPUT 1: thin L-shaped BOTTOM PLATE.
+//
+// First take the real cs-aware footprint at the printed face. Only after that
+// make the complete L footprint ef smaller.
+module lower_plate_2d() {
+    offset(delta = -ef)
+        clean_body_section_2d(W / 2);
+}
+
+module lower_plate(thickness = eps) {
+    translate([0, W / 2, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = thickness, center = true)
+                lower_plate_2d();
+}
+
+// INPUT 2: the complete already-cs-chamfered L from ef above the print bed
+// inward through the rest of the part.
+//
+// In model coordinates the +Y face is the print bed, so "ef upward" means
+// retain y <= W/2-ef.
+module upper_l_volume() {
+    intersection() {
+        clean_body();
+
+        translate([-100, -100, -100])
+            cube([200, 100 + W / 2 - ef, 200]);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// INTERNAL ONLY: split the concave L into two arms for hull().
+// -----------------------------------------------------------------------------
+
 module horizontal_arm_mask_2d() {
     translate([-t - 2, -2])
         square([armH + t + 4, t + 4]);
@@ -124,54 +154,37 @@ module vertical_arm_mask_2d() {
         square([t + 4, armV + t + 4]);
 }
 
-module arm_section_2d(y, which = "horizontal", shrink = 0) {
-    offset(delta = -shrink)
-        intersection() {
-            clean_body_section_2d(y);
-
-            if (which == "horizontal")
-                horizontal_arm_mask_2d();
-            else
-                vertical_arm_mask_2d();
-        }
+module arm_mask_2d(which) {
+    if (which == "horizontal")
+        horizontal_arm_mask_2d();
+    else
+        vertical_arm_mask_2d();
 }
 
-// -----------------------------------------------------------------------------
-// 1. TWO EF INPUTS — BOTH START FROM THE ALREADY-cs CLEAN L
-// -----------------------------------------------------------------------------
-
-module input_layer(y, which, shrink = 0, thickness = eps) {
-    translate([0, y, 0])
-        rotate([90, 0, 0])
-            linear_extrude(height = thickness, center = true)
-                arm_section_2d(y, which, shrink);
+module arm_mask_3d(which) {
+    rotate([90, 0, 0])
+        linear_extrude(height = 2 * W, center = true)
+            arm_mask_2d(which);
 }
 
-// Inner input: normal cs-aware L, one ef inward from the print face.
-module inner_input(which, display = false) {
-    input_layer(
-        W / 2 - ef,
-        which,
-        0,
-        display ? display_thickness : eps
-    );
+module lower_arm_plate(which) {
+    intersection() {
+        lower_plate();
+        arm_mask_3d(which);
+    }
 }
 
-// Outer input: cs-aware L at the print face, made ef smaller.
-// This is where the elephant-foot correction is introduced for the FIRST time.
-module outer_input(which, display = false) {
-    input_layer(
-        W / 2,
-        which,
-        ef,
-        display ? display_thickness : eps
-    );
+module upper_arm_volume(which) {
+    intersection() {
+        upper_l_volume();
+        arm_mask_3d(which);
+    }
 }
 
 module arm_ef_hull(which) {
     hull() {
-        inner_input(which);
-        outer_input(which);
+        lower_arm_plate(which);
+        upper_arm_volume(which);
     }
 }
 
@@ -182,18 +195,12 @@ module l_ef_hulls() {
     }
 }
 
-// Keep the clean cs body inward of the ef transition and replace only the
-// outer +Y printed-side layer by the new local hulls.
+// The two hulls already contain their upper arm volumes. Union the untouched
+// upper L as well to guarantee the original concave L and inside radius remain
+// complete.
 module result_body_one_side() {
     union() {
-        intersection() {
-            clean_body();
-
-            // Keep y <= W/2-ef.
-            translate([-100, -100, -100])
-                cube([200, 100 + W / 2 - ef, 200]);
-        }
-
+        upper_l_volume();
         l_ef_hulls();
     }
 }
@@ -209,7 +216,7 @@ module print_orientation() {
 }
 
 // -----------------------------------------------------------------------------
-// Four explanatory scenes
+// Four scenes
 // -----------------------------------------------------------------------------
 
 if (junction_step == "00_l_with_cs") {
@@ -220,29 +227,20 @@ if (junction_step == "00_l_with_cs") {
 
 else if (junction_step == "01_ef_inputs") {
     print_orientation() {
-        color("SteelBlue", 0.12)
-            clean_body();
+        // INPUT 1: clearly visible thin lower L plate.
+        color("DeepSkyBlue", 0.62)
+            lower_plate(display_thickness);
 
-        color("DeepSkyBlue", 0.50) {
-            inner_input("horizontal", true);
-            inner_input("vertical", true);
-        }
-
-        color("DarkOrange", 0.50) {
-            outer_input("horizontal", true);
-            outer_input("vertical", true);
-        }
+        // INPUT 2: complete upper already-cs-chamfered L volume.
+        color("DarkOrange", 0.28)
+            upper_l_volume();
     }
 }
 
 else if (junction_step == "02_ef_hull") {
-    print_orientation() {
-        color("SteelBlue", 0.12)
-            clean_body();
-
-        color("SeaGreen", 0.58)
+    print_orientation()
+        color("SeaGreen")
             l_ef_hulls();
-    }
 }
 
 else {

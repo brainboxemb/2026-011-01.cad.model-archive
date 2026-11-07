@@ -1,51 +1,55 @@
-# Corner Bracket: same idea as the beam, now on the L
+# Corner Bracket: same idea as the beam, now on a clean L
 
-The L is now shown **lying on its printed side**, so the pictures read the same
-way as the beam experiment.
+The L is shown in print orientation and the walkthrough has only four steps.
 
-There are only four steps.
+One important detail is now explicit: the first scene is **not** the production
+`body()`, because that already contains the elephant-foot adjustment in
+`tip_top` and `tip_vert`.
 
-## 0. L with the normal `cs` chamfer
+For this explanation the starting L is rebuilt with:
 
-![L with cs](../design/junction_00_l_with_cs.png)
+- the same arm geometry;
+- the same end chamfers `c`;
+- the same outside corner chamfer `ce`;
+- the same side chamfer `cs`;
+- **no `ef` anywhere yet**.
 
-This is the real bracket `body()`, already including the normal side chamfer.
+That gives a clean baseline.
 
-## 1. The two `ef` inputs
+## 0. Clean L with `cs` only
 
-![Two transparent ef inputs on the L](../design/junction_01_ef_inputs.png)
+![Clean L with cs](../design/junction_00_l_with_cs.png)
 
-The complete L stays faintly visible underneath.
+The arm tips are still sharp at the print/contact edge. If an elephant-foot
+bevel is visible here, the demo is wrong.
 
-The colored shapes are the two real inputs to the elephant-foot transition:
+## 1. Add the two `ef` inputs
 
-- blue: the already-`cs`-chamfered L one `ef` inward from the print face;
-- orange: the already-`cs`-chamfered L at the print face, then made
-  `ef` smaller.
+![Two transparent ef inputs](../design/junction_01_ef_inputs.png)
 
-Both inputs therefore already contain the `cs` geometry before any new
-`hull()` is made.
+Now `ef` is introduced for the first time.
 
-Internally the horizontal and vertical arms are hulled separately. That avoids
-a global hull filling the concave inside corner, but visually they remain one L.
+Both colored inputs are derived from the already-`cs`-chamfered clean L:
+
+- blue: normal cs-aware L one `ef` inward from the printed side;
+- orange: cs-aware L at the printed side, then made `ef` smaller.
 
 ## 2. Hull result
 
-![Hull result on the L](../design/junction_02_ef_hull.png)
+![Hull result](../design/junction_02_ef_hull.png)
 
-The green volume is the union of those two local arm hulls.
-
-This is the direct L-shaped equivalent of the successful beam construction.
+The two local arm hulls create the elephant-foot transition while preserving the
+concave L corner.
 
 ## 3. Resulting L
 
 ![Resulting L](../design/junction_03_result.png)
 
-The new transition replaces only the outer `ef`-deep printed-side layer.
-Everything farther inward remains the original `body()`.
+Everything inward of the transition stays the clean `cs` body. Only the outer
+printed-side layer is replaced by the new `ef` transition.
 
 ## Interactive source
 
 Open
 [`design/ef_cs_junction_explained.scad`](../design/ef_cs_junction_explained.scad)
-and switch the `junction_step` dropdown through the same four stages.
+and use the `junction_step` dropdown.

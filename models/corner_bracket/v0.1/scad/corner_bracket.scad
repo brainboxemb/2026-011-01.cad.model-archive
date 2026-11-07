@@ -182,12 +182,28 @@ module body() {
     }
 }
 
-// ---------- Unified hull-based side chamfers and print relief ----------
-// The broad outside edges are controlled by side_chamfer_env() above.
-// For the *concave*, wood-facing edges, use the complement: the open
-// quadrant between the two arms, less the small rounded corner fill.
-// Its boundary includes both straight contact faces and the inner arc.
-// We extend the quadrant beyond the arm ends so the bevel is not clipped.
+// ---------- Elephant-foot relief along the complete inside L ----------
+//
+// At this point body() already contains the normal cs side chamfers.
+//
+// The old implementation used separate cutters for:
+//   - the horizontal inside edge,
+//   - the vertical inside edge,
+//   - the rounded r_in corner,
+//   - and the short diagonal cs/ef junctions at the arm tips.
+//
+// The current implementation keeps only the last item as a local special case.
+// The main relief is derived from ONE 2D description of the empty space
+// between the arms.  Its boundary follows, continuously:
+//
+//   horizontal wood-contact face -> r_in arc -> vertical wood-contact face
+//
+// We expand that opening by ef only at each outer Y side and hull it to the
+// unchanged opening ef inward.  Subtracting the two short hulls from body()
+// creates the 45-degree elephant-foot relief on both printed sides.
+//
+// The opening is deliberately extended beyond the arm tips.  It is a cutting
+// helper, not printable geometry, so overlap outside the real bracket is safe.
 module inside_opening_2d() {
     reach = max(5, cs + ef + 1);
     difference() {
@@ -209,9 +225,11 @@ module opening_layer(y, expansion = 0) {
                     inside_opening_2d();
 }
 
-// Why TWO hulls? A single convex hull joining expanded openings at BOTH
-// outside Y faces would also enlarge the opening all through the middle.
-// Each side must have its own local transition from normal to expanded.
+// Why TWO hulls?
+// Each printed Y side needs only a short ef-deep transition.
+// One global convex hull from one side face to the other would expand the
+// opening through the middle of the bracket as well.  Therefore each side
+// gets its own local hull.
 module inside_relief_envelope() {
     if (ef > 0)
         for (side = [-1, 1])
@@ -221,13 +239,16 @@ module inside_relief_envelope() {
             }
 }
 
-// At each arm tip the EF chamfer meets the *diagonal* cs side chamfer.
-// The opening hull above follows the straight plywood faces and the inside
-// radius, but does not provide this third diagonal miter. This leaves a
-// short, flat termination (visible at the corner in the 3D preview).
-// Connect a triangular relief profile at BOTH ends of each diagonal edge
-// with another local hull(), so the bevel continues through the junction.
-// A profile is only 0.001 mm thick; the hull supplies the swept volume.
+// Small remaining arm-tip problem:
+//
+// The main opening hull already handles the horizontal face, r_in and the
+// vertical face.  Only where that relief reaches the diagonal cs bevel at an
+// arm tip can a short flat termination remain.
+//
+// The correction below is intentionally local.  It places a tiny triangular
+// cutting profile at both ends of that short diagonal junction and hulls the
+// two profiles together.  The resulting swept volume removes only the small
+// leftover piece.  A profile is 0.001 mm thick; hull() supplies the volume.
 module relief_miter_hull(A, U, V, D, len) {
     module triangle_at(distance) {
         multmatrix([[U[0], V[0], D[0], A[0]],
@@ -244,9 +265,9 @@ module relief_miter_hull(A, U, V, D, len) {
     }
 }
 
-// One diagonal junction at each end of each arm, repeated on both print
-// faces. The rest of the elephant-foot relief still uses the two opening
-// hulls, including the curved inside corner.
+// Four equivalent local junctions are corrected:
+// horizontal and vertical arm tips, on both Y side faces.
+// Everything else remains the continuous inside-opening relief above.
 module relief_corner_miters() {
     s2 = sqrt(2) / 2;
     if (ef > 0 && cs > 0)

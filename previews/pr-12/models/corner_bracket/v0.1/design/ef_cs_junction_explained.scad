@@ -24,6 +24,7 @@ use <../scad/corner_bracket.scad>
 $fn = 48;
 eps = 0.02;
 display_thickness = 0.35;
+display_explode = 3;
 
 // Same production defaults, explicit so the clean baseline is unambiguous.
 armH = 40;
@@ -226,14 +227,17 @@ if (junction_step == "00_l_with_cs") {
 }
 
 else if (junction_step == "01_ef_inputs") {
+    // Exploded VIEW ONLY:
+    // pull the two real hull inputs apart so the lower plate is unmistakable.
+    // The actual hull geometry below still uses their true positions.
     print_orientation() {
-        // INPUT 1: clearly visible thin lower L plate.
-        color("DeepSkyBlue", 0.62)
-            lower_plate(display_thickness);
+        color("DeepSkyBlue", 0.78)
+            translate([0, -display_explode, 0])
+                lower_plate(display_thickness);
 
-        // INPUT 2: complete upper already-cs-chamfered L volume.
-        color("DarkOrange", 0.28)
-            upper_l_volume();
+        color("DarkOrange", 0.24)
+            translate([0, display_explode, 0])
+                upper_l_volume();
     }
 }
 

@@ -248,10 +248,6 @@ module print_bed() {
 // Four scenes — same visual order as the beam
 // -----------------------------------------------------------------------------
 
-// Low oblique default view: enough side angle to see the bottom plate under
-// the upper L. Users can still rotate freely in OpenSCAD.
-$vpr = [68, 0, 38];
-
 if (junction_step == "00_l_with_cs") {
     %print_bed();
 
@@ -260,12 +256,14 @@ if (junction_step == "00_l_with_cs") {
 }
 
 else if (junction_step == "01_ef_inputs") {
+    %print_bed();
+
     // Real hull-input positions, exactly like the beam:
-    // blue plate at the print bed, orange cs-body beginning at z=ef.
-    color("DeepSkyBlue")
+    // blue plate at Z=0, orange cs-body beginning at Z=ef.
+    color("DeepSkyBlue", 0.72)
         ef_input_bottom(display_thickness);
 
-    color("DarkOrange", 0.14)
+    color("DarkOrange", 0.30)
         ef_input_upper();
 }
 

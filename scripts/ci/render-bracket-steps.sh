@@ -45,7 +45,7 @@ for stage in \
   05_main_hull \
   06_main_result \
   07_missing_tip_volume \
-  08_reference_cutter \
+  08_reference_relief_volume \
   09_reference_result \
   10_exact_reference_inputs \
   11_exact_two_surface_hull \

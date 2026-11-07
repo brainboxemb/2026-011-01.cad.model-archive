@@ -4,7 +4,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
-IMAGE="${SCAD_DRAWING_IMAGE:-ghcr.io/brainboxemb/scad-toolchain-drawing:edge}"
+IMAGE="${SCAD_DRAWING_IMAGE:-ghcr.io/brainboxemb/scad-toolchain-drawing:v0.6.2}"
 LIBRARY_PATH="/work/ext:/opt/openscad-libraries"
 
 in_container() {

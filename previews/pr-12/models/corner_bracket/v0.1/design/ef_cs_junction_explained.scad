@@ -204,6 +204,24 @@ module ef_expanded_L_sheet() {
     }
 }
 
+
+// Beam equivalent of "upper body from ef upward":
+// keep the COMPLETE already-cs-chamfered bracket, but remove everything within
+// ef of the continuous inside L boundary.
+module ef_inner_clearance() {
+    rotate([90, 0, 0])
+        linear_extrude(height = W + 2, center = true)
+            offset(delta = ef)
+                inside_opening_2d();
+}
+
+module ef_upper_body() {
+    difference() {
+        cs_body();
+        ef_inner_clearance();
+    }
+}
+
 // The raw hull between two complete concave L shapes is convex and would fill
 // the open inside corner with a diagonal triangle.
 //
@@ -295,11 +313,14 @@ else if (scene == "03_cs_shaped_L") {
 }
 
 else if (scene == "04_ef_inputs") {
+    // Blue: thin continuous L input at the real inside boundary.
     color("DeepSkyBlue", 0.78)
         cs_shaped_inner_L_sheet();
 
-    color("DarkOrange", 0.40)
-        ef_expanded_L_sheet();
+    // Orange: complete already-cs-chamfered bracket, with only the first ef
+    // of material along the continuous inside L removed.
+    color("DarkOrange", 0.28)
+        ef_upper_body();
 }
 
 else if (scene == "05_ef_relief") {

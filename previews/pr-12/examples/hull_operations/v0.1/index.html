@@ -32,11 +32,13 @@ contains the side chamfer.</p>
 <p><img alt="ef inputs" src="renders/03_ef_inputs.png" /></p>
 <p>This is the important change.</p>
 <ul>
-<li>blue: the bottom footprint, inset by <code>ef</code> on all four sides;</li>
+<li>blue: the <strong>bottom footprint taken from the already <code>cs</code>-chamfered body</strong>,
+  then inset by <code>ef</code>;</li>
 <li>orange: the <strong>already <code>cs</code>-chamfered upper body</strong>, clipped from <code>z = ef</code>
   upward.</li>
 </ul>
-<p>So the orange object is no longer a rectangular block.</p>
+<p>So neither input is a plain rectangular block anymore. Both already contain
+the <code>cs</code> geometry before the elephant-foot hull is made.</p>
 <h2>4. Hull those two objects</h2>
 <p><img alt="combined result" src="renders/04_combined_result.png" /></p>
 <p>The elephant-foot transition is now created directly from the existing
@@ -49,11 +51,15 @@ intersection() {
 }</code></p>
 <p>between two independently built envelopes.</p>
 <p>Instead the sequence is:</p>
-<p><code>openscad
+<p>```openscad
 hull() {
-    ef_input_bottom();
-    ef_input_upper_chamfered();
-}</code></p>
+    // cs-chamfered bottom footprint, then inset by ef
+    ef_input_bottom();</p>
+<pre><code>// cs-chamfered upper body
+ef_input_upper_chamfered();
+</code></pre>
+<p>}
+```</p>
 <h2>5. Inspect the meeting corner</h2>
 <p><img alt="corner close-up" src="renders/05_corner.png" /></p>
 <p>This close-up is the actual test: does using the already-chamfered upper body as

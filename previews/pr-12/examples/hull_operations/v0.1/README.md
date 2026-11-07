@@ -35,11 +35,13 @@ This is the already-chamfered beam.
 
 This is the important change.
 
-- blue: the bottom footprint, inset by `ef` on all four sides;
+- blue: the **bottom footprint taken from the already `cs`-chamfered body**,
+  then inset by `ef`;
 - orange: the **already `cs`-chamfered upper body**, clipped from `z = ef`
   upward.
 
-So the orange object is no longer a rectangular block.
+So neither input is a plain rectangular block anymore. Both already contain
+the `cs` geometry before the elephant-foot hull is made.
 
 ## 4. Hull those two objects
 
@@ -63,7 +65,10 @@ Instead the sequence is:
 
 ```openscad
 hull() {
+    // cs-chamfered bottom footprint, then inset by ef
     ef_input_bottom();
+
+    // cs-chamfered upper body
     ef_input_upper_chamfered();
 }
 ```

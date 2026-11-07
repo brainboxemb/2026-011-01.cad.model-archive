@@ -34,9 +34,13 @@ already contains the <code>cs</code> geometry. Only then is <code>offset(-ef)</c
 bracket.</p>
 <p><strong>Orange — <code>ef_input_upper()</code></strong></p>
 <p>This is the complete <code>cs_body()</code> from <code>Z = ef</code> upward.</p>
-<p>For this illustration only, the orange volume is moved straight upward in Z so
-the blue plate is visibly <strong>under</strong> it. There is no X/Y displacement. The real
-<code>hull()</code> uses the unshifted geometry at the actual <code>ef</code> height.</p>
+<p>Both objects are shown at their <strong>real hull positions</strong>:</p>
+<ul>
+<li>the blue plate lies on the print bed at <code>Z=0</code>;</li>
+<li>the orange upper L starts at <code>Z=ef</code>.</li>
+</ul>
+<p>The orange L is made strongly transparent and the default camera is lower so
+the blue plate can actually be seen underneath it, just as in the beam demo.</p>
 <p>So both inputs already contain the normal chamfer before the elephant-foot hull
 is created.</p>
 <h2>2. Hull result</h2>

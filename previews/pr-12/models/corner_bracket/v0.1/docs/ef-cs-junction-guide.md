@@ -1,68 +1,81 @@
-# Corner Bracket: cs/ef junction on the real L
+# Corner Bracket: cs/ef hull experiment on one L-shape
 
-This walkthrough now keeps the picture as simple as possible:
+This page deliberately keeps the geometry simple to follow:
 
-- the **real L-shaped bracket** stays in the same place;
-- no detached section planes are shown;
-- the proposed elephant-foot step is visualized with **two full 3D arm volumes**,
-  just like the beam example.
+**the same L-shaped bracket body stays in the same place in every image.**
 
-The production model is still unchanged.
+Nothing is moved beside the bracket. There are no separate section drawings in
+the walkthrough. When a hull is explained, its two input volumes are simply
+shown transparently on the L itself.
 
-## 0. L with the existing `cs` chamfer
+The production model is not changed by this experiment.
 
-![L with cs](../design/junction_00_l_with_cs.png)
+## 0. L-shape with the existing `cs` chamfer
 
-This is the real `body()`.
+![L-shaped body with cs](../design/junction_00_l_with_cs.png)
 
-## 1. Current result before the extra corner correction
+This is the real `body()`: the L-shaped bracket after the normal side-edge
+chamfer `cs`, before the elephant-foot relief.
 
-![Current result](../design/junction_01_current_result.png)
+## 1. Current `ef` inputs on the same L
 
-This is the current broad elephant-foot relief before
-`relief_corner_miters()`.
+![Current transparent ef inputs on the L](../design/junction_01_current_inputs.png)
 
-The only point of interest is the small arm-tip junction.
+The L stays faintly visible.
 
-## 2. Proposed inputs: two real 3D arm volumes
+The two colored objects are the current inputs to one of the two local
+elephant-foot hulls:
 
-![Proposed full-volume inputs](../design/junction_02_proposed_inputs.png)
+- blue: inner input at `Y = W/2-ef`;
+- orange: outer input at `Y = W/2`, expanded by `ef`.
 
-The whole L stays faintly visible.
+## 2. Current `ef` hull on the L
 
-The colored shapes are no longer thin vertical profile planes:
+![Current ef hull on the L](../design/junction_02_current_hull.png)
 
-- blue: the lower horizontal-arm volume, already carrying the `cs` geometry;
-- orange: the upper horizontal-arm volume, also already carrying the same
-  `cs` geometry.
+The red volume is the hull made from those two inputs.
 
-The lower volume is the smaller `ef` input. The upper volume is the normal
-already-chamfered arm.
+## 3. Current result
 
-So this is the direct Corner Bracket equivalent of the successful beam test:
-**both hull inputs already contain the side chamfer before `hull()`.**
+![Current result before corner miter](../design/junction_03_current_result.png)
 
-## 3. Hull those two arm volumes
+This is the L after the two existing broad elephant-foot hulls are subtracted,
+but **before** `relief_corner_miters()`.
 
-![Proposed local arm hull](../design/junction_03_proposed_hull.png)
+The small arm-tip defect is the only issue we are trying to solve.
 
-Only the local horizontal arm is hulled.
+## 4. Proposed inputs on the same L
 
-The complete L is **not** put into one global `hull()`, so the concave inside
-corner cannot be filled in.
+![Proposed transparent cs-aware inputs on the L](../design/junction_04_proposed_inputs.png)
 
-## 4. Proposed L result
+The structure is unchanged: still two inputs, at the same two Y positions.
 
-![Proposed L result](../design/junction_04_proposed_result.png)
+The only difference is that these input profiles are derived from the
+already-`cs`-chamfered `body()`. Therefore the outer input already contains
+the arm-tip side chamfer before `hull()` is called.
 
-The proposed local arm hull is placed back into the unchanged L.
+## 5. Proposed hull on the L
 
-This page is only meant to make the geometry understandable. Once this view is
-visually correct, the next step is to express the same minimal idea cleanly in
-the production model.
+![Proposed cs-aware hull on the L](../design/junction_05_proposed_hull.png)
+
+Again: one local hull, shown in place on the same L.
+
+No new global construction is introduced.
+
+## 6. Proposed result
+
+![Proposed result](../design/junction_06_proposed_result.png)
+
+This result uses the same two local elephant-foot hulls, but with the cs-aware
+inputs.
+
+No separate `relief_corner_miters()` is applied here. The purpose of the
+experiment is to see whether the minimal input change is sufficient.
 
 ## Interactive source
 
 Open
 [`design/ef_cs_junction_explained.scad`](../design/ef_cs_junction_explained.scad)
-and use the `junction_step` dropdown.
+and select `junction_step`.
+
+The dropdown follows exactly the seven images above.

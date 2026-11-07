@@ -204,10 +204,48 @@ and plywood-facing surfaces remain governed by the original profile.</p>
 elephant-foot step</strong>: the <code>cs</code> envelope is built around the
 <em>outside convex perimeter</em>, while the <code>ef</code> relief also follows
 the <strong>concave inner corner</strong> and its transitions.</p>
-<h2>3. Experiment: can hull also handle elephant-foot relief?</h2>
-<p>For a <strong>straight, convex arm</strong>, yes: the editable
+<h2>3. How elephant-foot relief now uses hull on the real bracket</h2>
+<p>The revised production model also uses hull-based geometry for the
+wood-facing edges, <strong>including the rounded inside corner</strong>. However,
+a single global hull cannot preserve the opening on both printed sides.
+Here is the actual approach:</p>
+<ol>
+<li><code>inside_opening_2d()</code> draws the <strong>empty area between the two arms</strong>:
+   the open quadrant, with the rounded corner-fill region excluded.
+   Its boundary follows the straight plywood faces and the radius.</li>
+<li>At each printed side (<code>Y = ±10</code> mm), <code>offset(delta = ef)</code>
+   expands that <em>empty</em> shape by <code>ef = 0.6</code> mm.</li>
+<li>At <code>Y = ±9.4</code> mm, the original opening is left unchanged.</li>
+<li>A separate <code>hull()</code> on <strong>each side</strong> joins the expanded and
+   unexpanded opening. <code>difference()</code> subtracts both local transition
+   volumes from the actual L bracket.</li>
+<li>The outer <code>cs</code> bevel still comes from <code>side_chamfer_env()</code>,
+   using the hull and intersection described in Section 2.</li>
+</ol>
+<p>The essential difference is <strong>what is being hulled</strong>: Section 2 forms a
+limiting <em>outer envelope</em>; here, a pair of hulls forms <em>inner cutting
+volumes</em>. The two sides cannot share one hull because convexity would
+expand the opening through the full 20 mm width.</p>
+<p><code>openscad
+module inside_relief_envelope() {
+    if (ef &gt; 0)
+        for (side = [-1, 1])
+            hull() {
+                opening_layer(side * (W/2 - ef));
+                opening_layer(side * W/2, ef);
+            }
+}</code></p>
+<p>The <a href="chamfer-guide.html">Chamfer Guide</a> shows this on the actual bracket,
+before and after the relief. The old straight, diagonal and circular
+elephant-foot cutters are kept <em>only in the regression fixture</em>.
+For supported configurations, CI compares the full old and new solids,
+including nut pockets and bolt holes. This is a near-equivalence test:
+minor changes around transitions are measured, not claimed to be
+bit-for-bit identical. Physical fit is still unverified.</p>
+<h2>4. Earlier single-hull experiment on a straight bar</h2>
+<p>For a <strong>convex straight arm</strong>, the editable
 <a href="../design/combined_chamfer_hull.scad">combined-chamfer experiment</a>
-places four rectangular layers inside a <strong>single hull</strong>:</p>
+joins four rectangular layers in one global hull:</p>
 <ol>
 <li>Bottom layer inset by <code>ef = 0.6</code> mm.</li>
 <li>Full-width layer at height <code>ef</code>.</li>
@@ -215,18 +253,12 @@ places four rectangular layers inside a <strong>single hull</strong>:</p>
 <li>Top layer inset by <code>cs = 2</code> mm.</li>
 </ol>
 <p><img alt="Four layers for the combined bevel experiment" src="../design/combined_chamfer_layers.png" /></p>
-<p>The left object uses one hull; the right uses three individual
-hull segments as a geometric reference.</p>
+<p>The left object uses one hull; the right uses three separate hull
+segments as an equivalent straight-bar reference.</p>
 <p><img alt="Combined hull versus sectional reference" src="../design/combined_chamfer_comparison.png" /></p>
-<p>A CI script checks symmetric differences for four configurations.
-This verifies the <strong>simple rectangular experiment only</strong>, not an
-equivalent replacement for the full bracket.</p>
-<p>The real bracket's geometry varies around its <strong>concave inside
-corner</strong> and rounded wood-contact edge. Replacing both
-<code>side_chamfer_env()</code> and <code>ef_cuts()</code> would require suitable
-convex subregions (or another limiting construction) and further
-whole-bracket regression tests. <strong>The printable bracket has not
-been changed by this experiment.</strong></p>
+<p>This example remains useful to understand <strong>why</strong> two bevels can be
+combined for a convex solid. For the concave full L, the production
+implementation instead uses an outer hull and two local inner hulls.</p>
 <h2>Where to read next</h2>
 <p>For the rounded inside corner, the previous <code>sin()/cos()</code>
 point-list method and the current <code>square() - circle()</code> method,

@@ -24,8 +24,8 @@ is included to show how exactly the same idea works with solids.</p>
 <blockquote>
 <p><strong>The printable corner bracket now uses Method A (2D shapes).</strong>
 The 3D method and the former point-based approach are included here
-for comparison. The outside chamfers, nut pockets and elephant-foot
-relief remain separate, unchanged operations.</p>
+for comparison. The outside chamfers and nut pockets remain unchanged. The
+elephant-foot relief now uses two local hulls per bracket.</p>
 </blockquote>
 <h2>First: draw a simple L with polygon()</h2>
 <p><code>polygon()</code> needs a list of coordinates. OpenSCAD joins them in order
@@ -214,7 +214,7 @@ reasonable to combine them: make the L and the inside radius in 2D,
 extrude, then subtract the 3D nut pockets and print-relief cutters.</p>
 <p>The production corner radius now uses the <strong>2D square-minus-circle
 construction</strong>. The alternative 3D solid method and legacy point-list
-polygon are provided for learning. The change preserves the outside
-chamfers, bolt and nut features, and elephant-foot cutters; final
+polygon are provided for learning. The change preserves the outside chamfers and bolt/nut features. The
+print relief was subsequently refactored to hull-based geometry; final
 print fit and mechanical strength still require physical testing.</p>
 </main></body></html>

@@ -195,77 +195,70 @@ applied at **both printed side faces** (`Y = +W/2` and `Y = -W/2`).
 
 ![Wood-facing relief edge locations on the bracket](figures/elephant-foot-edges.svg)
 
-The OpenSCAD code constructs the cutting shapes in stages:
+**We now use the same hull principle as for the outer side bevels.**
+The opening between the arms is a convex 2D helper shape, with a
+quarter-circle boundary at the rounded inside corner. We create
+one normal copy at `Y = ±(W/2 - ef)` and one copy expanded by
+`ef` at `Y = ±W/2`. A `hull()` connects these two outlines.
 
-1. `ef_wedge_profile()` draws a tiny **triangle in 2D** using
-   `polygon()`. It is the cross-section of the material to remove.
-2. `linear_extrude()` stretches that triangle along each **straight**
-   contact edge, like pulling a triangular knife along the bracket.
-   `mirror()` repeats the operation on the other printed side.
-3. At the short **diagonal corners**, `ef_edge_wedge()` uses
-   `multmatrix()` to position the same triangular cutter at an angle.
-4. For the **rounded inside corner**, `rotate_extrude()` sweeps a
-   triangular cutter around a circular path rather than along a line.
-5. Finally, `difference()` inside `bracket()` subtracts all these
-   cutters from the body, along with the nut pockets and bolt holes.
+Two **separate hulls**, one for each printed side, are necessary:
+joining the two expanded outside slices in a *single* global hull
+would remove material through the entire middle of the bracket.
+With two local hulls, only the outer 0.6 mm on each side is affected.
+`difference()` then subtracts the resulting cutting volumes from
+`body()`. This naturally follows the straight plywood faces AND the
+rounded inner corner, replacing the former individual wedge cutters.
 
-Setting `ef = 0` disables the relief. The diagonal cutters depend on
-`cs > 0`, and the rounded cutter is used when `r_in >= 1`. This is
-an allowance for printing, **not** a substitute for checking fit on
-an actual print.
+Setting `ef = 0` disables this relief. `cs` still controls the
+larger outside chamfers in Step 2. The small 2D chamfers at the arm
+tips are part of Step 1, as before. The geometric regression tests
+compare the complete bracket against the former cutting method.
+The small differences are concentrated near relief intersections;
+actual print fit must still be checked.
 
 The following render shows the resulting bracket. The complete
 cutter modules used in the source code are listed underneath.
 
 ![Elephant-foot relief](design/04_print_relief.png)
 
-**Relevant OpenSCAD code:**
+**Relevant OpenSCAD code (shortened):**
 
-    module ef_wedge_profile() {   // triangle in local (u=y, v=material depth) coordinates
-        polygon([[W / 2 - ef - 1, -1], [W / 2 + 1, -1], [W / 2 + 1, ef + 1]]);
-    }
-    
-    module ef_edge_wedge(A, U, V, D, len) {
-        multmatrix([[U[0], V[0], D[0], A[0]],
-                    [U[1], V[1], D[1], A[1]],
-                    [U[2], V[2], D[2], A[2]],
-                    [0, 0, 0, 1]])
-            linear_extrude(height = len)
-                polygon([[-ef - 1, -1], [1, -1], [1, ef + 1]]);
-    }
-    
-    module ef_cuts() {
-        s2 = sqrt(2) / 2;
-        if (ef > 0) for (m = [0, 1]) mirror([0, m, 0]) {
-            // Diagonal corners where side and end chamfers meet.
-            if (cs > 0) {
-                // Top arm: (armH-cs, W/2) to (armH, W/2-cs) at z=0.
-                ef_edge_wedge([armH - cs - s2, W / 2 + s2, 0], [s2, s2, 0], [0, 0, 1], [s2, -s2, 0],
-                              cs * sqrt(2) + 2);
-                // Vertical arm: (W/2-cs, -armV) to (W/2, -armV+cs) at x=0.
-                ef_edge_wedge([0, W / 2 - cs - s2, -armV - s2], [0, s2, -s2], [-1, 0, 0], [0, s2, s2],
-                              cs * sqrt(2) + 2);
-            }
-            // Edge along the top arm (z=0, x=r_in..armH).
-            translate([r_in, 0, 0]) rotate([90, 0, 90])
-                linear_extrude(height = armH + 1 - r_in) ef_wedge_profile();
-            // Edge along the vertical arm (x=0, z=-r_in..-armV).
-            translate([0, 0, -armV - 1]) rotate([0, 0, 90])
-                linear_extrude(height = armV + 1 - r_in) ef_wedge_profile();
-            // Edge along the rounded inside corner.
-            if (r_in >= 1)
-                translate([r_in, 0, -r_in]) rotate([90, 0, 0]) rotate([0, 0, 89])
-                    rotate_extrude(angle = 92)
-                        polygon([[r_in - 1, W / 2 - ef - 1], [r_in - 1, W / 2 + 1], [r_in + ef + 1, W / 2 + 1]]);
+    module inside_opening_2d() {
+        reach = max(5, cs + ef + 1);
+        difference() {
+            translate([0, -armV - reach])
+                square([armH + reach, armV + reach]);
+            if (r_in > 0) inside_corner_2d(r_in);
         }
     }
-    
+
+    module opening_layer(y, expansion = 0) {
+        translate([0, y, 0]) rotate([90, 0, 0])
+            linear_extrude(height = 0.002, center = true)
+                offset(delta = expansion) inside_opening_2d();
+    }
+
+    module inside_relief_envelope() {
+        if (ef > 0)
+            for (side = [-1, 1])
+                hull() {
+                    opening_layer(side * (W / 2 - ef));
+                    opening_layer(side * W / 2, ef);
+                }
+    }
+
+    module chamfered_body() {
+        difference() {
+            body(); // already has the outside hull chamfers
+            if (ef > 0) inside_relief_envelope();
+        }
+    }
+
     module bracket() {
         difference() {
-            body();
+            chamfered_body();
             nut_top();
             nut_side();
-            ef_cuts();
         }
     }
 

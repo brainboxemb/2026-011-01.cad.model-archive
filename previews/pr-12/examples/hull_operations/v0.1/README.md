@@ -1,107 +1,81 @@
-# Beam experiment: why `cs` and `ef` still need a local junction hull
+# Beam experiment: chamfer first, then build the elephant-foot hull
 
-This beam isolates the exact Corner Bracket problem.
+This version tests one specific idea:
 
-Both main operations are built the same way:
+**do not feed a square upper block into the elephant-foot hull.**
 
-**two solids → `hull()` → intersect with the beam**
+Instead:
 
-That works for the normal side chamfer `cs`, and it also works for the
-elephant-foot relief `ef` around the complete bottom perimeter.
+1. build the normal `cs` chamfer first;
+2. take that already-chamfered beam above height `ef`;
+3. hull it to an `ef`-inset bottom footprint.
 
-The remaining problem is not either hull by itself. It is the **corner where
-the two hull envelopes meet**.
+That means the elephant-foot construction starts from the geometry that already
+contains the side chamfer.
 
-## 0. Reference beam
+## 0. Beam
 
-![Reference beam](renders/00_plain.png)
+![Beam](renders/00_plain.png)
 
-The normal end-profile chamfer `c` is already part of the beam.
+## 1. `cs`: two transparent inputs
 
-## 1. `cs`: transparent hull inputs
+![cs inputs](renders/01_cs_inputs.png)
 
-![Transparent cs inputs](renders/01_cs_inputs.png)
-
-Blue and orange are the two actual solids passed to `hull()`.
+Blue and orange are the two objects passed to the normal `cs` hull.
 
 ## 2. `cs`: result
 
-![cs hull result](renders/02_cs_result.png)
+![cs result](renders/02_cs_result.png)
 
-The side chamfer is correct.
+This is the already-chamfered beam.
 
-## 3. `ef`: transparent hull inputs
+## 3. `ef`: two transparent inputs
 
-![Transparent ef inputs](renders/03_ef_inputs.png)
+![ef inputs](renders/03_ef_inputs.png)
 
-Again, these are the two actual solids passed to `hull()`.
+This is the important change.
 
-The lower footprint is inset by `ef` on all four sides, so this operation
-includes both the long bottom edges and the bottom edges on the kopse kanten.
+- blue: the bottom footprint, inset by `ef` on all four sides;
+- orange: the **already `cs`-chamfered upper body**, clipped from `z = ef`
+  upward.
 
-## 4. `ef`: result
+So the orange object is no longer a rectangular block.
 
-![ef hull result](renders/04_ef_result.png)
+## 4. Hull those two objects
 
-The bottom relief is correct on its own.
+![combined result](renders/04_combined_result.png)
 
-## 5. Combine both hull envelopes
+The elephant-foot transition is now created directly from the existing
+chamfered geometry.
 
-![Combined cs and ef envelopes](renders/05_combined.png)
-
-The beam is now simply:
+There is no later
 
 ```openscad
 intersection() {
-    beam();
     cs_hull();
     ef_hull();
 }
 ```
 
-This looks almost right, but `intersection()` only clips the two envelopes.
-It does not construct a new blended surface where they cross.
+between two independently built envelopes.
 
-## 6. The isolated defect
+Instead the sequence is:
 
-![Close-up of the remaining defect](renders/06_corner.png)
+```openscad
+hull() {
+    ef_input_bottom();
+    ef_input_upper_chamfered();
+}
+```
 
-This is the same small unwanted termination seen on the real Corner Bracket.
+## 5. Inspect the meeting corner
 
-That is useful: the problem already exists on a straight beam, so it is **not
-caused by the L-shaped profile or the inside radius**.
+![corner close-up](renders/05_corner.png)
 
-It comes from the 3D meeting of the separate `cs` and `ef` hulls.
-
-## 7. Local correction: two transparent hull inputs
-
-![Transparent miter hull inputs](renders/07_miter_inputs.png)
-
-The correction is deliberately small.
-
-The two blue triangular profiles are the inputs to one additional local
-`hull()`. The beam is only shown faintly to make their position clear.
-
-So this correction follows the exact same visual rule as the other operations:
-
-**two inputs → `hull()`**
-
-## 8. Corrected meeting corner
-
-![Corrected meeting corner](renders/08_fixed.png)
-
-The additional hull only removes the local corner defect. The broad `cs` and
-`ef` constructions remain unchanged.
-
-The resulting explanation is therefore:
-
-1. build `cs` from two hull inputs;
-2. build `ef` from two hull inputs;
-3. combine them;
-4. observe that their intersection leaves one local defect;
-5. bridge that junction with one small third hull.
+This close-up is the actual test: does using the already-chamfered upper body as
+the second hull input remove the small termination at the `cs`/`ef` meeting
+corner?
 
 ## Source
 
-The complete experiment is in
-[`scad/hull_operations.scad`](scad/hull_operations.scad).
+[`scad/hull_operations.scad`](scad/hull_operations.scad)

@@ -39,8 +39,11 @@ r_in = 2.0;
 
 /* [Hidden] */
 $fn = 48;
+$vpr = [60, 0, 45];
 eps = 0.02;
 display_thickness = 0.35;
+bed_margin = 5;
+bed_thickness = 0.2;
 
 // -----------------------------------------------------------------------------
 // Base L footprint — equivalent to beam_profile_2d()
@@ -229,6 +232,18 @@ module result_body() {
     }
 }
 
+// Simple print-bed reference used only for the visual explanation.
+// It makes "under the bracket" unambiguous.
+module print_bed() {
+    color("LightGray", 0.45)
+        translate([-t - bed_margin, -armV - bed_margin, -bed_thickness])
+            cube([
+                armH + t + 2 * bed_margin,
+                armV + t + 2 * bed_margin,
+                bed_thickness
+            ]);
+}
+
 // -----------------------------------------------------------------------------
 // Four scenes — same visual order as the beam
 // -----------------------------------------------------------------------------
@@ -238,6 +253,8 @@ module result_body() {
 $vpr = [68, 0, 38];
 
 if (junction_step == "00_l_with_cs") {
+    %print_bed();
+
     color("SteelBlue")
         cs_body();
 }
@@ -253,11 +270,15 @@ else if (junction_step == "01_ef_inputs") {
 }
 
 else if (junction_step == "02_ef_hull") {
+    %print_bed();
+
     color("SeaGreen")
         ef_hulls();
 }
 
 else {
+    %print_bed();
+
     color("SeaGreen")
         result_body();
 }

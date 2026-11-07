@@ -42,6 +42,11 @@ The model has a 20 mm bracket width, 10 mm nominal wall, 40 mm arms, a
 2 mm inside-corner radius and two M4 bolt/nut positions by default.
 The `plug` part selector lays out the two separate access plugs on their sides.
 
+For testing the elephant-foot geometry, `ef_corner_correction` is exposed
+in the OpenSCAD Customizer. Keep it `true` for the normal model; set it to
+`false` to leave the two main EF hulls active while disabling only the
+small arm-tip corrections.
+
 ## How to view
 
 From the archive root after `bootstrap.ps1`:

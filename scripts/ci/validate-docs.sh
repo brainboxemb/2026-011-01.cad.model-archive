@@ -27,7 +27,7 @@ test -s "$bracket/scad/corner_bracket.scad"
 test -s "$bracket/scad/inspection.scad"
 test ! -e "$bracket/scad/documentation.scad"
 test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
-for source in design hull_explained rounding_explained inside_corner_methods; do
+for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull; do
   test -s "$bracket/design/$source.scad"
 done
 test -s "$bracket/docs/documentation.scad"
@@ -42,7 +42,7 @@ if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
 fi
 
 # The main manual should remain concise and link to two focused guides.
-for page in mounting-options hull-guide polygon-guide; do
+for page in mounting-options hull-guide polygon-guide chamfer-guide; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
   grep -Fq "docs/$page.html" "$bracket/readme.md"
@@ -121,12 +121,12 @@ if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
   exit 1
 fi
 
-# The separate hull guide owns both original step-by-step demonstrations.
-for source_module in 'module sloped_hull()' 'module hull_of_circles()' 'module sharp_L()'; do
+# The hull guide now progresses from a simple bar to the real bracket.
+for source_module in 'module sloped_hull()' 'module side_chamfer_env()' 'module body()'; do
   grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
   grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
 done
-grep -Fq 'cos(a)' "$bracket/docs/hull-guide.md"
+grep -Fq '## 2. How the real corner bracket uses hull' "$bracket/docs/hull-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
@@ -147,8 +147,11 @@ done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
 done
-for stage in 01_four_circles 02_hull_of_circles 03_sharp_L 04_circle_guide 05_arc_points 06_rounded_L 07_hull_fills_corner; do
-  check_image "rounding_$stage" hull-guide
+for stage in layers comparison; do
+  check_image "combined_chamfer_$stage" hull-guide
+done
+for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final; do
+  check_image "chamfer_$stage" chamfer-guide
 done
 
 # 2D and 3D rounding alternatives must both be illustrated in the
@@ -161,7 +164,7 @@ for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner
   grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
   grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
 done
-grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
+grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"\ngrep -Fq 'chamfer-guide.html' "$bracket/readme.html"
 grep -Fq 'polygon-guide.html' "$bracket/readme.html"
 if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
   echo "General polygon tutorial leaked into the bracket walkthrough" >&2

@@ -4,7 +4,7 @@
 use <../scad/corner_bracket.scad>
 
 /* [Illustration] */
-chamfer_step = "02_profile_chamfers"; // [02_profile_chamfers, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final]
+chamfer_step = "02_profile_chamfers"; // [02_profile_chamfers, 02_inside_radius_added, 03_extruded_profile, 04_convex_outline, 05_hull_inputs, 06_hull_envelope, 07_intersection, 08_print_relief, 09_final]
 /* [Hidden] */
 // Initial sharp profile is only a reference, not a printable production part.
 // Defaults correspond to corner_bracket.scad v0.1.
@@ -32,6 +32,10 @@ module show_hull_inputs() {
 
 if (chamfer_step == "02_profile_chamfers")
     color("SteelBlue")
+        rotate([90,0,0]) linear_extrude(height=0.6) sharp_profile();
+
+else if (chamfer_step == "02_inside_radius_added")
+    color("DarkOrange")
         rotate([90,0,0]) linear_extrude(height=0.6) profile();
 
 else if (chamfer_step == "03_extruded_profile")

@@ -12,7 +12,7 @@
 // visually accepted.
 
 /* [Demo] */
-scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_hull]
+scene = "00_cs_body"; // [00_cs_body, 01_raw_L_sheet, 02_cs_hull_inputs, 03_cs_shaped_L, 04_ef_inputs, 05_ef_relief, 06_final_body]
 
 /* [Geometry] */
 armH = 40;
@@ -252,6 +252,17 @@ module ef_hull() {
 }
 
 // -----------------------------------------------------------------------------
+// Apply the ef relief directly to the existing cs body.
+// -----------------------------------------------------------------------------
+
+module final_body() {
+    difference() {
+        cs_body();
+        ef_hull();
+    }
+}
+
+// -----------------------------------------------------------------------------
 // Scenes.
 // -----------------------------------------------------------------------------
 
@@ -284,19 +295,22 @@ else if (scene == "03_cs_shaped_L") {
 }
 
 else if (scene == "04_ef_inputs") {
-    // Blue: the already cs-shaped L accepted in the previous step.
     color("DeepSkyBlue", 0.78)
         cs_shaped_inner_L_sheet();
 
-    // Orange: the ef-expanded version of that SAME continuous L.
     color("DarkOrange", 0.40)
         ef_expanded_L_sheet();
 }
 
-else {
+else if (scene == "05_ef_relief") {
     color("SeaGreen", 0.90)
         ef_hull();
 
-    color("DarkOrange", 0.18)
+    color("DarkOrange", 0.15)
         cs_body();
+}
+
+else {
+    color("SteelBlue")
+        final_body();
 }

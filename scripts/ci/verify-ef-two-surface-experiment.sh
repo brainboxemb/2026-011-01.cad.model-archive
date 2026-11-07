@@ -43,7 +43,7 @@ for case in "${cases[@]}"; do
   read -r cs ef radius <<< "$case"
 
   declare -A step_for=(
-    [reference]="08_reference_cutter"
+    [reference]="08_reference_relief_volume"
     [candidate]="11_exact_two_surface_hull"
     [xor]="13_exact_candidate_xor"
     [overcut]="14_exact_candidate_overcut"

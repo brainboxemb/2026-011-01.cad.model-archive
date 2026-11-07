@@ -1,51 +1,59 @@
-# Corner Bracket: the beam construction on the real L
+# Corner Bracket: same construction as the beam
 
-The L is shown in print orientation and the elephant-foot step now uses the
-**same two kinds of input as the beam demo**.
+This walkthrough now checks the two `ef` inputs **separately first**.
 
-The starting L contains the normal `c`, `ce` and `cs` chamfers, but no
-`ef` yet.
+That is deliberate: before looking at `hull()`, the lower input must clearly
+be a flat L-shaped plate, just like the plate under the beam.
 
-## 0. Clean L with `cs` only
+The clean starting L contains `c`, `ce` and `cs`, but no `ef`.
+
+## 0. Clean L with `cs`
 
 ![Clean L with cs](../design/junction_00_l_with_cs.png)
 
-There is no elephant-foot correction in this scene.
+No elephant-foot geometry is present yet.
 
-## 1. The two `ef` inputs
+## 1. Lower `ef` input only
 
-![Two ef inputs](../design/junction_01_ef_inputs.png)
+![Lower L plate](../design/junction_01_lower_plate.png)
 
-This should now read exactly like the beam.
+This image shows **nothing except the lower input**.
 
-For this illustration only, the two inputs are shown as an **exploded view** so
-the lower plate cannot disappear behind the upper volume:
+It must look like one flat L-shaped plate. For visibility only, it is rendered
+2 mm thick; the real hull input remains an almost-zero-thickness layer.
 
-- **blue:** one thin **L-shaped bottom plate**. It is derived from the
-  already-`cs`-chamfered footprint and then made `ef` smaller;
-- **orange:** the complete already-`cs`-chamfered **L volume from height
-  `ef` upward**.
+The plate is taken from the already-`cs`-chamfered footprint and then inset by
+`ef`.
 
-The exploded spacing is visual only. The actual `hull()` uses both inputs at
-their real positions.
+## 2. Upper `ef` input only
 
-## 2. Hull result
+![Upper L volume](../design/junction_02_upper_volume.png)
 
-![Hull result](../design/junction_02_ef_hull.png)
+This is the complete already-`cs`-chamfered L from height `ef` upward.
 
-A single global hull of a concave L would fill its inside corner. Therefore the
-implementation hulls the horizontal and vertical arm separately and unions the
-two results.
+## 3. Both inputs, exploded
 
-That split is only an internal implementation detail. The inputs shown in the
-previous image are still one bottom L plate and one upper L volume.
+![Exploded inputs](../design/junction_03_ef_inputs.png)
 
-## 3. Resulting L
+Now the same two inputs are shown together:
 
-![Resulting L](../design/junction_03_result.png)
+- blue lower L plate;
+- orange upper L volume.
 
-The result is the upper clean `cs` L plus the two local hull transitions down
-to the smaller bottom plate.
+They are moved apart only for this illustration.
+
+## 4. Hull result
+
+![Hull result](../design/junction_04_ef_hull.png)
+
+Because a global hull would fill the concave inside corner, the two arms are
+hulled separately internally and then united.
+
+## 5. Resulting L
+
+![Resulting L](../design/junction_05_result.png)
+
+This is the resulting one-sided elephant-foot experiment.
 
 ## Interactive source
 

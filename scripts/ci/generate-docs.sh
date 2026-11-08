@@ -22,6 +22,14 @@ test -f ext/NopSCADlib/scripts/make_all.py
 in_container /work/examples/spacer/v0.1 \
   xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
 
+tube="examples/rounded-rectangular-tube/v0.1"
+mkdir -p "$tube/figures"
+in_container "/work/$tube" bash -c '
+  xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter \
+    -o figures/rounded_rectangular_tube.png scad/rounded_rectangular_tube.scad
+  python -m markdown -x tables -x sane_lists -x fenced_code README.md > readme.html
+'
+
 bracket="models/corner_bracket/v0.1"
 mkdir -p "$bracket/design" "$bracket/docs"
 

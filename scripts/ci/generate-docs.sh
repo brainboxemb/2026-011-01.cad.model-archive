@@ -50,6 +50,35 @@ in_container "/work/$tube" bash -c '
   python -m markdown -x tables -x sane_lists -x fenced_code README.md > readme.html
 '
 
+lbracket="examples/rounded-l-bracket/v0.1"
+mkdir -p "$lbracket/figures" "$lbracket/design"
+in_container "/work/$lbracket" bash -c '
+  xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter --projection=ortho \
+    -o figures/rounded_l_bracket.png scad/rounded_l_bracket.scad
+
+  stages=(
+    01_outer_profile
+    02_inner_profile
+    03_shell_profile
+    04_outer_chamfer_inputs
+    05_outer_body
+    06_inner_chamfer_inputs
+    07_inner_chamfer_cut
+    08_before_trim
+    09_final_trim
+    10_chamfer_closeup
+  )
+  for stage in "${stages[@]}"; do
+    xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter --projection=ortho \
+      -D "design_step=\"$stage\"" \
+      -o "design/lbracket_$stage.png" \
+      design/rounded_l_bracket_explained.scad
+    test -s "design/lbracket_$stage.png"
+  done
+
+  python -m markdown -x tables -x sane_lists -x fenced_code README.md > readme.html
+'
+
 bracket="models/corner_bracket/v0.1"
 mkdir -p "$bracket/design" "$bracket/docs"
 

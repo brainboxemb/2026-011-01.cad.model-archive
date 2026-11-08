@@ -83,31 +83,52 @@ Subtracting the cutter removes the sharp inside edge while leaving the rest of t
 
 The same inside cutter is mirrored at the opposite end. The outside chamfers were already created symmetrically by `outer_body()`.
 
-## Why this is much easier than the corner bracket
+## Why the chamfer construction stays simple
 
-This comparison is the main reason for keeping the example.
+The finished part is hollow, but the geometry is built from two simple pieces:
 
-![Convex tube profile versus concave L profile](design/tube_09_convex_vs_concave.png)
+1. a convex rounded **outside profile** that is used to create the outer body;
+2. a convex rounded **inside profile** that is used to create the hollow opening and its chamfer cutter.
 
-On the **left**, the rounded rectangle is convex. A straight line between any two points in the profile remains inside the profile. A hull between two nested rounded rectangles therefore behaves exactly as wanted.
+That separation is important. Each individual `hull()` only has to connect two related rounded rectangles. It never has to solve the complete wall shape in one operation.
 
-On the **right**, the simplified bracket cross-section is an L. That shape is **concave**: it deliberately contains a missing quadrant. But `hull()` always creates a convex result. If it is applied globally to two L-shaped layers, it bridges across that missing quadrant.
+For the outside chamfer, the end profile is slightly smaller than the normal outside profile. The hull connects those two convex profiles and creates the sloped outside face.
 
-That gives the key distinction:
+For the inside chamfer, the end opening is slightly larger than the normal inside opening. The hull connects those two convex openings and creates a tapered cutting volume. Subtracting that volume creates the inside chamfer.
 
-| Rounded tube construction | Corner bracket construction |
-| --- | --- |
-| Hull a convex **outside profile** | Material profile itself is a concave L |
-| Hull a convex **inside opening** separately | A global hull would bridge the open quadrant |
-| Subtract the inner hull from the outer body | Extra clipping or local subtractive geometry is required |
-| No special corner junction between separate bevel systems | Elephant-foot relief must also meet the side-edge bevels at the arm tips |
+So the construction remains easy to reason about:
 
-So the finished tube is hollow and is not itself a convex solid. The reason the code stays simple is that the problem has been decomposed into **two convex hull operations**: one for the outside body and one for the inside cutting volume.
+~~~text
+outside:
+smaller outer profile
+        ↓
+      hull
+        ↓
+normal outer profile
 
-The corner bracket is harder because its important boundary is already concave before the chamfer is added. The current bracket implementation therefore needs an outer convex envelope plus `intersection()`, separate local opening hulls for the elephant-foot relief, and local miter correction where that relief meets the side chamfer.
+inside:
+larger inner opening
+        ↓
+      hull
+        ↓
+normal inner opening
+        ↓
+subtract from outer body
+~~~
 
-This is also why the older per-edge `ef_cuts()` solution remains attractive: it avoids asking one global hull to understand the concave L at all.
+The shell itself is therefore not created by one complicated hull. It is built as a solid outer body first and hollowed afterward.
 
+### Step I — Close-up of both chamfers
+
+![Chamfer close-up](design/tube_09_chamfer_closeup.png)
+
+This cutaway keeps only the lower part and half the depth of the finished tube. It makes the two independent bevels visible at the same time:
+
+- the **outside chamfer** slopes inward from the outer end face;
+- the **inside chamfer** slopes outward into the hollow opening;
+- the wall between them remains intact.
+
+This final view is useful for checking the relationship between `outer_chamfer`, `inner_chamfer` and `wall_thickness` without the rest of the tube hiding the detail.
 
 ## 1. Build the rounded 2D profiles
 

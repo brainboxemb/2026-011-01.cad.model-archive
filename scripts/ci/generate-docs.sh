@@ -37,7 +37,7 @@ in_container "/work/$tube" bash -c '
     06_inner_chamfer_cut
     07_bottom_chamfer_result
     08_final
-    09_convex_vs_concave
+    09_chamfer_closeup
   )
   for stage in "${stages[@]}"; do
     xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter --projection=ortho \

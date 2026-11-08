@@ -46,6 +46,13 @@ else
   cp "$tube/README.md" "$target/$tube/README.md"
   cp -a "$tube/scad" "$tube/figures" "$tube/design" "$target/$tube/"
 
+  lbracket="examples/rounded-l-bracket/v0.1"
+  mkdir -p "$target/$lbracket"
+  cat site/model-header.html "$lbracket/readme.html" > "$target/$lbracket/index.html"
+  printf '\n</main></body></html>\n' >> "$target/$lbracket/index.html"
+  cp "$lbracket/README.md" "$target/$lbracket/README.md"
+  cp -a "$lbracket/scad" "$lbracket/figures" "$lbracket/design" "$target/$lbracket/"
+
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"

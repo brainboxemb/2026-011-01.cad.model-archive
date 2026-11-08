@@ -1,7 +1,8 @@
 // OpenSCAD design concepts — visual examples.
 //
-// This file creates small, deliberately simple illustrations for the
-// archive-wide design concepts page. Each stage shows one idea only.
+// Each illustration is deliberately simple. Whenever possible it shows
+// INPUT on the left and RESULT on the right so the operation can be read
+// from the picture before reading the text.
 
 $fn = 48;
 
@@ -27,57 +28,95 @@ module chamfer_body() {
     }
 }
 
-module concept_keep() {
-    // Green result: geometry we intend to keep.
-    color([0.25,0.70,0.40])
-        chamfer_body();
+module arrow_x(length=11) {
+    color([0.25,0.25,0.25]) {
+        rotate([0,90,0])
+            cylinder(h=length-2.2, r=0.45);
+        translate([length-2.2,0,0])
+            rotate([0,90,0])
+                cylinder(h=2.2, r1=1.35, r2=0);
+    }
+}
 
-    // Ghost the two input layers.
-    %thin_profile(0, -1.5, 0.25);
-    %thin_profile(4, 0, 0.25);
+module concept_keep() {
+    // LEFT: the two profiles we start from, pulled apart so both are obvious.
+    translate([-40,0,0]) {
+        color([0.95,0.55,0.18])
+            thin_profile(0, -1.5, 0.28);
+        color([0.20,0.55,0.90])
+            thin_profile(7, 0, 0.28);
+    }
+
+    translate([-4,9,3.5])
+        arrow_x(11);
+
+    // RIGHT: the material produced by joining the profiles is kept.
+    translate([18,0,0])
+        color([0.25,0.70,0.40])
+            chamfer_body();
 }
 
 module concept_cut() {
-    // Grey body stays.
-    color([0.65,0.70,0.76])
-        cube([30,22,10]);
+    // LEFT: body plus red volume that describes what must disappear.
+    translate([-42,0,0]) {
+        color([0.65,0.70,0.76])
+            cube([30,22,10]);
+        color([0.90,0.25,0.20])
+            translate([15,11,-1])
+                cylinder(h=12, r=4.5);
+    }
 
-    // Red cylinder is not part of the final object: it describes material
-    // that will be removed.
-    color([0.90,0.25,0.20])
-        translate([15,11,-1])
-            cylinder(h=12, r=4.5);
+    translate([-5,11,5])
+        arrow_x(11);
+
+    // RIGHT: difference() result.
+    translate([20,0,0])
+        color([0.25,0.70,0.40])
+            difference() {
+                cube([30,22,10]);
+                translate([15,11,-1])
+                    cylinder(h=12, r=4.5);
+            }
 }
 
 module concept_clip() {
-    // Orange part is intentionally too long.
-    color([0.95,0.55,0.18,0.55])
-        translate([-6,0,0])
-            cube([42,16,8]);
-
-    // Blue box is the allowed final region.
-    color([0.20,0.55,0.90,0.30])
-        cube([30,16,10]);
-
-    // Green overlap is what intersection() keeps.
-    color([0.25,0.70,0.40])
-        intersection() {
-            translate([-6,0,0]) cube([42,16,8]);
+    // LEFT: orange part is too long; blue box is the allowed final region.
+    translate([-44,0,0]) {
+        color([0.95,0.55,0.18])
+            translate([-6,0,0])
+                cube([42,16,8]);
+        color([0.20,0.55,0.90,0.42])
             cube([30,16,10]);
-        }
+    }
+
+    translate([-3,8,4])
+        arrow_x(11);
+
+    // RIGHT: only the overlap remains.
+    translate([20,0,0])
+        color([0.25,0.70,0.40])
+            intersection() {
+                translate([-6,0,0]) cube([42,16,8]);
+                cube([30,16,10]);
+            }
 }
 
 module concept_hull_keep() {
-    // Same geometric hull as concept_keep(), but shown explicitly as
-    // something that becomes the final material.
-    color([0.25,0.70,0.40,0.85])
-        chamfer_body();
+    // LEFT: the hull inputs.
+    translate([-40,0,0]) {
+        color([0.95,0.55,0.18])
+            thin_profile(0, -1.5, 0.28);
+        color([0.20,0.55,0.90])
+            thin_profile(7, 0, 0.28);
+    }
 
-    color([0.95,0.55,0.18])
-        thin_profile(0, -1.5, 0.25);
+    translate([-4,9,3.5])
+        arrow_x(11);
 
-    color([0.20,0.55,0.90])
-        thin_profile(4, 0, 0.25);
+    // RIGHT: the hull itself is the wanted body.
+    translate([18,0,0])
+        color([0.25,0.70,0.40])
+            chamfer_body();
 }
 
 module inner_profile_2d(w=20,d=12,r=3) {
@@ -101,19 +140,44 @@ module chamfer_cutter() {
     }
 }
 
-module concept_hull_cut() {
-    // Ghost body gives context.
-    %cube([30,20,8]);
+module hollow_body_with_chamfer() {
+    difference() {
+        cube([30,20,8]);
 
-    // Red hull is only a cutter.
-    color([0.90,0.25,0.20,0.85])
+        // Normal opening continues through the whole body.
+        translate([0,0,-1])
+            linear_extrude(10)
+                inner_profile_2d();
+
+        // The tapered cutter enlarges the opening only near the end face.
         chamfer_cutter();
+    }
+}
 
-    color([0.95,0.55,0.18])
-        inner_layer(0, 1.5, 0.25);
+module concept_hull_cut() {
+    // LEFT: two opening profiles.
+    translate([-55,0,0]) {
+        color([0.95,0.55,0.18])
+            inner_layer(0, 1.5, 0.28);
+        color([0.20,0.55,0.90])
+            inner_layer(7, 0, 0.28);
+    }
 
-    color([0.20,0.55,0.90])
-        inner_layer(4, 0, 0.25);
+    translate([-27,9,3.5])
+        arrow_x(9);
+
+    // MIDDLE: hull turns them into a solid cutter.
+    translate([-12,0,0])
+        color([0.90,0.25,0.20])
+            chamfer_cutter();
+
+    translate([18,9,3.5])
+        arrow_x(9);
+
+    // RIGHT: subtract the normal opening and the cutter from the body.
+    translate([34,0,0])
+        color([0.25,0.70,0.40])
+            hollow_body_with_chamfer();
 }
 
 module l_2d(size=24, wall=7) {
@@ -124,23 +188,28 @@ module l_2d(size=24, wall=7) {
 }
 
 module concept_convexity() {
-    // LEFT: convex rounded rectangle. Hull follows the expected outside.
+    // LEFT: convex rounded rectangle. Hull follows the expected boundary.
     translate([-34,0,0]) {
-        color([0.25,0.70,0.40,0.85])
+        color([0.25,0.70,0.40,0.90])
             hull() {
-                translate([0,0,0]) linear_extrude(0.2) offset(delta=-1.3) rounded_box_2d(26,18,4);
-                translate([0,0,4]) linear_extrude(0.2) rounded_box_2d(26,18,4);
+                translate([0,0,0])
+                    linear_extrude(0.2)
+                        offset(delta=-1.3)
+                            rounded_box_2d(26,18,4);
+                translate([0,0,4])
+                    linear_extrude(0.2)
+                        rounded_box_2d(26,18,4);
             }
-        %translate([0,0,4]) linear_extrude(0.25) rounded_box_2d(26,18,4);
     }
 
-    // RIGHT: concave L. The red hull bridges the missing inside corner.
+    // RIGHT: concave L. Red hull bridges the missing inside corner.
     translate([20,0,0]) {
-        %translate([0,0,4])
-            linear_extrude(0.25)
-                l_2d();
+        color([0.65,0.70,0.76,0.50])
+            translate([0,0,4])
+                linear_extrude(0.25)
+                    l_2d();
 
-        color([0.90,0.25,0.20,0.70])
+        color([0.90,0.25,0.20,0.72])
             hull() {
                 translate([0,0,0])
                     linear_extrude(0.2)
@@ -151,46 +220,62 @@ module concept_convexity() {
                         l_2d();
             }
 
-        // Ghost the missing quadrant so the unwanted bridge is easy to see.
-        %translate([7,7,-0.2])
-            cube([17,17,4.6]);
+        // The translucent box marks the quadrant that should remain open.
+        color([0.20,0.55,0.90,0.18])
+            translate([7,7,-0.2])
+                cube([17,17,4.6]);
+    }
+}
+
+module base_with_main_void(length=26) {
+    difference() {
+        cube([length,16,8]);
+        translate([6,4,-1])
+            cube([12,8,10]);
+    }
+}
+
+module base_with_local_cut(length=26) {
+    difference() {
+        base_with_main_void(length);
+        translate([length-2,8,6])
+            rotate([0,45,0])
+                cube([8,5,5], center=true);
     }
 }
 
 module concept_decompose() {
-    // Four simple construction ideas placed from left to right.
-
-    // 1: outer body
-    translate([-54,0,0])
+    // 1: start with an easy outside body.
+    translate([-63,0,0])
         color([0.25,0.70,0.40])
-            cube([20,16,8]);
+            cube([26,16,8]);
 
-    // 2: inner void
-    translate([-24,0,0]) {
-        color([0.65,0.70,0.76])
-            cube([20,16,8]);
-        color([0.90,0.25,0.20])
-            translate([5,4,-1]) cube([10,8,10]);
-    }
+    translate([-33,8,4])
+        arrow_x(7);
 
-    // 3: local detail cutter
-    translate([6,0,0]) {
-        color([0.65,0.70,0.76])
-            cube([20,16,8]);
-        color([0.90,0.25,0.20])
-            translate([15,8,5])
-                rotate([0,45,0])
-                    cube([8,4,4], center=true);
-    }
+    // 2: subtract the main void.
+    translate([-21,0,0])
+        color([0.25,0.70,0.40])
+            base_with_main_void();
 
-    // 4: final trimmed result
-    translate([38,0,0]) {
+    translate([9,8,4])
+        arrow_x(7);
+
+    // 3: subtract a small local detail.
+    translate([21,0,0])
+        color([0.25,0.70,0.40])
+            base_with_local_cut();
+
+    translate([51,8,4])
+        arrow_x(7);
+
+    // 4: trim the overlong end to the final length.
+    translate([63,0,0])
         color([0.25,0.70,0.40])
             intersection() {
-                translate([-3,0,0]) cube([26,16,8]);
-                cube([20,16,10]);
+                base_with_local_cut();
+                cube([22,16,10]);
             }
-    }
 }
 
 if (concept_step == "01_keep")

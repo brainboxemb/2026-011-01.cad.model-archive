@@ -23,9 +23,9 @@
 <p>Once that is clear, the OpenSCAD operation becomes much easier to choose.</p>
 <h2>1. A shape can describe material that stays</h2>
 <p><img alt="Keep geometry" src="figures/concept_01_keep.png" /></p>
-<p>In this example we want a solid with a sloped side.</p>
-<p>The lower profile is a little smaller than the upper profile. <code>hull()</code> connects them.</p>
-<p>The green result is the actual material we want to keep.</p>
+<p>On the left you see the two profiles we start with. The orange profile is smaller; the blue profile is the normal size.</p>
+<p>The arrow means: connect these profiles.</p>
+<p>On the right you see the green result. That is the actual material we want to keep.</p>
 <pre><code class="language-openscad">hull() {
     small_profile();
     normal_profile();
@@ -35,8 +35,8 @@
 <p>This is useful when the shape you want to <strong>keep</strong> is easy to describe directly.</p>
 <h2>2. A shape can describe material that must be removed</h2>
 <p><img alt="Cut geometry" src="figures/concept_02_cut.png" /></p>
-<p>Here the grey block is the part.</p>
-<p>The red cylinder is not another part that will remain. It only describes the material we want to remove.</p>
+<p>On the left, the grey block is the part and the red cylinder describes the material we want to remove.</p>
+<p>On the right you see the result after <code>difference()</code>: the red cylinder is gone and only the hole remains.</p>
 <pre><code class="language-openscad">difference() {
     body();
     hole();
@@ -55,10 +55,8 @@
 <p>If the unwanted material is easier to draw than the final surface, drawing a cutter is often the simplest solution.</p>
 <h2>3. A shape can describe the final boundary</h2>
 <p><img alt="Clip or trim geometry" src="figures/concept_03_clip.png" /></p>
-<p>Sometimes it is easier to build a part slightly too large first.</p>
-<p>The orange shape in the picture is deliberately too long.</p>
-<p>The blue box says:</p>
-<p><strong>Only the material inside this box is allowed to remain.</strong></p>
+<p>On the left, the orange part is deliberately too long. The transparent blue box marks the region that is allowed to remain.</p>
+<p>On the right you see the result: only the overlap survives.</p>
 <p>That is what <code>intersection()</code> does.</p>
 <pre><code class="language-openscad">intersection() {
     overlong_part();
@@ -71,8 +69,9 @@
 <p><strong>The blue box does not create the feature. It only trims the finished geometry.</strong></p>
 <h2>4. hull() can make something that stays</h2>
 <p><img alt="Hull used for material to keep" src="figures/concept_04_hull_keep.png" /></p>
-<p>The orange layer is smaller than the blue layer.</p>
-<p><code>hull()</code> fills the space between them and creates the green sloped body.</p>
+<p>On the left, the orange layer is smaller than the blue layer.</p>
+<p><code>hull()</code> connects them.</p>
+<p>On the right, the green sloped body is the result. In this case that hull is the material we actually want to keep.</p>
 <pre><code class="language-openscad">hull() {
     smaller_layer();
     normal_layer();
@@ -83,9 +82,10 @@
 <h2>5. hull() can also make a cutter</h2>
 <p><img alt="Hull used as a cutter" src="figures/concept_05_hull_cut.png" /></p>
 <p>This picture uses the same basic idea, but the purpose is different.</p>
-<p>The orange opening is larger than the blue opening.</p>
-<p><code>hull()</code> connects those two openings and creates the red tapered volume.</p>
-<p>That red shape is then used as a cutter:</p>
+<p>On the left are two opening profiles: the orange opening is larger than the blue one.</p>
+<p>In the middle, <code>hull()</code> connects them and creates the red tapered solid.</p>
+<p>On the right, that red solid has been subtracted from the body together with the normal opening. The result is the green part with a chamfer around the hole.</p>
+<p>That red hull is therefore only a cutter:</p>
 <pre><code class="language-openscad">difference() {
     body();
 
@@ -123,12 +123,12 @@
 <h2>7. Complex parts do not have to be made in one operation</h2>
 <p><img alt="Break the model into simpler operations" src="figures/concept_07_decompose.png" /></p>
 <p>A finished part can look complicated while the construction stays simple.</p>
-<p>A useful sequence is:</p>
+<p>The picture reads from left to right:</p>
 <ol>
-<li>make the outside body;</li>
+<li>start with an easy outside body;</li>
 <li>subtract the main opening;</li>
-<li>subtract local details;</li>
-<li>trim to the final limits.</li>
+<li>subtract a small local detail;</li>
+<li>trim the overlong end to its final length.</li>
 </ol>
 <p>In OpenSCAD that often looks roughly like this:</p>
 <pre><code class="language-openscad">intersection() {

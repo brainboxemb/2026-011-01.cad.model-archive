@@ -7,9 +7,9 @@ trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 test -s "docs/design-concepts.md"
 test -s "docs/design-concepts.html"
 grep -Fq 'OpenSCAD design concepts' "docs/design-concepts.html"
-grep -Fq 'Keep geometry' "docs/design-concepts.html"
-grep -Fq 'Cut geometry' "docs/design-concepts.html"
-grep -Fq 'Clip / trim geometry' "docs/design-concepts.html"
+grep -Fq 'A shape can describe material that stays' "docs/design-concepts.html"
+grep -Fq 'A shape can describe material that must be removed' "docs/design-concepts.html"
+grep -Fq 'A shape can describe the final boundary' "docs/design-concepts.html"
 test -s "docs/design-concepts.scad"
 for stage in 01_keep 02_cut 03_clip 04_hull_keep 05_hull_cut 06_convexity 07_decompose; do
   test -s "docs/figures/concept_$stage.png"

@@ -154,21 +154,19 @@ That is why this is the better way to think about `hull()`:
 
 The left side shows a rounded rectangle.
 
-That shape is convex. There is no notch or missing inside corner that `hull()` has to preserve.
+This is a **convex** shape: its outline never turns inward to make a notch. Taking its convex hull therefore does not unexpectedly fill anything.
 
-Connecting two such profiles gives a predictable result.
+The right side shows an L-shaped profile in grey. This shape is **concave** because it has an inward corner.
 
-The right side shows an L-shaped profile in grey. Under it you can see the red convex hull of that same L.
+Under the grey L you can see the red convex hull of that same shape. `hull()` fills straight across the inward corner.
 
-The open inside corner is important. But `hull()` fills across that missing corner.
-
-The visible red triangle is the unwanted bridge.
+The visible red triangle is material we did not want.
 
 This is the main limitation to remember:
 
 **A global hull cannot keep a concave notch open.**
 
-If the shape has an important opening, notch or re-entrant corner, you often need another approach:
+If the shape has an important opening, notch or inward corner, you often need another approach:
 
 - build a simpler outside shape and cut the opening afterward;
 - use a local cutter;

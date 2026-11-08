@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Generated documentation</title>
+  <link rel="stylesheet" href="../../../site.css">
+</head>
+<body>
+  <header><a href="../../../">← Model archive</a></header>
+  <main>
+<h1>Rounded L bracket with end chamfers — v0.1</h1>
+<p>This standalone OpenSCAD example builds an <strong>L-shaped shell</strong> with a rounded inside corner and separate chamfers on the outside and inside edges of both Z end faces.</p>
+<p>The construction uses a useful modelling trick: the outer profile and the inner cutout are first made as <strong>simple convex shapes that deliberately extend past the final leg lengths</strong>. All chamfer operations are completed on those clean profiles. Only at the end are the two leg ends trimmed flat.</p>
+<p><img alt="Finished rounded L bracket" src="figures/rounded_l_bracket.png" /></p>
+<h2>Files</h2>
+<ul>
+<li><a href="scad/rounded_l_bracket.scad">Printable example</a></li>
+<li><a href="design/rounded_l_bracket_explained.scad">Editable construction walkthrough</a></li>
+</ul>
+<p>The walkthrough uses a <code>design_step</code> selector and exposes the intermediate geometry one operation at a time.</p>
+<h2>Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th style="text-align: right;">Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>leg_x</code></td>
+<td style="text-align: right;">40 mm</td>
+<td>Final leg length along X</td>
+</tr>
+<tr>
+<td><code>leg_y</code></td>
+<td style="text-align: right;">30 mm</td>
+<td>Final leg length along Y</td>
+</tr>
+<tr>
+<td><code>height</code></td>
+<td style="text-align: right;">20 mm</td>
+<td>Height along Z</td>
+</tr>
+<tr>
+<td><code>wall_thickness</code></td>
+<td style="text-align: right;">2.5 mm</td>
+<td>Nominal wall thickness</td>
+</tr>
+<tr>
+<td><code>outer_radius</code></td>
+<td style="text-align: right;">5 mm</td>
+<td>Outside corner radius</td>
+</tr>
+<tr>
+<td><code>inner_chamfer</code></td>
+<td style="text-align: right;">0.6 mm</td>
+<td>Chamfer on the inside edge</td>
+</tr>
+<tr>
+<td><code>outer_chamfer</code></td>
+<td style="text-align: right;">0.4 mm</td>
+<td>Chamfer on the outside edge</td>
+</tr>
+</tbody>
+</table>
+<p>The inner radius follows the wall thickness:</p>
+<pre><code class="language-openscad">inner_radius = max(outer_radius - wall_thickness, 0.01);
+</code></pre>
+<p>The construction profiles are intentionally a little longer than the final legs:</p>
+<pre><code class="language-openscad">profile_x = leg_x + 2;
+profile_y = leg_y + 2;
+</code></pre>
+<p>Those extra 2 mm are temporary and are removed in the final step.</p>
+<h2>Construction at a glance</h2>
+<pre><code class="language-text">1. make extended convex outer profile
+2. make extended convex inner cutout
+3. create outside end chamfers
+4. subtract the normal inner cutout
+5. subtract inside-chamfer cutters
+6. trim both leg ends to final length
+</code></pre>
+<p>The final L shape therefore appears only after the clean chamfer geometry has already been built.</p>
+<h2>Step A — Build the extended outer profile</h2>
+<p><img alt="Extended outer profile" src="design/lbracket_01_outer_profile.png" /></p>
+<p>The outer 2D shape is made with one rounded corner and two thin rectangles at the far ends:</p>
+<pre><code class="language-openscad">module outer_2d() {
+    hull() {
+        translate([outer_radius, outer_radius])
+            circle(outer_radius);
+
+        translate([profile_x - epsilon, 0])
+            square([epsilon, profile_y]);
+
+        translate([0, profile_y - epsilon])
+            square([profile_x, epsilon]);
+    }
+}
+</code></pre>
+<p>The three inputs are all part of one convex outline. <code>hull()</code> therefore creates:</p>
+<ul>
+<li>one rounded corner near the origin;</li>
+<li>one straight leg running in X;</li>
+<li>one straight leg running in Y;</li>
+<li>a filled region between them.</li>
+</ul>
+<p>The profile extends 2 mm beyond the final leg limits. The ghosted rectangle in the image shows where the part will eventually be trimmed.</p>
+<h2>Step B — Build the extended inner cutout</h2>
+<p><img alt="Extended inner profile" src="design/lbracket_02_inner_profile.png" /></p>
+<p>The inner cutout uses exactly the same idea, shifted inward by the wall thickness:</p>
+<pre><code class="language-openscad">module inner_2d() {
+    translate([wall_thickness, wall_thickness])
+        hull() {
+            translate([inner_radius, inner_radius])
+                circle(inner_radius);
+
+            translate([profile_x - epsilon, 0])
+                square([epsilon, profile_y]);
+
+            translate([0, profile_y - epsilon])
+                square([profile_x, epsilon]);
+        }
+}
+</code></pre>
+<p>This is also a convex shape and also extends beyond the final ends.</p>
+<p>Keeping both profiles simple and extended is deliberate: no special end geometry is needed while the chamfers are being created.</p>
+<h2>Step C — See the 2D shell before extrusion</h2>
+<p><img alt="2D shell profile" src="design/lbracket_03_shell_profile.png" /></p>
+<p>Subtracting the inner profile from the outer profile gives the intended wall section:</p>
+<pre><code class="language-openscad">difference() {
+    outer_2d();
+    inner_2d();
+}
+</code></pre>
+<p>This view is only explanatory. The printable model does not first extrude this shell; instead it creates the chamfered outer body and subtracts the inner volume later.</p>
+<p>The extended ends are still visible at this stage.</p>
+<h2>Step D — Define the outside chamfer</h2>
+<p><img alt="Outside chamfer input layers" src="design/lbracket_04_outer_chamfer_inputs.png" /></p>
+<p>At the bottom end face, the outer profile is reduced by <code>outer_chamfer</code>:</p>
+<pre><code class="language-openscad">offset(r = -outer_chamfer)
+    outer_2d();
+</code></pre>
+<p>Only <code>0.4 mm</code> higher, the normal profile is restored:</p>
+<pre><code class="language-text">Z = 0.0 mm   reduced outer profile
+Z = 0.4 mm   normal outer profile
+</code></pre>
+<p>The same construction is repeated at the top.</p>
+<h2>Step E — Create the chamfered outer body</h2>
+<p><img alt="Chamfered outer body" src="design/lbracket_05_outer_body.png" /></p>
+<p>One <code>hull()</code> connects the reduced bottom profile, the full middle profile and the reduced top profile:</p>
+<pre><code class="language-openscad">module outer_body() {
+    hull() {
+        linear_extrude(epsilon)
+            offset(r = -outer_chamfer)
+                outer_2d();
+
+        translate([0, 0, outer_chamfer])
+            linear_extrude(height - 2 * outer_chamfer)
+                outer_2d();
+
+        translate([0, 0, height - epsilon])
+            linear_extrude(epsilon)
+                offset(r = -outer_chamfer)
+                    outer_2d();
+    }
+}
+</code></pre>
+<p>The result is still a solid body. The hollow portion has not yet been removed.</p>
+<h2>Step F — Define the inside chamfer</h2>
+<p><img alt="Inside chamfer input layers" src="design/lbracket_06_inner_chamfer_inputs.png" /></p>
+<p>At the bottom face the inner opening is enlarged by <code>inner_chamfer</code>:</p>
+<pre><code class="language-openscad">offset(r = inner_chamfer)
+    inner_2d();
+</code></pre>
+<p>At <code>Z = inner_chamfer = 0.6 mm</code>, it has returned to its normal size.</p>
+<pre><code class="language-text">Z = 0.0 mm   enlarged inner cutout
+Z = 0.6 mm   normal inner cutout
+</code></pre>
+<p>These layers describe a cutting volume rather than material that remains.</p>
+<h2>Step G — Hull the inside-chamfer cutter</h2>
+<p><img alt="Inside chamfer cutting volume" src="design/lbracket_07_inner_chamfer_cut.png" /></p>
+<p>The enlarged and normal inner profiles are joined with <code>hull()</code>:</p>
+<pre><code class="language-openscad">module inner_chamfer_cut() {
+    hull() {
+        translate([0, 0, -epsilon])
+            linear_extrude(2 * epsilon)
+                offset(r = inner_chamfer)
+                    inner_2d();
+
+        translate([0, 0, inner_chamfer])
+            linear_extrude(epsilon)
+                inner_2d();
+    }
+}
+</code></pre>
+<p>This creates a solid tapered cutter. Most of that cutter lies inside the normal empty region. Only the extra rim overlaps the wall and creates the visible inside chamfer after subtraction.</p>
+<p>The same cutter is mirrored at the top.</p>
+<h2>Step H — Complete the shell before trimming</h2>
+<p><img alt="Extended bracket before trimming" src="design/lbracket_08_before_trim.png" /></p>
+<p>The model now contains all important finished geometry:</p>
+<ul>
+<li>the outside body with both outside chamfers;</li>
+<li>the continuous inner cutout;</li>
+<li>the bottom inside chamfer;</li>
+<li>the mirrored top inside chamfer.</li>
+</ul>
+<p>But the X and Y legs are still intentionally too long.</p>
+<p>The ghosted box shows the final limits.</p>
+<h2>Step I — Trim the leg ends</h2>
+<p><img alt="Final trimmed bracket" src="design/lbracket_09_final_trim.png" /></p>
+<p>The final dimensions are imposed with one <code>intersection()</code>:</p>
+<pre><code class="language-openscad">intersection() {
+    before_trim();
+
+    translate([0, 0, -1])
+        cube([leg_x, leg_y, height + 2]);
+}
+</code></pre>
+<p><code>intersection()</code> keeps only the volume that lies inside the final <code>leg_x × leg_y</code> footprint.</p>
+<p>This turns both temporary overlong ends into perfectly flat final faces without adding end-specific geometry to the earlier hull operations.</p>
+<h2>Step J — Inspect the chamfers at the rounded corner</h2>
+<p><img alt="Chamfer close-up" src="design/lbracket_10_chamfer_closeup.png" /></p>
+<p>This view isolates the rounded-corner region and the lowest 8 mm.</p>
+<p>It makes it easier to inspect:</p>
+<ul>
+<li>the outside chamfer;</li>
+<li>the inside chamfer;</li>
+<li>the rounded outer corner;</li>
+<li>the rounded inner cutout;</li>
+<li>the remaining wall between the two.</li>
+</ul>
+<p>This is the most useful design view when changing <code>outer_radius</code>, <code>wall_thickness</code>, <code>outer_chamfer</code> or <code>inner_chamfer</code>.</p>
+<h2>Why the deliberate overhang is useful</h2>
+<p>The extra 2 mm at the leg ends is not a tolerance and does not remain in the final part.</p>
+<p>It separates two concerns:</p>
+<pre><code class="language-text">first:
+build clean profile + chamfers
+
+then:
+apply exact final leg lengths
+</code></pre>
+<p>Without that temporary overhang, the profile construction and chamfer operations would also have to deal with the final end boundaries at the same time.</p>
+<p>By trimming last, the chamfer code can work on simple continuous profiles and the exact leg lengths are enforced with one obvious final operation.</p>
+<h2>Why <code>epsilon</code> exists</h2>
+<pre><code class="language-openscad">epsilon = 0.01;
+</code></pre>
+<p>The small helper layers need non-zero thickness for <code>hull()</code>, and cutting volumes are allowed to overlap slightly across the end faces.</p>
+<p><code>epsilon</code> is only a CAD construction tolerance. It is not a print fit or clearance value.</p>
+<h2>Complete final construction</h2>
+<p>The final module remains compact:</p>
+<pre><code class="language-openscad">module rounded_l_bracket() {
+    intersection() {
+        difference() {
+            outer_body();
+
+            translate([0, 0, -1])
+                linear_extrude(height + 2)
+                    inner_2d();
+
+            inner_chamfer_cut();
+
+            translate([0, 0, height])
+                mirror([0, 0, 1])
+                    inner_chamfer_cut();
+        }
+
+        translate([0, 0, -1])
+            cube([leg_x, leg_y, height + 2]);
+    }
+}
+</code></pre>
+<p>The printable source contains only the construction itself. The separate design file exists to make the intermediate geometry visible.</p>
+</main></body></html>

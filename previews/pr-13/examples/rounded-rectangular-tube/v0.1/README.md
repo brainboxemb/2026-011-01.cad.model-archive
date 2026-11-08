@@ -1,138 +1,62 @@
 # Rounded rectangular tube with end chamfers — v0.1
 
-This standalone OpenSCAD example shows a compact way to build a **hollow rounded rectangular tube** with two different edge treatments:
+This standalone OpenSCAD example builds a **hollow rounded rectangular tube** with two independently controlled end treatments:
 
 - a small chamfer on the **outside edge** of both end faces;
 - a separate chamfer on the **inside edge** of the hollow opening.
 
-The example is deliberately independent of NopSCADlib. It is meant as a small geometry reference for understanding how hull(), offset(), linear_extrude() and difference() can work together.
+The interesting part is not the tube itself, but the construction method: the outside chamfer is created while building the solid outer body, while the inside chamfer is created later with a separate cutting volume.
 
-![Rounded rectangular tube](figures/rounded_rectangular_tube.png)
+![Finished rounded rectangular tube](figures/rounded_rectangular_tube.png)
 
-The complete source is in [scad/rounded_rectangular_tube.scad](scad/rounded_rectangular_tube.scad).
+## Files
+
+- [Printable example](scad/rounded_rectangular_tube.scad)
+- [Editable construction walkthrough](design/rounded_rectangular_tube_explained.scad)
+
+The walkthrough has a `design_step` selector and exposes every important intermediate shape.
 
 ## Parameters
 
 | Parameter | Default | Meaning |
 | --- | ---: | --- |
-| outer_width | 30 mm | Outside size in X |
-| outer_depth | 20 mm | Outside size in Y |
-| length | 60 mm | Tube length in Z |
-| wall_thickness | 2.5 mm | Nominal wall thickness |
-| outer_radius | 5 mm | Outside corner radius |
-| inner_chamfer | 0.6 mm | Chamfer on the hollow inside edge |
-| outer_chamfer | 0.4 mm | Chamfer on the outside edge |
+| `outer_width` | 30 mm | Outside size in X |
+| `outer_depth` | 20 mm | Outside size in Y |
+| `length` | 60 mm | Tube length in Z |
+| `wall_thickness` | 2.5 mm | Nominal wall thickness |
+| `outer_radius` | 5 mm | Outside corner radius |
+| `inner_chamfer` | 0.6 mm | Chamfer on the hollow inside edge |
+| `outer_chamfer` | 0.4 mm | Chamfer on the outside edge |
 
-The inside width, depth and radius are derived from the outside dimensions and wall thickness.
+The inner dimensions are derived from the outside dimensions:
 
-## Visual design walkthrough
+~~~openscad
+inner_width  = outer_width - 2 * wall_thickness;
+inner_depth  = outer_depth - 2 * wall_thickness;
+inner_radius = max(outer_radius - wall_thickness, 0.01);
+~~~
 
-The editable walkthrough is in
-[design/rounded_rectangular_tube_explained.scad](design/rounded_rectangular_tube_explained.scad).
-Use the `design_step` selector to inspect the construction one operation at a time.
+## Construction at a glance
 
-The renders below deliberately keep the same geometry visible while changing only the operation being explained.
+The model is easiest to understand as three operations:
 
-### Step A — Outer and inner 2D profiles
+~~~text
+1. build chamfered outer solid
+                ↓
+2. subtract normal through-hole
+                ↓
+3. subtract tapered inside-chamfer cutters
+~~~
+
+The outside and inside chamfers therefore do **not** come from one complicated operation.
+
+## Step A — Build the rounded 2D profiles
 
 ![Outer and inner profiles](design/tube_01_profiles.png)
 
-The blue profile is the rounded outside boundary. The orange profile is the smaller rounded inside boundary derived from the wall thickness.
+The blue shape is the outside profile. The orange shape is the smaller inside profile.
 
-### Step B — The two important layers for the outside chamfer
-
-![Outside chamfer input layers](design/tube_02_outer_chamfer_inputs.png)
-
-At the end face the outer profile is inset by `outer_chamfer`. Only `0.4 mm` farther into the part the full outside profile is restored. These are the two boundaries that define the lower outside chamfer.
-
-### Step C — Hull the outside profiles
-
-![Outside hull](design/tube_03_outer_hull.png)
-
-Because the outside rounded rectangle is **convex**, `hull()` can connect the smaller end profile to the full profile without filling any region that is supposed to stay open.
-
-### Step D — Subtract the normal inner opening
-
-![Hollow tube before the inner chamfer](design/tube_04_hollow_tube.png)
-
-The continuous inner profile is now subtracted. This produces the hollow tube, but its inside end edge is still sharp.
-
-### Step E — The two layers for the inside chamfer
-
-![Inside chamfer input layers](design/tube_05_inner_chamfer_inputs.png)
-
-This time the operation is reversed. At the end face the **hole is enlarged** by `inner_chamfer`. At `Z = inner_chamfer` the hole has returned to its normal size.
-
-These layers are not material to keep. They define a cutting volume.
-
-### Step F — Hull the inside cutting volume
-
-![Inside chamfer cutting volume](design/tube_06_inner_chamfer_cut.png)
-
-Again, both profiles are convex rounded rectangles. Their hull is therefore a simple tapered ring-shaped boundary around the opening. The resulting solid is used only as a cutter.
-
-### Step G — Subtract that cutter
-
-![Bottom inside chamfer result](design/tube_07_bottom_chamfer_result.png)
-
-Subtracting the cutter removes the sharp inside edge while leaving the rest of the wall unchanged.
-
-### Step H — Mirror the operation at the top
-
-![Finished tube](design/tube_08_final.png)
-
-The same inside cutter is mirrored at the opposite end. The outside chamfers were already created symmetrically by `outer_body()`.
-
-## Why the chamfer construction stays simple
-
-The finished part is hollow, but the geometry is built from two simple pieces:
-
-1. a convex rounded **outside profile** that is used to create the outer body;
-2. a convex rounded **inside profile** that is used to create the hollow opening and its chamfer cutter.
-
-That separation is important. Each individual `hull()` only has to connect two related rounded rectangles. It never has to solve the complete wall shape in one operation.
-
-For the outside chamfer, the end profile is slightly smaller than the normal outside profile. The hull connects those two convex profiles and creates the sloped outside face.
-
-For the inside chamfer, the end opening is slightly larger than the normal inside opening. The hull connects those two convex openings and creates a tapered cutting volume. Subtracting that volume creates the inside chamfer.
-
-So the construction remains easy to reason about:
-
-~~~text
-outside:
-smaller outer profile
-        ↓
-      hull
-        ↓
-normal outer profile
-
-inside:
-larger inner opening
-        ↓
-      hull
-        ↓
-normal inner opening
-        ↓
-subtract from outer body
-~~~
-
-The shell itself is therefore not created by one complicated hull. It is built as a solid outer body first and hollowed afterward.
-
-### Step I — Close-up of both chamfers
-
-![Chamfer close-up](design/tube_09_chamfer_closeup.png)
-
-This cutaway keeps only the lower part and half the depth of the finished tube. It makes the two independent bevels visible at the same time:
-
-- the **outside chamfer** slopes inward from the outer end face;
-- the **inside chamfer** slopes outward into the hollow opening;
-- the wall between them remains intact.
-
-This final view is useful for checking the relationship between `outer_chamfer`, `inner_chamfer` and `wall_thickness` without the rest of the tube hiding the detail.
-
-## 1. Build the rounded 2D profiles
-
-The basic rounded rectangle is made from four circles. hull() wraps those circles with the smallest convex shape that contains them, producing straight sides and rounded corners.
+Both use the same rounded-rectangle helper:
 
 ~~~openscad
 module rounded_rectangle(width, depth, radius) {
@@ -144,48 +68,74 @@ module rounded_rectangle(width, depth, radius) {
 }
 ~~~
 
-The outer profile uses the requested outside dimensions. The inner profile is shifted inward by the wall thickness and uses a correspondingly smaller radius.
+Four circles define the corner radii. Because the desired outline is convex, `hull()` connects them with the straight sides of the rounded rectangle.
 
-## 2. Create the outside end chamfers
-
-The outer body is not made with one simple extrusion. Instead, three profile layers are supplied to one hull():
-
-1. at the bottom face, the outer profile is inset by outer_chamfer;
-2. at Z = outer_chamfer, the profile has its full outside size;
-3. at the top face, the profile is inset again.
+The inner profile is simply translated inward by the wall thickness:
 
 ~~~openscad
-hull() {
-    translate([0, 0, 0])
-        linear_extrude(epsilon)
-            offset(delta = -outer_chamfer)
-                outer_2d();
-
-    translate([0, 0, outer_chamfer])
-        linear_extrude(length - 2 * outer_chamfer)
-            outer_2d();
-
-    translate([0, 0, length - epsilon])
-        linear_extrude(epsilon)
-            offset(delta = -outer_chamfer)
-                outer_2d();
+module inner_2d() {
+    translate([wall_thickness, wall_thickness])
+        rounded_rectangle(inner_width, inner_depth, inner_radius);
 }
 ~~~
 
-The full-size middle section prevents the entire tube from shrinking. The hull only creates a short transition from the smaller end profile to the normal profile at each end.
+## Step B — Define the outside chamfer with two nearby profiles
 
-Conceptually:
+![Outside chamfer input layers](design/tube_02_outer_chamfer_inputs.png)
 
-~~~text
-end face             normal tube
-smaller profile  ->  full profile
-       \____________
-        short chamfer
+At the physical end face, the outside profile is made slightly smaller with:
+
+~~~openscad
+offset(delta = -outer_chamfer)
+    outer_2d();
 ~~~
 
-## 3. Subtract the continuous hollow interior
+Only `outer_chamfer = 0.4 mm` farther into the tube, the full outside profile is restored.
 
-The normal inner profile is extruded slightly beyond both ends of the tube and subtracted with difference().
+So the lower end is defined by:
+
+~~~text
+Z = 0.0 mm   smaller outside profile
+Z = 0.4 mm   normal outside profile
+~~~
+
+The orange layer in the image is the smaller end profile. The blue layer is the normal profile.
+
+## Step C — Hull the outside profiles
+
+![Outside hull result](design/tube_03_outer_hull.png)
+
+`hull()` connects the smaller end profile to the normal profile and creates the sloped outside face.
+
+The real outer body does the same thing at both ends:
+
+~~~openscad
+module outer_body() {
+    hull() {
+        translate([0, 0, 0])
+            linear_extrude(epsilon)
+                offset(delta = -outer_chamfer)
+                    outer_2d();
+
+        translate([0, 0, outer_chamfer])
+            linear_extrude(length - 2 * outer_chamfer)
+                outer_2d();
+
+        translate([0, 0, length - epsilon])
+            linear_extrude(epsilon)
+                offset(delta = -outer_chamfer)
+                    outer_2d();
+    }
+}
+~~~
+
+The large middle extrusion is important: it keeps the full outside dimensions over almost the complete tube length. Only the short regions near the two end faces slope inward.
+
+## Step D — Subtract the normal hollow interior
+
+![Hollow tube before the inside chamfer](design/tube_04_hollow_tube.png)
+
+The outer body is still solid. The normal inner profile is therefore extruded completely through it:
 
 ~~~openscad
 translate([0, 0, -1])
@@ -193,16 +143,42 @@ translate([0, 0, -1])
         inner_2d();
 ~~~
 
-At this stage the tube is hollow, but the inside edge of each end face would still be sharp.
+Subtracting that volume creates the tube wall.
 
-## 4. Create the inside chamfer as a cutting volume
+At this stage:
 
-The inside chamfer uses the opposite idea: instead of making the solid smaller at the end face, it makes the **hole larger** at the end face.
+- the outside end edge already has its chamfer;
+- the inside end edge is still sharp.
 
-The cutting volume is a hull between:
+## Step E — Define the inside chamfer with two opening sizes
 
-- an enlarged inner opening at the end face;
-- the normal inner opening inner_chamfer millimetres farther into the tube.
+![Inside chamfer input layers](design/tube_05_inner_chamfer_inputs.png)
+
+The inside chamfer uses the opposite geometric idea.
+
+At the end face, the hollow opening is made **larger**:
+
+~~~openscad
+offset(r = inner_chamfer)
+    inner_2d();
+~~~
+
+At `Z = inner_chamfer = 0.6 mm`, the opening has returned to its normal size.
+
+So the two important layers are:
+
+~~~text
+Z = 0.0 mm   enlarged inner opening
+Z = 0.6 mm   normal inner opening
+~~~
+
+These layers do not describe material that will remain. They describe a cutter.
+
+## Step F — Create the inside chamfer as a cutting volume
+
+![Inside chamfer cutting volume](design/tube_06_inner_chamfer_cut.png)
+
+The two inner profiles are joined with another `hull()`:
 
 ~~~openscad
 module inner_chamfer_cut() {
@@ -219,26 +195,105 @@ module inner_chamfer_cut() {
 }
 ~~~
 
-Subtracting this volume removes only the small tapered ring around the inside edge. The same cutter is mirrored at the top end.
+This creates a **solid tapered cutting volume**.
 
-So the two chamfers are made in different ways:
+Most of that cutter lies inside the normal hollow space, where there is already no material. Only the slightly enlarged outer rim overlaps the tube wall. That overlapping rim is the material that will actually be removed.
 
-| Edge | Construction |
-| --- | --- |
-| Outside end edge | Build a smaller end profile into the **solid** |
-| Inside end edge | Subtract a larger end profile from the **hollow opening** |
+This is why the cutter can be simple even though only a narrow chamfer is visible in the final part.
 
-That distinction is the main idea demonstrated by this example.
+## Step G — Subtract the lower inside-chamfer cutter
 
-## 5. Why epsilon exists
+![Bottom inside chamfer result](design/tube_07_bottom_chamfer_result.png)
 
-epsilon = 0.01 mm gives the very thin helper layers a real thickness and lets subtractive geometry overlap slightly.
+Subtracting the tapered cutter removes the sharp inside edge.
 
-That avoids depending on perfectly coincident faces in Boolean operations. It is a construction tolerance for the CAD model, not a print tolerance.
+The result now has two independent slopes at the lower end:
 
-## Complete construction
+- outside profile: slopes **inward** toward the end face;
+- inside opening: slopes **outward** toward the end face.
 
-The final module is intentionally simple:
+The wall between the two remains.
+
+## Step H — Mirror the inside cutter at the top
+
+![Finished tube](design/tube_08_final.png)
+
+The same cutter is mirrored around the top end:
+
+~~~openscad
+translate([0, 0, length])
+    mirror([0, 0, 1])
+        inner_chamfer_cut();
+~~~
+
+No second inside-chamfer implementation is needed.
+
+The outside body was already symmetrical because its single `hull()` contains an inset profile at both ends.
+
+## Step I — Inspect both chamfers in a cutaway
+
+![Chamfer close-up](design/tube_09_chamfer_closeup.png)
+
+This view keeps only the lowest 8 mm and half the tube depth.
+
+It exposes the finished relationship between:
+
+- `outer_chamfer`;
+- `inner_chamfer`;
+- `wall_thickness`.
+
+This is the most useful inspection view when changing those three values, because the full tube no longer hides the small end details.
+
+## Why the chamfer construction stays simple
+
+The finished tube is hollow, but the construction never asks one `hull()` to create the complete shell.
+
+Instead, it separates the problem into two simple convex profile transitions:
+
+~~~text
+OUTSIDE BODY
+
+smaller rounded outer profile
+             ↓
+           hull
+             ↓
+normal rounded outer profile
+
+
+INSIDE CUTTER
+
+larger rounded inner opening
+             ↓
+           hull
+             ↓
+normal rounded inner opening
+             ↓
+subtract
+~~~
+
+Each `hull()` therefore connects two related rounded rectangles.
+
+The shell itself is therefore not created by one complicated hull. It is built as a solid outer body first and hollowed afterward. The inside chamfer is then a separate subtractive operation.
+
+That separation is the main design idea in this example.
+
+## Why `epsilon` exists
+
+The helper layers use:
+
+~~~openscad
+epsilon = 0.01;
+~~~
+
+A `hull()` needs actual geometry, so the profile layers are given a very small thickness instead of being perfectly zero-thickness surfaces.
+
+The cutters are also allowed to extend very slightly beyond an end face. This avoids relying on exactly coincident Boolean faces.
+
+`epsilon` is a CAD construction tolerance. It is **not** a printing clearance or dimensional fit allowance.
+
+## Complete final construction
+
+After the helper modules have been defined, the finished tube is only:
 
 ~~~openscad
 module rounded_rectangular_tube() {
@@ -250,9 +305,10 @@ module rounded_rectangular_tube() {
             linear_extrude(length + 2)
                 inner_2d();
 
-        // Inside chamfer at both ends.
+        // Inside chamfer at the bottom.
         inner_chamfer_cut();
 
+        // Same inside chamfer at the top.
         translate([0, 0, length])
             mirror([0, 0, 1])
                 inner_chamfer_cut();
@@ -260,4 +316,4 @@ module rounded_rectangular_tube() {
 }
 ~~~
 
-This example is useful when a part needs a rounded rectangular shell and the two end-edge treatments need to remain independently adjustable.
+The complete editable source remains deliberately small; the separate design file exists only to make every intermediate construction step visible.

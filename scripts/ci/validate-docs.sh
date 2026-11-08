@@ -10,7 +10,14 @@ grep -Fq 'OpenSCAD design concepts' "docs/design-concepts.html"
 grep -Fq 'Keep geometry' "docs/design-concepts.html"
 grep -Fq 'Cut geometry' "docs/design-concepts.html"
 grep -Fq 'Clip / trim geometry' "docs/design-concepts.html"
-grep -Fq 'hull() is a shape generator, not a Boolean role' "docs/design-concepts.html"
+test -s "docs/design-concepts.scad"
+for stage in 01_keep 02_cut 03_clip 04_hull_keep 05_hull_cut 06_convexity 07_decompose; do
+  test -s "docs/figures/concept_$stage.png"
+  grep -Fq "figures/concept_$stage.png" "docs/design-concepts.md"
+  grep -Fq "figures/concept_$stage.png" "docs/design-concepts.html"
+done
+grep -Fq 'What do I want this temporary shape to do?' "docs/design-concepts.html"
+grep -Fq 'A global hull cannot keep a concave notch open' "docs/design-concepts.html"
 
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"

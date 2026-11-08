@@ -69,7 +69,7 @@ If the unwanted material is easier to draw than the final surface, drawing a cut
 
 ![Clip or trim geometry](figures/concept_03_clip.png)
 
-On the left, the orange part is deliberately too long. The transparent blue box marks the region that is allowed to remain.
+On the left, the orange part is deliberately too long. The blue plate above it shows the X/Y footprint that is allowed to remain.
 
 On the right you see the result: only the overlap survives.
 
@@ -158,11 +158,11 @@ That shape is convex. There is no notch or missing inside corner that `hull()` h
 
 Connecting two such profiles gives a predictable result.
 
-The right side shows an L-shaped profile.
+The right side shows an L-shaped profile in grey. Under it you can see the red convex hull of that same L.
 
-The open inside corner is important. But `hull()` always makes a convex result, so it stretches across that opening.
+The open inside corner is important. But `hull()` fills across that missing corner.
 
-That is the red bridge in the picture.
+The visible red triangle is the unwanted bridge.
 
 This is the main limitation to remember:
 

@@ -55,7 +55,7 @@
 <p>If the unwanted material is easier to draw than the final surface, drawing a cutter is often the simplest solution.</p>
 <h2>3. A shape can describe the final boundary</h2>
 <p><img alt="Clip or trim geometry" src="figures/concept_03_clip.png" /></p>
-<p>On the left, the orange part is deliberately too long. The transparent blue box marks the region that is allowed to remain.</p>
+<p>On the left, the orange part is deliberately too long. The blue plate above it shows the X/Y footprint that is allowed to remain.</p>
 <p>On the right you see the result: only the overlap survives.</p>
 <p>That is what <code>intersection()</code> does.</p>
 <pre><code class="language-openscad">intersection() {
@@ -108,9 +108,9 @@
 <p>The left side shows a rounded rectangle.</p>
 <p>That shape is convex. There is no notch or missing inside corner that <code>hull()</code> has to preserve.</p>
 <p>Connecting two such profiles gives a predictable result.</p>
-<p>The right side shows an L-shaped profile.</p>
-<p>The open inside corner is important. But <code>hull()</code> always makes a convex result, so it stretches across that opening.</p>
-<p>That is the red bridge in the picture.</p>
+<p>The right side shows an L-shaped profile in grey. Under it you can see the red convex hull of that same L.</p>
+<p>The open inside corner is important. But <code>hull()</code> fills across that missing corner.</p>
+<p>The visible red triangle is the unwanted bridge.</p>
 <p>This is the main limitation to remember:</p>
 <p><strong>A global hull cannot keep a concave notch open.</strong></p>
 <p>If the shape has an important opening, notch or re-entrant corner, you often need another approach:</p>

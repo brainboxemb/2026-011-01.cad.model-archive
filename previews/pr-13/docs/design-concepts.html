@@ -106,14 +106,13 @@
 <h2>6. Why convex shapes are easy for hull()</h2>
 <p><img alt="Convex and concave hull behaviour" src="figures/concept_06_convexity.png" /></p>
 <p>The left side shows a rounded rectangle.</p>
-<p>That shape is convex. There is no notch or missing inside corner that <code>hull()</code> has to preserve.</p>
-<p>Connecting two such profiles gives a predictable result.</p>
-<p>The right side shows an L-shaped profile in grey. Under it you can see the red convex hull of that same L.</p>
-<p>The open inside corner is important. But <code>hull()</code> fills across that missing corner.</p>
-<p>The visible red triangle is the unwanted bridge.</p>
+<p>This is a <strong>convex</strong> shape: its outline never turns inward to make a notch. Taking its convex hull therefore does not unexpectedly fill anything.</p>
+<p>The right side shows an L-shaped profile in grey. This shape is <strong>concave</strong> because it has an inward corner.</p>
+<p>Under the grey L you can see the red convex hull of that same shape. <code>hull()</code> fills straight across the inward corner.</p>
+<p>The visible red triangle is material we did not want.</p>
 <p>This is the main limitation to remember:</p>
 <p><strong>A global hull cannot keep a concave notch open.</strong></p>
-<p>If the shape has an important opening, notch or re-entrant corner, you often need another approach:</p>
+<p>If the shape has an important opening, notch or inward corner, you often need another approach:</p>
 <ul>
 <li>build a simpler outside shape and cut the opening afterward;</li>
 <li>use a local cutter;</li>

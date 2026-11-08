@@ -13,6 +13,10 @@ The construction uses a useful modelling trick: the outer profile and the inner 
 
 The walkthrough uses a `design_step` selector and exposes the intermediate geometry one operation at a time.
 
+For the shared terminology used here — **keep geometry**, **cut geometry**,
+**clip / trim geometry**, and the role of `hull()` — see the
+[OpenSCAD design concepts](../../../docs/design-concepts.html).
+
 ## Parameters
 
 | Parameter | Default | Meaning |

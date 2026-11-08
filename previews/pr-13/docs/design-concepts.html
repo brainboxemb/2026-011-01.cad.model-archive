@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Design concepts</title>
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+  <header><a href="../">← Model archive</a></header>
+  <main>
+<h1>OpenSCAD design concepts</h1>
+<p>This page collects reusable modelling ideas that apply across the archive.
+The goal is not to prescribe one OpenSCAD command for every situation, but to
+make the <strong>role of each construction shape</strong> explicit before choosing the
+Boolean operation.</p>
+<h2>Start with the role of the geometry</h2>
+<p>A useful way to read or design an OpenSCAD model is to classify temporary
+geometry into three roles:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Question</th>
+<th>Typical operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Keep geometry</strong></td>
+<td>What material or envelope do I want to keep?</td>
+<td>direct solid, <code>union()</code>, sometimes <code>hull()</code></td>
+</tr>
+<tr>
+<td><strong>Cut geometry</strong></td>
+<td>What material do I want to remove?</td>
+<td><code>difference()</code></td>
+</tr>
+<tr>
+<td><strong>Clip / trim geometry</strong></td>
+<td>What final region is allowed to remain?</td>
+<td><code>intersection()</code></td>
+</tr>
+</tbody>
+</table>
+<p>These roles describe <strong>design intent</strong>. They are more useful than rules such as
+"outside geometry uses one command and inside geometry uses another".</p>
+<p>The same OpenSCAD primitive can serve different roles. A <code>hull()</code>, for
+example, can generate material that remains in the part or a temporary volume
+that is later subtracted.</p>
+<h2>hull() is a shape generator, not a Boolean role</h2>
+<p><code>hull()</code> creates the smallest <strong>convex</strong> shape containing all of its inputs.</p>
+<p>That makes it very useful for connecting two related profiles:</p>
+<pre><code class="language-text">profile A
+   ↓
+ hull()
+   ↓
+profile B
+</code></pre>
+<p>If profile A and profile B are differently sized layers, the hull naturally
+creates the sloped transition between them.</p>
+<p>But what that transition <em>means</em> depends on how the result is used.</p>
+<h3>Pattern 1 — hull() creates material to keep</h3>
+<p>A smaller outside profile can be connected to the normal outside profile:</p>
+<pre><code class="language-text">smaller outer profile
+         ↓
+       hull()
+         ↓
+normal outer profile
+         =
+sloped outside body
+</code></pre>
+<p>The hull result is the actual solid or envelope that remains in the model.</p>
+<h3>Pattern 2 — hull() creates material to remove</h3>
+<p>A larger opening can be connected to the normal opening:</p>
+<pre><code class="language-text">larger opening
+      ↓
+    hull()
+      ↓
+normal opening
+      =
+tapered cutting volume
+      ↓
+ difference()
+</code></pre>
+<p>Here the hull itself is not part of the final object. It is simply the easiest
+way to describe the material that must disappear.</p>
+<p>So there is no general rule that an "inside" feature must be a cutter or an
+"outside" feature must be kept. Use whichever representation makes the desired
+geometry simplest and clearest.</p>
+<h2>difference() — describe what should disappear</h2>
+<p><code>difference()</code> is usually easiest to understand when the unwanted material
+has a simple shape.</p>
+<pre><code class="language-openscad">difference() {
+    body();
+    cut();
+}
+</code></pre>
+<p>This is often a good fit for:</p>
+<ul>
+<li>holes;</li>
+<li>pockets;</li>
+<li>clearances;</li>
+<li>chamfers around an opening;</li>
+<li>local print compensation;</li>
+<li>reliefs.</li>
+</ul>
+<p>A subtractive construction is not inferior to a constructive one. If the
+material to remove is easier to describe than the final remaining surface,
+the cutter is often the clearer model.</p>
+<h2>intersection() — constrain or trim, do not confuse it with the feature</h2>
+<p><code>intersection()</code> keeps only material present in <strong>all</strong> supplied shapes.</p>
+<pre><code class="language-openscad">intersection() {
+    overbuilt_part();
+    final_bounds();
+}
+</code></pre>
+<p>A useful pattern is to deliberately build geometry slightly too large or too
+long, then apply the exact final boundary once at the end.</p>
+<p>This separates two concerns:</p>
+<pre><code class="language-text">first:   construct the feature cleanly
+then:    enforce the final bounds
+</code></pre>
+<p>For example, a chamfer can be generated on a continuous overlong profile while
+a final trim box later sets the exact end position.</p>
+<p>In that construction, <code>intersection()</code> does <strong>not</strong> create the chamfer. It
+only clips the already-created geometry to its allowed final region.</p>
+<h2>Convexity is the important limitation of hull()</h2>
+<p>The central geometric fact about <code>hull()</code> is that its result is always
+convex.</p>
+<p>For a convex profile, this is often exactly what is wanted. Connecting nested
+rounded rectangles or other convex layers gives a predictable transition.</p>
+<p>For a concave profile, a global hull cannot preserve a notch, opening or
+re-entrant corner. It bridges across it.</p>
+<p>Conceptually:</p>
+<pre><code class="language-text">convex input               concave input
+
+  ______                     ______
+ /      \                   |      |
+|        |                  |   ___|
+ \______/                   |__|
+
+hull preserves            hull bridges across
+the intended boundary     the missing region
+</code></pre>
+<p>This does not mean <code>hull()</code> cannot be used in a model containing concave
+geometry. It means the problem usually needs to be <strong>decomposed</strong>:</p>
+<ul>
+<li>hull a simpler convex outside envelope and clip it afterward;</li>
+<li>hull a convex opening and subtract it;</li>
+<li>use several local hulls;</li>
+<li>or use explicit cutters for the local feature.</li>
+</ul>
+<h2>Decompose a shell into simpler problems</h2>
+<p>A hollow or L-shaped final part may be geometrically complicated while its
+construction can still consist of simple operations.</p>
+<p>A common approach is:</p>
+<pre><code class="language-text">1. construct a simple outer body
+2. construct a simple inner void
+3. subtract the void
+4. add or subtract local details
+5. trim to final bounds if needed
+</code></pre>
+<p>The important point is that the final shell does not need to be generated in
+one operation.</p>
+<p>This is often easier to understand, test and maintain than asking one global
+operation to reproduce every concave boundary at once.</p>
+<h2>A practical decision sequence</h2>
+<p>When adding a feature, use this order of questions:</p>
+<ol>
+<li><strong>What physical change do I want?</strong>
+   Material added/kept, material removed, or a final boundary?</li>
+<li><strong>Which shape is easiest to describe?</strong>
+   The desired remaining material, the unwanted material, or a bounding
+   envelope?</li>
+<li><strong>Is the shape convex?</strong>
+   If not, a global <code>hull()</code> may bridge regions that must stay open.</li>
+<li><strong>Can the problem be split into simpler local or convex pieces?</strong></li>
+<li><strong>Only then choose the operator.</strong></li>
+</ol>
+<p>A compact mapping is:</p>
+<pre><code class="language-text">easy to describe what remains  -&gt; keep geometry
+easy to describe what is lost  -&gt; cutter + difference()
+easy to describe final limits  -&gt; clip + intersection()
+need transition between shapes -&gt; hull(), then use that hull in one of
+                                  the roles above
+</code></pre>
+<h2>Chamfers as an example</h2>
+<p>A chamfer illustrates why the roles matter.</p>
+<h3>Outside edge: constructive version</h3>
+<p>If a smaller end profile and a normal profile are easy to define, a hull can
+directly build the chamfered outside body.</p>
+<h3>Inside edge: subtractive version</h3>
+<p>If an enlarged opening and its normal opening are easy to define, their hull
+can form a tapered cutter that is subtracted.</p>
+<h3>Final end position: clipping version</h3>
+<p>If profiles are deliberately extended so the chamfer can be constructed
+cleanly, a later intersection can trim them to the exact final dimensions.</p>
+<p>These are three different jobs:</p>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Geometry role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>create the outside slope</td>
+<td>keep geometry</td>
+</tr>
+<tr>
+<td>remove the inside slope</td>
+<td>cut geometry</td>
+</tr>
+<tr>
+<td>impose the exact end plane</td>
+<td>clip / trim geometry</td>
+</tr>
+</tbody>
+</table>
+<p>They should not be presented as one combined "chamfer method".</p>
+<h2>Prefer the simplest faithful construction</h2>
+<p>Two implementations can produce nearly identical solids while having very
+different cognitive cost.</p>
+<p>Prefer the construction that:</p>
+<ul>
+<li>matches the physical intent;</li>
+<li>is easy to explain with intermediate geometry;</li>
+<li>handles all required boundaries;</li>
+<li>has fewer special cases;</li>
+<li>remains stable across the supported parameter range;</li>
+<li>can be regression-tested.</li>
+</ul>
+<p>Do not replace a simple subtractive construction merely to make every feature
+use <code>hull()</code>. Likewise, do not avoid <code>hull()</code> when it expresses a transition
+more clearly than hand-built wedges.</p>
+<p>The modelling method should follow the geometry, not stylistic consistency.</p>
+<h2>Related examples</h2>
+<p>The archive contains small examples that demonstrate these roles independently:</p>
+<ul>
+<li><a href="../examples/rounded-rectangular-tube/v0.1/">Rounded rectangular tube</a> —
+  outside chamfer as keep geometry, inside chamfer as a cutting volume.</li>
+<li><a href="../examples/rounded-l-bracket/v0.1/">Rounded L bracket</a> —
+  the same roles plus deliberately overlong profiles followed by a final
+  trimming <code>intersection()</code>.</li>
+</ul>
+<p>The examples are intentionally self-contained. This page provides the shared
+vocabulary for reasoning about them and about larger models in the archive.</p>
+</main></body></html>

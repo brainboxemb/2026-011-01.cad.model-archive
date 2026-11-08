@@ -28,6 +28,8 @@ jobs:
         with:
           name: nopscadlib-generated-documentation
           path: |
+            docs/design-concepts.md
+            docs/design-concepts.html
             examples/spacer/v0.1/
             examples/rounded-rectangular-tube/v0.1/
             examples/rounded-l-bracket/v0.1/
@@ -43,6 +45,8 @@ jobs:
         run: |
           bash scripts/ci/publish-pages.sh
           echo "### Browser preview for PR #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "OpenSCAD design concepts:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/docs/design-concepts.html" >> "$GITHUB_STEP_SUMMARY"
           echo "Rounded tube example:" >> "$GITHUB_STEP_SUMMARY"
           echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/examples/rounded-rectangular-tube/v0.1/" >> "$GITHUB_STEP_SUMMARY"
           echo "Rounded L bracket example:" >> "$GITHUB_STEP_SUMMARY"

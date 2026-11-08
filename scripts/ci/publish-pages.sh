@@ -53,6 +53,11 @@ else
   cp "$lbracket/README.md" "$target/$lbracket/README.md"
   cp -a "$lbracket/scad" "$lbracket/figures" "$lbracket/design" "$target/$lbracket/"
 
+  mkdir -p "$target/docs"
+  cat site/concept-header.html docs/design-concepts.html > "$target/docs/design-concepts.html"
+  printf '\n</main></body></html>\n' >> "$target/docs/design-concepts.html"
+  cp docs/design-concepts.md "$target/docs/design-concepts.md"
+
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"

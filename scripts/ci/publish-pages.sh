@@ -57,6 +57,8 @@ else
   cat site/concept-header.html docs/design-concepts.html > "$target/docs/design-concepts.html"
   printf '\n</main></body></html>\n' >> "$target/docs/design-concepts.html"
   cp docs/design-concepts.md "$target/docs/design-concepts.md"
+  cp docs/design-concepts.scad "$target/docs/design-concepts.scad"
+  cp -a docs/figures "$target/docs/"
 
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"

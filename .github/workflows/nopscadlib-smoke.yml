@@ -30,6 +30,8 @@ jobs:
           path: |
             docs/design-concepts.md
             docs/design-concepts.html
+            docs/design-concepts.scad
+            docs/figures/
             examples/spacer/v0.1/
             examples/rounded-rectangular-tube/v0.1/
             examples/rounded-l-bracket/v0.1/

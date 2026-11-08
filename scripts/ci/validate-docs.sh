@@ -17,8 +17,19 @@ test -s "$tube/scad/rounded_rectangular_tube.scad"
 test -s "$tube/README.md"
 test -s "$tube/readme.html"
 test -s "$tube/figures/rounded_rectangular_tube.png"
+test -s "$tube/design/rounded_rectangular_tube_explained.scad"
+for stage in \
+  01_profiles 02_outer_chamfer_inputs 03_outer_hull 04_hollow_tube \
+  05_inner_chamfer_inputs 06_inner_chamfer_cut 07_bottom_chamfer_result \
+  08_final 09_convex_vs_concave; do
+  test -s "$tube/design/tube_$stage.png"
+  grep -Fq "design/tube_$stage.png" "$tube/README.md"
+  grep -Fq "design/tube_$stage.png" "$tube/readme.html"
+done
 grep -Fq 'Rounded rectangular tube with end chamfers' "$tube/README.md"
 grep -Fq 'Create the inside chamfer as a cutting volume' "$tube/readme.html"
+grep -Fq 'Why this is much easier than the corner bracket' "$tube/readme.html"
+grep -Fq 'two convex hull operations' "$tube/readme.html"
 grep -Fq 'figures/rounded_rectangular_tube.png' "$tube/readme.html"
 
 bracket="models/corner_bracket/v0.1"

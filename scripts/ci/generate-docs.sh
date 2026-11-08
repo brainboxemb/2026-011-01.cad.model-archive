@@ -23,10 +23,30 @@ in_container /work/examples/spacer/v0.1 \
   xvfb-run -a python /work/ext/NopSCADlib/scripts/make_all.py
 
 tube="examples/rounded-rectangular-tube/v0.1"
-mkdir -p "$tube/figures"
+mkdir -p "$tube/figures" "$tube/design"
 in_container "/work/$tube" bash -c '
-  xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter \
+  xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter --projection=ortho \
     -o figures/rounded_rectangular_tube.png scad/rounded_rectangular_tube.scad
+
+  stages=(
+    01_profiles
+    02_outer_chamfer_inputs
+    03_outer_hull
+    04_hollow_tube
+    05_inner_chamfer_inputs
+    06_inner_chamfer_cut
+    07_bottom_chamfer_result
+    08_final
+    09_convex_vs_concave
+  )
+  for stage in "${stages[@]}"; do
+    xvfb-run -a openscad --imgsize=900,650 --viewall --autocenter --projection=ortho \
+      -D "design_step=\"$stage\"" \
+      -o "design/tube_$stage.png" \
+      design/rounded_rectangular_tube_explained.scad
+    test -s "design/tube_$stage.png"
+  done
+
   python -m markdown -x tables -x sane_lists -x fenced_code README.md > readme.html
 '
 

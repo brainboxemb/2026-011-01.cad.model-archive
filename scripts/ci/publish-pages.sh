@@ -39,6 +39,13 @@ else
     cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$target/$version/"
   done
 
+  tube="examples/rounded-rectangular-tube/v0.1"
+  mkdir -p "$target/$tube"
+  cat site/model-header.html "$tube/readme.html" > "$target/$tube/index.html"
+  printf '\n</main></body></html>\n' >> "$target/$tube/index.html"
+  cp "$tube/README.md" "$target/$tube/README.md"
+  cp -a "$tube/scad" "$tube/figures" "$target/$tube/"
+
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"

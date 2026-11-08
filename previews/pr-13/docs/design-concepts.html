@@ -10,241 +10,216 @@
   <header><a href="../">← Model archive</a></header>
   <main>
 <h1>OpenSCAD design concepts</h1>
-<p>This page collects reusable modelling ideas that apply across the archive.
-The goal is not to prescribe one OpenSCAD command for every situation, but to
-make the <strong>role of each construction shape</strong> explicit before choosing the
-Boolean operation.</p>
-<h2>Start with the role of the geometry</h2>
-<p>A useful way to read or design an OpenSCAD model is to classify temporary
-geometry into three roles:</p>
-<table>
-<thead>
-<tr>
-<th>Role</th>
-<th>Question</th>
-<th>Typical operation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Keep geometry</strong></td>
-<td>What material or envelope do I want to keep?</td>
-<td>direct solid, <code>union()</code>, sometimes <code>hull()</code></td>
-</tr>
-<tr>
-<td><strong>Cut geometry</strong></td>
-<td>What material do I want to remove?</td>
-<td><code>difference()</code></td>
-</tr>
-<tr>
-<td><strong>Clip / trim geometry</strong></td>
-<td>What final region is allowed to remain?</td>
-<td><code>intersection()</code></td>
-</tr>
-</tbody>
-</table>
-<p>These roles describe <strong>design intent</strong>. They are more useful than rules such as
-"outside geometry uses one command and inside geometry uses another".</p>
-<p>The same OpenSCAD primitive can serve different roles. A <code>hull()</code>, for
-example, can generate material that remains in the part or a temporary volume
-that is later subtracted.</p>
-<h2>hull() is a shape generator, not a Boolean role</h2>
-<p><code>hull()</code> creates the smallest <strong>convex</strong> shape containing all of its inputs.</p>
-<p>That makes it very useful for connecting two related profiles:</p>
-<pre><code class="language-text">profile A
-   ↓
- hull()
-   ↓
-profile B
-</code></pre>
-<p>If profile A and profile B are differently sized layers, the hull naturally
-creates the sloped transition between them.</p>
-<p>But what that transition <em>means</em> depends on how the result is used.</p>
-<h3>Pattern 1 — hull() creates material to keep</h3>
-<p>A smaller outside profile can be connected to the normal outside profile:</p>
-<pre><code class="language-text">smaller outer profile
-         ↓
-       hull()
-         ↓
-normal outer profile
-         =
-sloped outside body
-</code></pre>
-<p>The hull result is the actual solid or envelope that remains in the model.</p>
-<h3>Pattern 2 — hull() creates material to remove</h3>
-<p>A larger opening can be connected to the normal opening:</p>
-<pre><code class="language-text">larger opening
-      ↓
-    hull()
-      ↓
-normal opening
-      =
-tapered cutting volume
-      ↓
- difference()
-</code></pre>
-<p>Here the hull itself is not part of the final object. It is simply the easiest
-way to describe the material that must disappear.</p>
-<p>So there is no general rule that an "inside" feature must be a cutter or an
-"outside" feature must be kept. Use whichever representation makes the desired
-geometry simplest and clearest.</p>
-<h2>difference() — describe what should disappear</h2>
-<p><code>difference()</code> is usually easiest to understand when the unwanted material
-has a simple shape.</p>
-<pre><code class="language-openscad">difference() {
-    body();
-    cut();
+<p>This page explains a few modelling ideas that come back in many OpenSCAD models in this archive.</p>
+<p>The easiest way to understand them is not to start with commands such as <code>difference()</code>, <code>intersection()</code> or <code>hull()</code>.</p>
+<p>Start with a simpler question:</p>
+<p><strong>What do I want this temporary shape to do?</strong></p>
+<p>Usually it does one of three jobs:</p>
+<ul>
+<li>it describes material that should <strong>stay</strong>;</li>
+<li>it describes material that should <strong>go away</strong>;</li>
+<li>or it describes the <strong>boundary</strong> inside which the final part must fit.</li>
+</ul>
+<p>Once that is clear, the OpenSCAD operation becomes much easier to choose.</p>
+<h2>1. A shape can describe material that stays</h2>
+<p><img alt="Keep geometry" src="figures/concept_01_keep.png" /></p>
+<p>In this example we want a solid with a sloped side.</p>
+<p>The lower profile is a little smaller than the upper profile. <code>hull()</code> connects them.</p>
+<p>The green result is the actual material we want to keep.</p>
+<pre><code class="language-openscad">hull() {
+    small_profile();
+    normal_profile();
 }
 </code></pre>
-<p>This is often a good fit for:</p>
+<p>Nothing is cut away afterward. The hull itself is the part.</p>
+<p>This is useful when the shape you want to <strong>keep</strong> is easy to describe directly.</p>
+<h2>2. A shape can describe material that must be removed</h2>
+<p><img alt="Cut geometry" src="figures/concept_02_cut.png" /></p>
+<p>Here the grey block is the part.</p>
+<p>The red cylinder is not another part that will remain. It only describes the material we want to remove.</p>
+<pre><code class="language-openscad">difference() {
+    body();
+    hole();
+}
+</code></pre>
+<p>After <code>difference()</code>, the red volume is gone and a hole remains.</p>
+<p>This way of thinking is useful for many things:</p>
 <ul>
 <li>holes;</li>
-<li>pockets;</li>
+<li>nut pockets;</li>
 <li>clearances;</li>
+<li>reliefs;</li>
 <li>chamfers around an opening;</li>
-<li>local print compensation;</li>
-<li>reliefs.</li>
+<li>print compensation.</li>
 </ul>
-<p>A subtractive construction is not inferior to a constructive one. If the
-material to remove is easier to describe than the final remaining surface,
-the cutter is often the clearer model.</p>
-<h2>intersection() — constrain or trim, do not confuse it with the feature</h2>
-<p><code>intersection()</code> keeps only material present in <strong>all</strong> supplied shapes.</p>
+<p>If the unwanted material is easier to draw than the final surface, drawing a cutter is often the simplest solution.</p>
+<h2>3. A shape can describe the final boundary</h2>
+<p><img alt="Clip or trim geometry" src="figures/concept_03_clip.png" /></p>
+<p>Sometimes it is easier to build a part slightly too large first.</p>
+<p>The orange shape in the picture is deliberately too long.</p>
+<p>The blue box says:</p>
+<p><strong>Only the material inside this box is allowed to remain.</strong></p>
+<p>That is what <code>intersection()</code> does.</p>
 <pre><code class="language-openscad">intersection() {
-    overbuilt_part();
+    overlong_part();
     final_bounds();
 }
 </code></pre>
-<p>A useful pattern is to deliberately build geometry slightly too large or too
-long, then apply the exact final boundary once at the end.</p>
-<p>This separates two concerns:</p>
-<pre><code class="language-text">first:   construct the feature cleanly
-then:    enforce the final bounds
+<p>The green part is the overlap between the two shapes.</p>
+<p>This is useful when you want to keep the feature construction simple and set the exact final length only afterward.</p>
+<p>An important point:</p>
+<p><strong>The blue box does not create the feature. It only trims the finished geometry.</strong></p>
+<h2>4. hull() can make something that stays</h2>
+<p><img alt="Hull used for material to keep" src="figures/concept_04_hull_keep.png" /></p>
+<p>The orange layer is smaller than the blue layer.</p>
+<p><code>hull()</code> fills the space between them and creates the green sloped body.</p>
+<pre><code class="language-openscad">hull() {
+    smaller_layer();
+    normal_layer();
+}
 </code></pre>
-<p>For example, a chamfer can be generated on a continuous overlong profile while
-a final trim box later sets the exact end position.</p>
-<p>In that construction, <code>intersection()</code> does <strong>not</strong> create the chamfer. It
-only clips the already-created geometry to its allowed final region.</p>
-<h2>Convexity is the important limitation of hull()</h2>
-<p>The central geometric fact about <code>hull()</code> is that its result is always
-convex.</p>
-<p>For a convex profile, this is often exactly what is wanted. Connecting nested
-rounded rectangles or other convex layers gives a predictable transition.</p>
-<p>For a concave profile, a global hull cannot preserve a notch, opening or
-re-entrant corner. It bridges across it.</p>
-<p>Conceptually:</p>
-<pre><code class="language-text">convex input               concave input
+<p>Here <code>hull()</code> is used to build the material that remains in the final part.</p>
+<p>This is a natural way to make an outside chamfer when the two profiles are easy to define.</p>
+<h2>5. hull() can also make a cutter</h2>
+<p><img alt="Hull used as a cutter" src="figures/concept_05_hull_cut.png" /></p>
+<p>This picture uses the same basic idea, but the purpose is different.</p>
+<p>The orange opening is larger than the blue opening.</p>
+<p><code>hull()</code> connects those two openings and creates the red tapered volume.</p>
+<p>That red shape is then used as a cutter:</p>
+<pre><code class="language-openscad">difference() {
+    body();
 
-  ______                     ______
- /      \                   |      |
-|        |                  |   ___|
- \______/                   |__|
-
-hull preserves            hull bridges across
-the intended boundary     the missing region
+    hull() {
+        larger_opening();
+        normal_opening();
+    }
+}
 </code></pre>
-<p>This does not mean <code>hull()</code> cannot be used in a model containing concave
-geometry. It means the problem usually needs to be <strong>decomposed</strong>:</p>
+<p>So <code>hull()</code> does <strong>not</strong> mean "keep this".</p>
+<p>It only creates a shape.</p>
+<p>What happens to that shape depends on how you use it afterward.</p>
+<p>That is why this is the better way to think about <code>hull()</code>:</p>
+<blockquote>
+<p><strong>hull() makes a transition between shapes.</strong></p>
+<p>That transition can become part of the model, or it can become a cutter.</p>
+</blockquote>
+<h2>6. Why convex shapes are easy for hull()</h2>
+<p><img alt="Convex and concave hull behaviour" src="figures/concept_06_convexity.png" /></p>
+<p>The left side shows a rounded rectangle.</p>
+<p>That shape is convex. There is no notch or missing inside corner that <code>hull()</code> has to preserve.</p>
+<p>Connecting two such profiles gives a predictable result.</p>
+<p>The right side shows an L-shaped profile.</p>
+<p>The open inside corner is important. But <code>hull()</code> always makes a convex result, so it stretches across that opening.</p>
+<p>That is the red bridge in the picture.</p>
+<p>This is the main limitation to remember:</p>
+<p><strong>A global hull cannot keep a concave notch open.</strong></p>
+<p>If the shape has an important opening, notch or re-entrant corner, you often need another approach:</p>
 <ul>
-<li>hull a simpler convex outside envelope and clip it afterward;</li>
-<li>hull a convex opening and subtract it;</li>
-<li>use several local hulls;</li>
-<li>or use explicit cutters for the local feature.</li>
+<li>build a simpler outside shape and cut the opening afterward;</li>
+<li>use a local cutter;</li>
+<li>use several smaller hulls;</li>
+<li>or build slightly too much and clip it later.</li>
 </ul>
-<h2>Decompose a shell into simpler problems</h2>
-<p>A hollow or L-shaped final part may be geometrically complicated while its
-construction can still consist of simple operations.</p>
-<p>A common approach is:</p>
-<pre><code class="language-text">1. construct a simple outer body
-2. construct a simple inner void
-3. subtract the void
-4. add or subtract local details
-5. trim to final bounds if needed
-</code></pre>
-<p>The important point is that the final shell does not need to be generated in
-one operation.</p>
-<p>This is often easier to understand, test and maintain than asking one global
-operation to reproduce every concave boundary at once.</p>
-<h2>A practical decision sequence</h2>
-<p>When adding a feature, use this order of questions:</p>
+<h2>7. Complex parts do not have to be made in one operation</h2>
+<p><img alt="Break the model into simpler operations" src="figures/concept_07_decompose.png" /></p>
+<p>A finished part can look complicated while the construction stays simple.</p>
+<p>A useful sequence is:</p>
 <ol>
-<li><strong>What physical change do I want?</strong>
-   Material added/kept, material removed, or a final boundary?</li>
-<li><strong>Which shape is easiest to describe?</strong>
-   The desired remaining material, the unwanted material, or a bounding
-   envelope?</li>
-<li><strong>Is the shape convex?</strong>
-   If not, a global <code>hull()</code> may bridge regions that must stay open.</li>
-<li><strong>Can the problem be split into simpler local or convex pieces?</strong></li>
-<li><strong>Only then choose the operator.</strong></li>
+<li>make the outside body;</li>
+<li>subtract the main opening;</li>
+<li>subtract local details;</li>
+<li>trim to the final limits.</li>
 </ol>
-<p>A compact mapping is:</p>
-<pre><code class="language-text">easy to describe what remains  -&gt; keep geometry
-easy to describe what is lost  -&gt; cutter + difference()
-easy to describe final limits  -&gt; clip + intersection()
-need transition between shapes -&gt; hull(), then use that hull in one of
-                                  the roles above
+<p>In OpenSCAD that often looks roughly like this:</p>
+<pre><code class="language-openscad">intersection() {
+    difference() {
+        outer_body();
+        inner_void();
+        local_cut();
+    }
+
+    final_bounds();
+}
 </code></pre>
-<h2>Chamfers as an example</h2>
-<p>A chamfer illustrates why the roles matter.</p>
-<h3>Outside edge: constructive version</h3>
-<p>If a smaller end profile and a normal profile are easy to define, a hull can
-directly build the chamfered outside body.</p>
-<h3>Inside edge: subtractive version</h3>
-<p>If an enlarged opening and its normal opening are easy to define, their hull
-can form a tapered cutter that is subtracted.</p>
-<h3>Final end position: clipping version</h3>
-<p>If profiles are deliberately extended so the chamfer can be constructed
-cleanly, a later intersection can trim them to the exact final dimensions.</p>
-<p>These are three different jobs:</p>
-<table>
-<thead>
-<tr>
-<th>Job</th>
-<th>Geometry role</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>create the outside slope</td>
-<td>keep geometry</td>
-</tr>
-<tr>
-<td>remove the inside slope</td>
-<td>cut geometry</td>
-</tr>
-<tr>
-<td>impose the exact end plane</td>
-<td>clip / trim geometry</td>
-</tr>
-</tbody>
-</table>
-<p>They should not be presented as one combined "chamfer method".</p>
-<h2>Prefer the simplest faithful construction</h2>
-<p>Two implementations can produce nearly identical solids while having very
-different cognitive cost.</p>
-<p>Prefer the construction that:</p>
+<p>Do not read that as "this is the correct formula for every model".</p>
+<p>The useful idea is the order:</p>
+<p><strong>Build the easy large shapes first. Add or remove local details afterward. Trim last when that keeps the earlier steps simpler.</strong></p>
+<h2>8. How to choose an approach</h2>
+<p>When you add a feature, ask these questions in this order.</p>
+<h3>What should physically happen?</h3>
+<p>Should material remain, disappear, or simply be limited to a final boundary?</p>
+<h3>Which shape is easiest to draw?</h3>
+<p>Sometimes the final surface is awkward, but the unwanted material is a very simple wedge or cylinder.</p>
+<p>In that case, draw the cutter.</p>
+<p>Sometimes the desired outside body is already easy to describe with two profiles.</p>
+<p>In that case, build the body directly.</p>
+<h3>Does hull() have to preserve an opening?</h3>
+<p>If yes, check whether the profile is concave.</p>
+<p>A global <code>hull()</code> may close that opening.</p>
+<h3>Can I split the problem?</h3>
+<p>A complicated shell often becomes much easier when you separately describe:</p>
 <ul>
-<li>matches the physical intent;</li>
-<li>is easy to explain with intermediate geometry;</li>
-<li>handles all required boundaries;</li>
-<li>has fewer special cases;</li>
-<li>remains stable across the supported parameter range;</li>
-<li>can be regression-tested.</li>
+<li>the outer body;</li>
+<li>the inner opening;</li>
+<li>a few local cutters;</li>
+<li>the final bounds.</li>
 </ul>
-<p>Do not replace a simple subtractive construction merely to make every feature
-use <code>hull()</code>. Likewise, do not avoid <code>hull()</code> when it expresses a transition
-more clearly than hand-built wedges.</p>
-<p>The modelling method should follow the geometry, not stylistic consistency.</p>
-<h2>Related examples</h2>
-<p>The archive contains small examples that demonstrate these roles independently:</p>
+<h2>9. Chamfers are a good example</h2>
+<p>A chamfer can be made in different ways depending on which geometry is simplest.</p>
+<p>For an outside edge:</p>
+<pre><code class="language-text">smaller outside profile
+        +
+normal outside profile
+        ↓
+      hull()
+        ↓
+material that stays
+</code></pre>
+<p>For an inside edge around an opening:</p>
+<pre><code class="language-text">larger opening
+      +
+normal opening
+      ↓
+    hull()
+      ↓
+cutting volume
+      ↓
+ difference()
+</code></pre>
+<p>If the part was deliberately made too long while constructing those chamfers:</p>
+<pre><code class="language-text">finished feature geometry
+        +
+final bounding box
+        ↓
+  intersection()
+        ↓
+exact final length
+</code></pre>
+<p>These are three separate jobs. They should not be treated as one fixed "chamfer recipe".</p>
+<h2>10. Prefer the simplest model that really works</h2>
+<p>It is easy to make an OpenSCAD model more complicated because a particular technique looks elegant.</p>
+<p>That is not automatically an improvement.</p>
+<p>A good construction should be:</p>
 <ul>
-<li><a href="../examples/rounded-rectangular-tube/v0.1/">Rounded rectangular tube</a> —
-  outside chamfer as keep geometry, inside chamfer as a cutting volume.</li>
-<li><a href="../examples/rounded-l-bracket/v0.1/">Rounded L bracket</a> —
-  the same roles plus deliberately overlong profiles followed by a final
-  trimming <code>intersection()</code>.</li>
+<li>easy to understand from the intermediate shapes;</li>
+<li>correct for all required edges and corners;</li>
+<li>reasonably short;</li>
+<li>stable when parameters change;</li>
+<li>easy to test.</li>
 </ul>
-<p>The examples are intentionally self-contained. This page provides the shared
-vocabulary for reasoning about them and about larger models in the archive.</p>
+<p>If a small cutter clearly describes the material that must disappear, using that cutter can be better than replacing it with several hulls.</p>
+<p>If two profiles naturally describe a sloped outside body, <code>hull()</code> can be the clearest solution.</p>
+<p>Use the operation that matches the geometry, not the operation that happens to be fashionable elsewhere in the model.</p>
+<h2>Examples in this archive</h2>
+<p>The <a href="../examples/rounded-rectangular-tube/v0.1/">rounded rectangular tube</a> shows two uses of <code>hull()</code>:</p>
+<ul>
+<li>the outside hull creates material that stays;</li>
+<li>the inside hull creates a cutter.</li>
+</ul>
+<p>The <a href="../examples/rounded-l-bracket/v0.1/">rounded L bracket</a> adds another idea:</p>
+<ul>
+<li>the profiles are deliberately made a little too long;</li>
+<li>the exact leg lengths are imposed afterward with one final <code>intersection()</code>.</li>
+</ul>
+<p>Those examples contain the detailed step-by-step construction. This page is meant to give the simpler vocabulary for understanding why those steps are used.</p>
 </main></body></html>

@@ -61,6 +61,13 @@ docs/                            Usage and publication notes
 Unversioned models use `source/scad/` to keep NopSCADlib's generated lowercase
 `readme.md` separate from the human-written model `README.md` on Windows.
 
+## OpenSCAD design concepts
+
+The archive-wide [OpenSCAD design concepts](docs/design-concepts.md) describe
+the shared modelling vocabulary used across examples and models: keep geometry,
+cut geometry, clip/trim geometry, convex hulls, and decomposition into simpler
+construction problems.
+
 ## Model catalog
 
 Current model:

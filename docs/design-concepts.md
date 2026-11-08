@@ -20,11 +20,11 @@ Once that is clear, the OpenSCAD operation becomes much easier to choose.
 
 ![Keep geometry](figures/concept_01_keep.png)
 
-In this example we want a solid with a sloped side.
+On the left you see the two profiles we start with. The orange profile is smaller; the blue profile is the normal size.
 
-The lower profile is a little smaller than the upper profile. `hull()` connects them.
+The arrow means: connect these profiles.
 
-The green result is the actual material we want to keep.
+On the right you see the green result. That is the actual material we want to keep.
 
 ~~~openscad
 hull() {
@@ -41,9 +41,9 @@ This is useful when the shape you want to **keep** is easy to describe directly.
 
 ![Cut geometry](figures/concept_02_cut.png)
 
-Here the grey block is the part.
+On the left, the grey block is the part and the red cylinder describes the material we want to remove.
 
-The red cylinder is not another part that will remain. It only describes the material we want to remove.
+On the right you see the result after `difference()`: the red cylinder is gone and only the hole remains.
 
 ~~~openscad
 difference() {
@@ -69,13 +69,9 @@ If the unwanted material is easier to draw than the final surface, drawing a cut
 
 ![Clip or trim geometry](figures/concept_03_clip.png)
 
-Sometimes it is easier to build a part slightly too large first.
+On the left, the orange part is deliberately too long. The transparent blue box marks the region that is allowed to remain.
 
-The orange shape in the picture is deliberately too long.
-
-The blue box says:
-
-**Only the material inside this box is allowed to remain.**
+On the right you see the result: only the overlap survives.
 
 That is what `intersection()` does.
 
@@ -98,9 +94,11 @@ An important point:
 
 ![Hull used for material to keep](figures/concept_04_hull_keep.png)
 
-The orange layer is smaller than the blue layer.
+On the left, the orange layer is smaller than the blue layer.
 
-`hull()` fills the space between them and creates the green sloped body.
+`hull()` connects them.
+
+On the right, the green sloped body is the result. In this case that hull is the material we actually want to keep.
 
 ~~~openscad
 hull() {
@@ -119,11 +117,13 @@ This is a natural way to make an outside chamfer when the two profiles are easy 
 
 This picture uses the same basic idea, but the purpose is different.
 
-The orange opening is larger than the blue opening.
+On the left are two opening profiles: the orange opening is larger than the blue one.
 
-`hull()` connects those two openings and creates the red tapered volume.
+In the middle, `hull()` connects them and creates the red tapered solid.
 
-That red shape is then used as a cutter:
+On the right, that red solid has been subtracted from the body together with the normal opening. The result is the green part with a chamfer around the hole.
+
+That red hull is therefore only a cutter:
 
 ~~~openscad
 difference() {
@@ -181,12 +181,12 @@ If the shape has an important opening, notch or re-entrant corner, you often nee
 
 A finished part can look complicated while the construction stays simple.
 
-A useful sequence is:
+The picture reads from left to right:
 
-1. make the outside body;
+1. start with an easy outside body;
 2. subtract the main opening;
-3. subtract local details;
-4. trim to the final limits.
+3. subtract a small local detail;
+4. trim the overlong end to its final length.
 
 In OpenSCAD that often looks roughly like this:
 

@@ -4,6 +4,14 @@
 set -euo pipefail
 trap 'echo "Validation failed on line $LINENO: $BASH_COMMAND" >&2' ERR
 
+test -s "docs/design-concepts.md"
+test -s "docs/design-concepts.html"
+grep -Fq 'OpenSCAD design concepts' "docs/design-concepts.html"
+grep -Fq 'Keep geometry' "docs/design-concepts.html"
+grep -Fq 'Cut geometry' "docs/design-concepts.html"
+grep -Fq 'Clip / trim geometry' "docs/design-concepts.html"
+grep -Fq 'hull() is a shape generator, not a Boolean role' "docs/design-concepts.html"
+
 spacer="examples/spacer/v0.1"
 test -s "$spacer/stls/spacer.stl"
 test -s "$spacer/stls/spacer.png"

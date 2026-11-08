@@ -32,6 +32,25 @@ grep -Fq 'Why the chamfer construction stays simple' "$tube/readme.html"
 grep -Fq 'The shell itself is therefore not created by one complicated hull' "$tube/readme.html"
 grep -Fq 'figures/rounded_rectangular_tube.png' "$tube/readme.html"
 
+lbracket="examples/rounded-l-bracket/v0.1"
+test -s "$lbracket/scad/rounded_l_bracket.scad"
+test -s "$lbracket/README.md"
+test -s "$lbracket/readme.html"
+test -s "$lbracket/figures/rounded_l_bracket.png"
+test -s "$lbracket/design/rounded_l_bracket_explained.scad"
+for stage in \
+  01_outer_profile 02_inner_profile 03_shell_profile 04_outer_chamfer_inputs \
+  05_outer_body 06_inner_chamfer_inputs 07_inner_chamfer_cut 08_before_trim \
+  09_final_trim 10_chamfer_closeup; do
+  test -s "$lbracket/design/lbracket_$stage.png"
+  grep -Fq "design/lbracket_$stage.png" "$lbracket/README.md"
+  grep -Fq "design/lbracket_$stage.png" "$lbracket/readme.html"
+done
+grep -Fq 'Rounded L bracket with end chamfers' "$lbracket/README.md"
+grep -Fq 'Why the deliberate overhang is useful' "$lbracket/readme.html"
+grep -Fq 'Trim the leg ends' "$lbracket/readme.html"
+grep -Fq 'figures/rounded_l_bracket.png' "$lbracket/readme.html"
+
 bracket="models/corner_bracket/v0.1"
 test -s "$bracket/stls/corner_bracket.stl"
 test -s "$bracket/stls/access_plugs.stl"

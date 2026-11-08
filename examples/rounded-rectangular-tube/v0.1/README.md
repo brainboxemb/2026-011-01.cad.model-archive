@@ -16,6 +16,10 @@ The interesting part is not the tube itself, but the construction method: the ou
 
 The walkthrough has a `design_step` selector and exposes every important intermediate shape.
 
+For the shared terminology used here — **keep geometry**, **cut geometry**,
+**clip / trim geometry**, and the role of `hull()` — see the
+[OpenSCAD design concepts](../../../docs/design-concepts.html).
+
 ## Parameters
 
 | Parameter | Default | Meaning |

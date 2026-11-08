@@ -112,6 +112,7 @@ trap - EXIT
 in_container /work/models/corner_bracket/v0.1/docs \
   bash -c 'for page in mounting-options hull-guide polygon-guide chamfer-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
-python -m markdown -x tables -x sane_lists -x fenced_code docs/design-concepts.md > docs/design-concepts.html
+in_container /work/docs \
+  bash -c 'python -m markdown -x tables -x sane_lists -x fenced_code design-concepts.md > design-concepts.html'
 
 bash scripts/ci/validate-docs.sh

@@ -80,19 +80,23 @@ module concept_cut() {
 }
 
 module concept_clip() {
-    // LEFT: orange part is too long; blue box is the allowed final region.
+    // LEFT: orange part is too long.
     translate([-44,0,0]) {
         color([0.95,0.55,0.18])
             translate([-6,0,0])
                 cube([42,16,8]);
-        color([0.20,0.55,0.90,0.42])
-            cube([30,16,10]);
+
+        // Blue plate floats above it and shows the allowed X/Y footprint.
+        // Keeping it separate avoids hiding the orange overhang.
+        color([0.20,0.55,0.90])
+            translate([0,0,11])
+                cube([30,16,0.8]);
     }
 
     translate([-3,8,4])
         arrow_x(11);
 
-    // RIGHT: only the overlap remains.
+    // RIGHT: only the part inside that footprint remains.
     translate([20,0,0])
         color([0.25,0.70,0.40])
             intersection() {
@@ -188,42 +192,26 @@ module l_2d(size=24, wall=7) {
 }
 
 module concept_convexity() {
-    // LEFT: convex rounded rectangle. Hull follows the expected boundary.
+    // LEFT: a convex rounded rectangle. Its convex hull changes nothing.
     translate([-34,0,0]) {
-        color([0.25,0.70,0.40,0.90])
-            hull() {
-                translate([0,0,0])
-                    linear_extrude(0.2)
-                        offset(delta=-1.3)
-                            rounded_box_2d(26,18,4);
-                translate([0,0,4])
-                    linear_extrude(0.2)
-                        rounded_box_2d(26,18,4);
-            }
+        color([0.25,0.70,0.40])
+            linear_extrude(0.8)
+                hull()
+                    rounded_box_2d(26,18,4);
     }
 
-    // RIGHT: concave L. Red hull bridges the missing inside corner.
+    // RIGHT: grey is the intended L. Red underneath is hull(L).
+    // The red triangle visible in the missing corner is the unwanted bridge.
     translate([20,0,0]) {
-        color([0.65,0.70,0.76,0.50])
-            translate([0,0,4])
-                linear_extrude(0.25)
+        color([0.90,0.25,0.20])
+            linear_extrude(0.6)
+                hull()
                     l_2d();
 
-        color([0.90,0.25,0.20,0.72])
-            hull() {
-                translate([0,0,0])
-                    linear_extrude(0.2)
-                        offset(delta=-1)
-                            l_2d();
-                translate([0,0,4])
-                    linear_extrude(0.2)
-                        l_2d();
-            }
-
-        // The translucent box marks the quadrant that should remain open.
-        color([0.20,0.55,0.90,0.18])
-            translate([7,7,-0.2])
-                cube([17,17,4.6]);
+        color([0.65,0.70,0.76])
+            translate([0,0,0.8])
+                linear_extrude(0.6)
+                    l_2d();
     }
 }
 

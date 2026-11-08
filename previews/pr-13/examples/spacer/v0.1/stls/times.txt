@@ -1,3 +1,3 @@
 {
-    "spacer.stl": 0.062
+    "spacer.stl": 0.053
 }

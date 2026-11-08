@@ -66,6 +66,71 @@
 </tbody>
 </table>
 <p>The inside width, depth and radius are derived from the outside dimensions and wall thickness.</p>
+<h2>Visual design walkthrough</h2>
+<p>The editable walkthrough is in
+<a href="design/rounded_rectangular_tube_explained.scad">design/rounded_rectangular_tube_explained.scad</a>.
+Use the <code>design_step</code> selector to inspect the construction one operation at a time.</p>
+<p>The renders below deliberately keep the same geometry visible while changing only the operation being explained.</p>
+<h3>Step A — Outer and inner 2D profiles</h3>
+<p><img alt="Outer and inner profiles" src="design/tube_01_profiles.png" /></p>
+<p>The blue profile is the rounded outside boundary. The orange profile is the smaller rounded inside boundary derived from the wall thickness.</p>
+<h3>Step B — The two important layers for the outside chamfer</h3>
+<p><img alt="Outside chamfer input layers" src="design/tube_02_outer_chamfer_inputs.png" /></p>
+<p>At the end face the outer profile is inset by <code>outer_chamfer</code>. Only <code>0.4 mm</code> farther into the part the full outside profile is restored. These are the two boundaries that define the lower outside chamfer.</p>
+<h3>Step C — Hull the outside profiles</h3>
+<p><img alt="Outside hull" src="design/tube_03_outer_hull.png" /></p>
+<p>Because the outside rounded rectangle is <strong>convex</strong>, <code>hull()</code> can connect the smaller end profile to the full profile without filling any region that is supposed to stay open.</p>
+<h3>Step D — Subtract the normal inner opening</h3>
+<p><img alt="Hollow tube before the inner chamfer" src="design/tube_04_hollow_tube.png" /></p>
+<p>The continuous inner profile is now subtracted. This produces the hollow tube, but its inside end edge is still sharp.</p>
+<h3>Step E — The two layers for the inside chamfer</h3>
+<p><img alt="Inside chamfer input layers" src="design/tube_05_inner_chamfer_inputs.png" /></p>
+<p>This time the operation is reversed. At the end face the <strong>hole is enlarged</strong> by <code>inner_chamfer</code>. At <code>Z = inner_chamfer</code> the hole has returned to its normal size.</p>
+<p>These layers are not material to keep. They define a cutting volume.</p>
+<h3>Step F — Hull the inside cutting volume</h3>
+<p><img alt="Inside chamfer cutting volume" src="design/tube_06_inner_chamfer_cut.png" /></p>
+<p>Again, both profiles are convex rounded rectangles. Their hull is therefore a simple tapered ring-shaped boundary around the opening. The resulting solid is used only as a cutter.</p>
+<h3>Step G — Subtract that cutter</h3>
+<p><img alt="Bottom inside chamfer result" src="design/tube_07_bottom_chamfer_result.png" /></p>
+<p>Subtracting the cutter removes the sharp inside edge while leaving the rest of the wall unchanged.</p>
+<h3>Step H — Mirror the operation at the top</h3>
+<p><img alt="Finished tube" src="design/tube_08_final.png" /></p>
+<p>The same inside cutter is mirrored at the opposite end. The outside chamfers were already created symmetrically by <code>outer_body()</code>.</p>
+<h2>Why this is much easier than the corner bracket</h2>
+<p>This comparison is the main reason for keeping the example.</p>
+<p><img alt="Convex tube profile versus concave L profile" src="design/tube_09_convex_vs_concave.png" /></p>
+<p>On the <strong>left</strong>, the rounded rectangle is convex. A straight line between any two points in the profile remains inside the profile. A hull between two nested rounded rectangles therefore behaves exactly as wanted.</p>
+<p>On the <strong>right</strong>, the simplified bracket cross-section is an L. That shape is <strong>concave</strong>: it deliberately contains a missing quadrant. But <code>hull()</code> always creates a convex result. If it is applied globally to two L-shaped layers, it bridges across that missing quadrant.</p>
+<p>That gives the key distinction:</p>
+<table>
+<thead>
+<tr>
+<th>Rounded tube construction</th>
+<th>Corner bracket construction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hull a convex <strong>outside profile</strong></td>
+<td>Material profile itself is a concave L</td>
+</tr>
+<tr>
+<td>Hull a convex <strong>inside opening</strong> separately</td>
+<td>A global hull would bridge the open quadrant</td>
+</tr>
+<tr>
+<td>Subtract the inner hull from the outer body</td>
+<td>Extra clipping or local subtractive geometry is required</td>
+</tr>
+<tr>
+<td>No special corner junction between separate bevel systems</td>
+<td>Elephant-foot relief must also meet the side-edge bevels at the arm tips</td>
+</tr>
+</tbody>
+</table>
+<p>So the finished tube is hollow and is not itself a convex solid. The reason the code stays simple is that the problem has been decomposed into <strong>two convex hull operations</strong>: one for the outside body and one for the inside cutting volume.</p>
+<p>The corner bracket is harder because its important boundary is already concave before the chamfer is added. The current bracket implementation therefore needs an outer convex envelope plus <code>intersection()</code>, separate local opening hulls for the elephant-foot relief, and local miter correction where that relief meets the side chamfer.</p>
+<p>This is also why the older per-edge <code>ef_cuts()</code> solution remains attractive: it avoids asking one global hull to understand the concave L at all.</p>
 <h2>1. Build the rounded 2D profiles</h2>
 <p>The basic rounded rectangle is made from four circles. hull() wraps those circles with the smallest convex shape that contains them, producing straight sides and rounded corners.</p>
 <pre><code class="language-openscad">module rounded_rectangle(width, depth, radius) {

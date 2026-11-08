@@ -112,7 +112,18 @@ trap - EXIT
 in_container /work/models/corner_bracket/v0.1/docs \
   bash -c 'for page in mounting-options hull-guide polygon-guide chamfer-guide; do python -m markdown -x tables -x sane_lists "$page.md" > "$page.html"; done'
 
-in_container /work/docs \
-  bash -c 'python -m markdown -x tables -x sane_lists -x fenced_code design-concepts.md > design-concepts.html'
+mkdir -p docs/figures
+in_container /work/docs bash -c '
+  stages=(01_keep 02_cut 03_clip 04_hull_keep 05_hull_cut 06_convexity 07_decompose)
+  for stage in "${stages[@]}"; do
+    xvfb-run -a openscad --imgsize=900,560 --viewall --autocenter --projection=ortho \
+      -D "concept_step=\"$stage\"" \
+      -o "figures/concept_$stage.png" \
+      design-concepts.scad
+    test -s "figures/concept_$stage.png"
+  done
+
+  python -m markdown -x tables -x sane_lists -x fenced_code design-concepts.md > design-concepts.html
+'
 
 bash scripts/ci/validate-docs.sh

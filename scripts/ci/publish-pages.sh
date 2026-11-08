@@ -44,7 +44,7 @@ else
   cat site/model-header.html "$tube/readme.html" > "$target/$tube/index.html"
   printf '\n</main></body></html>\n' >> "$target/$tube/index.html"
   cp "$tube/README.md" "$target/$tube/README.md"
-  cp -a "$tube/scad" "$tube/figures" "$target/$tube/"
+  cp -a "$tube/scad" "$tube/figures" "$tube/design" "$target/$tube/"
 
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"

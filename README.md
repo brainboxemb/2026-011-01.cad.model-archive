@@ -49,6 +49,7 @@ models/<model>/vX.Y/scad/        Source for a versioned model
 models/<model>/source/scad/      Source without numbered versions
 examples/spacer/v0.1/scad/       Minimal NopSCADlib example
 examples/rounded-rectangular-tube/v0.1/scad/  Standalone rounded tube chamfer example
+examples/rounded-l-bracket/v0.1/scad/          Standalone rounded L-bracket chamfer example
 models/corner_bracket/v0.1/scad/    Main bracket and inspection helper (2 source files)
 models/corner_bracket/v0.1/design/  OpenSCAD teaching demos and generated images
 models/corner_bracket/v0.1/docs/    Documentation builder and illustrated guides
@@ -74,6 +75,9 @@ For a minimal NopSCADlib demonstration, try the
 For a standalone geometry example, see the
 [rounded rectangular tube](examples/rounded-rectangular-tube/v0.1/scad/rounded_rectangular_tube.scad),
 which demonstrates rounded rectangular profiles plus separate inside and outside end chamfers.
+
+The [rounded L bracket](examples/rounded-l-bracket/v0.1/scad/rounded_l_bracket.scad)
+uses the same small-example style for an L-shaped shell built from extended convex profiles, with final leg trimming applied last.
 
 - [Windows modeling workflow](docs/WORKFLOW.md)
 - [Shared CAD toolchain](https://github.com/brainboxemb/docker.scad-toolchain) (CI only)

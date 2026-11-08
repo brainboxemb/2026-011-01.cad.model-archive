@@ -26,6 +26,7 @@ jobs:
           name: nopscadlib-generated-documentation
           path: |
             examples/spacer/v0.1/
+            examples/rounded-rectangular-tube/v0.1/
             models/corner_bracket/v0.1/
           retention-days: 14
 
@@ -37,6 +38,9 @@ jobs:
         run: |
           bash scripts/ci/publish-pages.sh
           echo "### Browser preview for PR #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "Rounded tube example:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/examples/rounded-rectangular-tube/v0.1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Corner bracket chamfer guide:" >> "$GITHUB_STEP_SUMMARY"
           echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/models/corner_bracket/v0.1/docs/chamfer-guide.html" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish GitHub Pages (main only)

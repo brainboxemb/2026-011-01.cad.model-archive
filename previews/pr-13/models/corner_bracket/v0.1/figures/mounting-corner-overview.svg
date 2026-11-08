@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 465" role="img" aria-label="Unfolded top-to-bottom view of the two perpendicular arms of an L bracket">
+<rect width="960" height="465" fill="#fff"/><rect width="960" height="8" fill="#335f85"/>
+<text x="32" y="44" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#203246">One L bracket has TWO perpendicular mounting points</text>
+<text x="32" y="69" font-family="Arial,sans-serif" font-size="14" fill="#657789">Unfolded section: both arms follow the same fastener arrangement. OUTSIDE is at the top, INSIDE at the bottom.</text>
+<rect x="35" y="94" width="425" height="340" rx="12" fill="#f6f9fc" stroke="#dae4ee"/>
+<rect x="500" y="94" width="425" height="340" rx="12" fill="#f6f9fc" stroke="#dae4ee"/>
+<text x="60" y="124" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#335f85">Fixing point in the horizontal arm</text>
+<text x="523" y="124" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#335f85">Fixing point in the vertical arm</text>
+<text x="175" y="152" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#335f85">OUTSIDE</text>
+<text x="635" y="152" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#335f85">OUTSIDE</text>
+<text x="181" y="415" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#d68c3d">INSIDE</text>
+<text x="644" y="415" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#d68c3d">INSIDE</text><rect x="115" y="174" width="255" height="48" fill="#335f85" stroke="#244968" stroke-width="2"/>
+ <rect x="115" y="222" width="255" height="116" fill="#eed4aa" stroke="#bd9064" stroke-width="2"/>
+ <rect x="115" y="338" width="255" height="27" fill="#d68c3d" fill-opacity=".48" stroke="#ae732e" stroke-dasharray="8 4" stroke-width="2"/><line x1="120" y1="225" x2="139" y2="334" stroke="#d8af7b"/><line x1="157" y1="225" x2="176" y2="334" stroke="#d8af7b"/><line x1="194" y1="225" x2="213" y2="334" stroke="#d8af7b"/><line x1="231" y1="225" x2="250" y2="334" stroke="#d8af7b"/><line x1="268" y1="225" x2="287" y2="334" stroke="#d8af7b"/><line x1="305" y1="225" x2="324" y2="334" stroke="#d8af7b"/><line x1="342" y1="225" x2="361" y2="334" stroke="#d8af7b"/><line x1="243" y1="202" x2="243" y2="362" stroke="#657481" stroke-width="12"/>
+ <polygon points="224,199 232,186 254,186 262,199 254,210 232,210" fill="#697d88" stroke="#40505d" stroke-width="2"/>
+ <rect x="218" y="363" width="50" height="17" rx="6" fill="#657481" stroke="#435461" stroke-width="1.5"/><rect x="582" y="174" width="255" height="48" fill="#335f85" stroke="#244968" stroke-width="2"/>
+ <rect x="582" y="222" width="255" height="116" fill="#eed4aa" stroke="#bd9064" stroke-width="2"/>
+ <rect x="582" y="338" width="255" height="27" fill="#d68c3d" fill-opacity=".48" stroke="#ae732e" stroke-dasharray="8 4" stroke-width="2"/><line x1="587" y1="225" x2="606" y2="334" stroke="#d8af7b"/><line x1="624" y1="225" x2="643" y2="334" stroke="#d8af7b"/><line x1="661" y1="225" x2="680" y2="334" stroke="#d8af7b"/><line x1="698" y1="225" x2="717" y2="334" stroke="#d8af7b"/><line x1="735" y1="225" x2="754" y2="334" stroke="#d8af7b"/><line x1="772" y1="225" x2="791" y2="334" stroke="#d8af7b"/><line x1="809" y1="225" x2="828" y2="334" stroke="#d8af7b"/><line x1="710" y1="202" x2="710" y2="362" stroke="#657481" stroke-width="12"/>
+ <polygon points="691,199 699,186 721,186 729,199 721,210 699,210" fill="#697d88" stroke="#40505d" stroke-width="2"/>
+ <rect x="685" y="363" width="50" height="17" rx="6" fill="#657481" stroke="#435461" stroke-width="1.5"/><text x="58" y="392" font-family="Arial,sans-serif" font-size="13" fill="#657789">Blue outside bracket · beige plywood · orange optional inner support.</text>
+<text x="35" y="455" font-family="Arial,sans-serif" font-size="13" fill="#657789">These two views are unfolded. In the real corner bracket, the mounting axes are at right angles. The orange support is not modeled in v0.1.</text>
+</svg>

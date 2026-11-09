@@ -65,7 +65,7 @@ module narrow_layer() {
 }
 ```
 
-### D. Connect them with hull
+### window_depth. Connect them with hull
 
 `hull()` creates the connecting sloped faces. It does not need an
 explicit polygon for each side.
@@ -106,13 +106,13 @@ the shapes are **extruded polygons rather than horizontal rectangles**.
 
 This section follows
 [`corner_bracket.scad`](../scad/corner_bracket.scad), with the
-default settings `W = 20` mm and `cs = 2` mm.
+default settings `bracket_width = 20` mm and `side_edge_chamfer = 2` mm.
 
 ### Step 2.1 — Start with the actual L profile
 
 Step 1 of the [model walkthrough](../index.html) builds a 2D
-`profile()` from the L polygon plus the rounded inside corner.
-`linear_extrude(height = W, center = true)` gives that shape a
+`bracket_profile_2d()` from the L polygon plus the rounded inside corner.
+`linear_extrude(height = bracket_width, center = true)` gives that shape a
 width of 20 mm. `rotate([90,0,0])` makes the extrusion run along
 the **Y axis**, so its side faces lie at `Y = -10` and `Y = +10`.
 
@@ -123,17 +123,17 @@ face. We want to keep the *middle* of the part unchanged.
 
 ### Step 2.2 — Build a temporary outer envelope
 
-The source defines `outer_shape()` as a **convex polygon** containing
+The source defines `outer_chamfer_envelope_2d()` as a **convex polygon** containing
 the L. It deliberately bridges the open inside region of the L.
 This is not the printable part; it is only a convenient shape for
 controlling the outside edges.
 
 ```openscad
-module outer_shape() {
+module outer_chamfer_envelope_2d() {
     polygon([
-        [armH, -armV], [armH, t - c], [armH - c, t],
-        [-t + ce, t], [-t, t - ce], [-t, -armV + c],
-        [-t + c, -armV]
+        [horizontal_arm_length, -vertical_arm_length], [horizontal_arm_length, wall_thickness - arm_end_chamfer], [horizontal_arm_length - arm_end_chamfer, wall_thickness],
+        [-wall_thickness + outer_corner_chamfer, wall_thickness], [-wall_thickness, wall_thickness - outer_corner_chamfer], [-wall_thickness, -vertical_arm_length + arm_end_chamfer],
+        [-wall_thickness + arm_end_chamfer, -vertical_arm_length]
     ]);
 }
 ```
@@ -146,24 +146,24 @@ inside boundary afterward.
 ### Step 2.3 — Define two differently sized 3D envelopes
 
 The first envelope has the **full 2D outside outline**, but its
-extrusion is only `W - 2*cs = 16` mm wide. It occupies
+extrusion is only `bracket_width - 2*side_edge_chamfer = 16` mm wide. It occupies
 `Y = -8 ... +8`. It preserves the full outside dimensions in
 the middle of the bracket.
 
 The second envelope reaches the **full 20 mm width**, from
-`Y = -10 ... +10`, but its 2D outline is inset by `cs = 2` mm
-using `offset(delta = -cs)`. At the outermost side faces, its
+`Y = -10 ... +10`, but its 2D outline is inset by `side_edge_chamfer = 2` mm
+using `offset(delta = -side_edge_chamfer)`. At the outermost side faces, its
 perimeter is therefore smaller.
 
 ```openscad
 // Full perimeter, narrower Y span (-8 .. +8 mm).
-linear_extrude(height = W - 2 * cs, center = true)
-    outer_shape();
+linear_extrude(height = bracket_width - 2 * side_edge_chamfer, center = true)
+    outer_chamfer_envelope_2d();
 
 // Inset perimeter, full Y span (-10 .. +10 mm).
-linear_extrude(height = W, center = true)
-    offset(delta = -cs)
-        outer_shape();
+linear_extrude(height = bracket_width, center = true)
+    offset(delta = -side_edge_chamfer)
+        outer_chamfer_envelope_2d();
 ```
 
 Notice that **width** here refers to the Y direction, while
@@ -175,13 +175,13 @@ boundaries rather than joining two isolated flat plates.
 ### Step 2.4 — Hull the envelopes, then orient them
 
 ```openscad
-module side_chamfer_env() {
+module outer_side_chamfer_keep_envelope() {
     rotate([90, 0, 0]) hull() {
-        linear_extrude(height = W - 2 * cs, center = true)
-            outer_shape();
-        linear_extrude(height = W, center = true)
-            offset(delta = -cs)
-                outer_shape();
+        linear_extrude(height = bracket_width - 2 * side_edge_chamfer, center = true)
+            outer_chamfer_envelope_2d();
+        linear_extrude(height = bracket_width, center = true)
+            offset(delta = -side_edge_chamfer)
+                outer_chamfer_envelope_2d();
     }
 }
 ```
@@ -197,17 +197,17 @@ The limiting envelope is convex, so it also occupies the space
 *between* the two arms. We must **not** print that filled-in region.
 
 ```openscad
-module body() {
+module outer_side_chamfered_body() {
     intersection() {
         rotate([90, 0, 0])
-            linear_extrude(height = W, center = true)
-                profile();
-        if (cs > 0)
-            side_chamfer_env();
+            linear_extrude(height = bracket_width, center = true)
+                bracket_profile_2d();
+        if (side_edge_chamfer > 0)
+            outer_side_chamfer_keep_envelope();
         else
             rotate([90, 0, 0])
-                linear_extrude(height = W, center = true)
-                    outer_shape();
+                linear_extrude(height = bracket_width, center = true)
+                    outer_chamfer_envelope_2d();
     }
 }
 ```
@@ -226,11 +226,11 @@ Three settings can be easy to confuse:
 
 | Parameter | Where it works | How it is currently implemented |
 | --- | --- | --- |
-| `c` and `ce` | Arm tips and large outside corner, in the side profile | Vertices in the initial 2D `polygon()` |
-| `cs` | Outer edges on the two broad Y side faces | `hull()` envelope and `intersection()` |
-| `ef` | Printed-side contact edges, the inner radius, and arm-tip junctions | Two opening hulls plus local miter hulls, removed with `difference()` |
+| `arm_end_chamfer` and `outer_corner_chamfer` | Arm tips and large outside corner, in the side profile | Vertices in the initial 2D `polygon()` |
+| `side_edge_chamfer` | Outer edges on the two broad Y side faces | `hull()` envelope and `intersection()` |
+| `elephant_foot_relief` | Printed-side contact edges, the inner radius, and arm-tip junctions | Two opening hulls plus local miter hulls, removed with `difference()` |
 
-The separate `ef` hulls are necessary because the outer `cs` envelope
+The separate `elephant_foot_relief` hulls are necessary because the outer `side_edge_chamfer` envelope
 is made around the **outside convex perimeter**, whereas the relief
 must follow the wood-facing edges and join those outer bevels at
 the arm tips.
@@ -245,16 +245,16 @@ Here is the actual approach:
 1. `inside_opening_2d()` draws the **empty area between the two arms**:
    the open quadrant, with the rounded corner-fill region excluded.
    Its boundary follows the straight plywood faces and the radius.
-2. At each printed side (`Y = ±10` mm), `offset(delta = ef)`
-   expands that *empty* shape by `ef = 0.6` mm.
+2. At each printed side (`Y = ±10` mm), `offset(delta = elephant_foot_relief)`
+   expands that *empty* shape by `elephant_foot_relief = 0.6` mm.
 3. At `Y = ±9.4` mm, the original opening is left unchanged.
 4. A separate `hull()` on **each side** joins the expanded and
    unexpanded opening. `difference()` subtracts both local transition
    volumes from the actual L bracket.
-5. At each arm-tip diagonal where the `cs` bevel and `ef` bevel meet,
+5. At each arm-tip diagonal where the `side_edge_chamfer` bevel and `elephant_foot_relief` bevel meet,
    `relief_corner_miters()` creates another short **triangular miter hull**.
    This prevents a flat unfinished end at that small corner.
-6. The outer `cs` bevel still comes from `side_chamfer_env()`,
+6. The outer `side_edge_chamfer` bevel still comes from `outer_side_chamfer_keep_envelope()`,
    using the hull and intersection described in Section 2.
 
 The essential difference is **what is being hulled**: Section 2 forms a
@@ -264,11 +264,11 @@ expand the opening through the full 20 mm width.
 
 ```openscad
 module inside_relief_envelope() {
-    if (ef > 0)
+    if (elephant_foot_relief > 0)
         for (side = [-1, 1])
             hull() {
-                opening_layer(side * (W/2 - ef));
-                opening_layer(side * W/2, ef);
+                opening_layer(side * (bracket_width/2 - elephant_foot_relief));
+                opening_layer(side * bracket_width/2, elephant_foot_relief);
             }
 }
 ```
@@ -288,10 +288,10 @@ For a **convex straight arm**, the editable
 [combined-chamfer experiment](../design/combined_chamfer_hull.scad)
 joins four rectangular layers in one global hull:
 
-1. Bottom layer inset by `ef = 0.6` mm.
-2. Full-width layer at height `ef`.
+1. Bottom layer inset by `elephant_foot_relief = 0.6` mm.
+2. Full-width layer at height `elephant_foot_relief`.
 3. Full-width layer before the top bevel.
-4. Top layer inset by `cs = 2` mm.
+4. Top layer inset by `side_edge_chamfer = 2` mm.
 
 ![Four layers for the combined bevel experiment](../design/combined_chamfer_layers.png)
 

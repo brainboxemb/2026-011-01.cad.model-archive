@@ -1,201 +1,118 @@
 # How hull() is used in the Corner Bracket
 
-`hull()` is useful in the bracket, but only for a specific job: creating the **outside side-chamfer keep envelope**.
+The simplified bracket uses `hull()` for **two different jobs**:
 
-The elephant-foot print relief no longer uses hulls in production. It is described directly as cut geometry.
+1. the outside side chamfer: the hull describes material that may **remain**;
+2. the elephant-foot side relief: the hull describes material that must be **removed**.
 
-For the shared vocabulary of **keep**, **cut** and **clip** geometry, start with the archive-wide [OpenSCAD design concepts](../../../docs/design-concepts.html).
+For the shared vocabulary, start with [OpenSCAD design concepts](../../../docs/design-concepts.html).
 
-The rounded **inside** corner is a separate 2D construction; see the [Polygon and inside-corner guide](polygon-guide.html).
-
-## 1. First see hull() on a simple bar
-
-### A. Plain bar
+## 1. hull() on a simple convex bar
 
 ![Plain rectangular bar](../design/hull_01_original_bar.png)
 
-A rectangular bar starts with square edges.
-
-### B. Full-size layer
-
 ![Wide layer](../design/hull_02_wide_layer.png)
 
-The first thin layer has the full footprint.
-
-### C. Smaller layer
-
 ![Wide and narrow layers](../design/hull_03_two_layers.png)
-
-A second layer is smaller.
-
-### D. Connect them
 
 ![Hull between the two layers](../design/hull_04_hull.png)
 
 ~~~openscad
-module sloped_hull() {
-    hull() {
-        wide_layer();
-        narrow_layer();
-    }
+hull() {
+    wide_layer();
+    narrow_layer();
 }
 ~~~
-
-`hull()` fills the space between the two layers with straight sloping faces.
-
-### E. Result
 
 ![Sloped bar](../design/hull_05_result.png)
 
-For this simple convex bar, the hull already has the intended outside shape.
+For a convex shape, the transition is straightforward.
 
-## 2. Why the L bracket needs a helper envelope
+## 2. Outside side chamfer: hull as keep geometry
 
-The real bracket profile has an inward corner. It is concave.
+The real bracket is an L and therefore concave. A direct hull of the L would fill its open inside corner.
 
-If we hull the real L directly, `hull()` bridges across the open quadrant. That is normal behaviour: a hull is always convex.
+The production model instead hulls a temporary convex outside outline in `outer_side_chamfer_keep_envelope()`.
 
-So the production model does not ask `hull()` to preserve the L.
-
-Instead it separates the problem:
-
-1. make the real L-shaped `profile_body()`;
-2. make a temporary convex outside envelope;
-3. use `hull()` only on that convex envelope;
-4. clip the result with the real L.
-
-## 3. The temporary outside outline
-
-`outer_chamfer_envelope_2d()` follows the bracket's outside boundary but deliberately fills the inside opening.
+The result is clipped with the real `profile_body()`:
 
 ~~~openscad
-module outer_chamfer_envelope_2d() {
-    polygon([
-        [horizontal_arm_length, -vertical_arm_length],
-        [horizontal_arm_length,
-         wall_thickness - arm_end_chamfer],
-        [horizontal_arm_length - arm_end_chamfer,
-         wall_thickness],
-        [-wall_thickness + outer_corner_chamfer,
-         wall_thickness],
-        [-wall_thickness,
-         wall_thickness - outer_corner_chamfer],
-        [-wall_thickness,
-         -vertical_arm_length + arm_end_chamfer],
-        [-wall_thickness + arm_end_chamfer,
-         -vertical_arm_length]
-    ]);
+intersection() {
+    profile_body();
+    outer_side_chamfer_keep_envelope();
 }
 ~~~
 
-This shape is not printable. It is only a helper.
+Here the hull describes material we are allowed to **keep**.
 
-## 4. Build the side-chamfer keep envelope
+## 3. Elephant-foot side relief: hull as cut geometry
 
-The first extrusion keeps the full outside perimeter but is narrower than the final bracket.
+The plywood-facing side relief is the opposite kind of problem.
 
-The second extrusion reaches the full `bracket_width`, but its perimeter is inset by `side_edge_chamfer`.
+Instead of separate cutters for the horizontal edge, rounded corner and vertical edge, `inside_opening_2d()` describes the whole open region once.
+
+At the print face the opening is enlarged by `elephant_foot_relief`. One relief-depth inward it has its normal size.
+
+`hull()` connects those two layers:
 
 ~~~openscad
-module outer_side_chamfer_keep_envelope() {
-    rotate([90, 0, 0])
-        hull() {
-            linear_extrude(
-                height = bracket_width - 2 * side_edge_chamfer,
-                center = true
-            )
-                outer_chamfer_envelope_2d();
+hull() {
+    inside_side_relief_layer(
+        side * (bracket_width / 2 - elephant_foot_relief)
+    );
 
-            linear_extrude(height = bracket_width, center = true)
-                offset(delta = -side_edge_chamfer)
-                    outer_chamfer_envelope_2d();
-        }
+    inside_side_relief_layer(
+        side * bracket_width / 2,
+        elephant_foot_relief
+    );
 }
 ~~~
 
-With `side_edge_chamfer = 2`, the outer 2 mm on each broad side face slope inward.
+That hull is a **cutting volume**.
 
-This hull is **keep geometry**: it describes the outer volume we want to allow.
+It follows the complete contact path continuously, including the rounded inside corner.
 
-## 5. Clip it with the real bracket
+A separate hull is used on the opposite broad face only because the bracket can be printed on either side.
 
-The keep envelope is convex and therefore also occupies the open quadrant of the L.
+## 4. Why the arm-tip correction stays separate
 
-The real bracket is restored with `intersection()`:
+The continuous opening hull follows the plywood-facing geometry correctly.
 
-~~~openscad
-module outer_side_chamfered_body() {
-    intersection() {
-        profile_body();
-        outer_side_chamfer_keep_envelope();
-    }
-}
-~~~
+At an arm tip it meets the **diagonal outside side chamfer**. That is a local three-edge junction.
 
-The two operands have different jobs:
+Only that tiny junction needs an extra correction.
 
-- `profile_body()` preserves the real L opening and rounded inside corner;
-- `outer_side_chamfer_keep_envelope()` limits the outside side edges.
-
-`intersection()` only keeps material that belongs to both.
-
-## 6. Why elephant-foot relief does not use hull() anymore
-
-The elephant-foot relief is physically different.
-
-We do not need to invent a new outside envelope. We know exactly which small wedges of material should be removed from the print-facing edges.
-
-So production now uses:
-
-~~~openscad
-module print_compensated_body() {
-    difference() {
-        outer_side_chamfered_body();
-        elephant_foot_relief_cuts();
-    }
-}
-~~~
-
-That is easier to read:
+The current correction is one triangular prism positioned with fixed `translate()`, `rotate()` and `mirror()` calls. It does **not** use `multmatrix()`.
 
 ~~~text
-side-chamfered bracket
-        -
-small print-relief cutters
+continuous side relief
+        +
+small tip correction
         =
-print-compensated bracket
+complete print relief
 ~~~
 
-The former opening-hull implementation is retained only in `tests/elephant-foot-equivalence.scad` as a regression reference.
+The arm end-face bevel itself stays in the 2D profile.
 
-## 7. What happened to the combined-hull experiment?
+## 5. Combined-hull experiment
 
-`design/combined_chamfer_hull.scad` is still useful as an experiment on a straight convex bar.
+`design/combined_chamfer_hull.scad` remains an experiment on a straight convex bar.
 
 ![Combined hull layers](../design/combined_chamfer_layers.png)
 
 ![Combined hull comparison](../design/combined_chamfer_comparison.png)
 
-On a straight convex object, several transitions can sometimes be combined elegantly in one hull.
+The experiment remains educational rather than production architecture.
 
-The full L bracket is different because it has a concave opening and several local edge junctions.
+## Practical rule
 
-The experiment therefore remains educational, not production architecture.
+| Feature | Role | Approach |
+| --- | --- | --- |
+| arm-end chamfers | final 2D boundary | profile coordinates |
+| large outside corner chamfer | final 2D boundary | profile coordinates |
+| outside side-edge chamfer | keep geometry | `hull()` + clip |
+| continuous elephant-foot side relief | cut geometry | opening-layer `hull()` |
+| arm-tip transition | local cut | simple triangular prism |
+| four M5 holes/countersinks | cut geometry | cylinders/cones + `difference()` |
 
-## 8. Practical rule
-
-Use `hull()` when two simple shapes describe a transition you actually want.
-
-Do not use it just because another feature in the same model uses hull.
-
-For this bracket:
-
-| Feature | Production approach |
-| --- | --- |
-| arm-end chamfers | 2D profile coordinates |
-| large outside corner chamfer | 2D profile coordinates |
-| outside side-edge chamfer | convex keep envelope made with `hull()`, then clipped |
-| elephant-foot relief | explicit cutters + `difference()` |
-| nut/window/bolt spaces | explicit cutters + `difference()` |
-
-That split is easier to explain, test and maintain than forcing all edge treatments into one hull-based method.
+The rounded inside corner itself is explained in the [Polygon Guide](polygon-guide.html).

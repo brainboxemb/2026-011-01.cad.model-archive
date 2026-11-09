@@ -1,4 +1,4 @@
-stls/access_plugs.stl: \
+stls/corner_bracket.stl: \
 	/work/ext/NopSCADlib/utils/fillet.scad \
 	/work/ext/NopSCADlib/utils/core/rounded_rectangle.scad \
 	/work/ext/NopSCADlib/utils/core/bom.scad \

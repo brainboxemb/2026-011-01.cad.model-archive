@@ -1,20 +1,19 @@
-// Educational walkthrough of the corner bracket's three edge treatments.
+// Educational walkthrough of the corner bracket's edge treatments.
 // Real geometry comes from ../scad/corner_bracket.scad; this is NOT a second model.
-// Select chamfer_step in the OpenSCAD Customizer.
 
 use <../scad/corner_bracket.scad>
 
 /* [Illustration] */
-chamfer_step = "01_plain_l"; // [01_plain_l,02_profile_chamfers,03_profile_body,04_outer_envelope,05_side_chamfer_inputs,06_side_chamfer_envelope,07_side_chamfered_body,08_elephant_foot_cuts,09_print_compensated_body,10_final]
+chamfer_step = "01_plain_l"; // [01_plain_l,02_profile_chamfers,03_profile_body,04_outer_envelope,05_side_chamfer_inputs,06_side_chamfer_envelope,07_side_chamfered_body,08_continuous_side_relief,09_print_compensated_body,10_final]
 
 /* [Hidden] */
-// Defaults mirror corner_bracket.scad v0.1.
-horizontal_arm_length = 40;
-vertical_arm_length = 40;
-wall_thickness = 10;
+// Defaults mirror the simplified v0.1 bracket.
+horizontal_arm_length = 50;
+vertical_arm_length = 50;
+wall_thickness = 12;
 arm_end_chamfer = 3;
 outer_corner_chamfer = 6;
-bracket_width = 20;
+bracket_width = 24;
 side_edge_chamfer = 2;
 elephant_foot_relief = 0.6;
 inside_corner_radius = 2;
@@ -80,11 +79,25 @@ else if (chamfer_step == "07_side_chamfered_body")
     color("SteelBlue")
         outer_side_chamfered_body();
 
-else if (chamfer_step == "08_elephant_foot_cuts") {
-    color("SteelBlue", 0.35)
+else if (chamfer_step == "08_continuous_side_relief") {
+    color("SteelBlue", 0.25)
         outer_side_chamfered_body();
-    color("IndianRed")
-        elephant_foot_relief_cuts();
+
+    // Main red shape: one continuous cut per broad side.
+    color("IndianRed", 0.85)
+        render()
+            intersection() {
+            outer_side_chamfered_body();
+            inside_side_relief_cuts();
+        }
+
+    // Orange: only the small arm-tip transition corrections.
+    color("DarkOrange", 0.95)
+        render()
+            intersection() {
+            outer_side_chamfered_body();
+            arm_tip_relief_cuts();
+        }
 }
 
 else if (chamfer_step == "09_print_compensated_body")

@@ -1,5 +1,4 @@
 tmp/main_assembly.png: \
-	/work/models/corner_bracket/v0.1/stls/access_plugs.stl \
 	/work/models/corner_bracket/v0.1/stls/corner_bracket.stl \
 	/work/ext/NopSCADlib/vitamins/screw.scad \
 	/work/ext/NopSCADlib/vitamins/nut.scad \

@@ -118,6 +118,7 @@ done
 grep -Eq "^bolts_per_arm[[:space:]]*=[[:space:]]*2" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_diameter[[:space:]]*=[[:space:]]*5" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*30" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_hole_edge_relief[[:space:]]*=[[:space:]]*0.2" "$bracket/scad/corner_bracket.scad"
 
 # The active source must not drift back to the captive-nut/plug design or the
 # hard-to-read multmatrix arm-tip placement.

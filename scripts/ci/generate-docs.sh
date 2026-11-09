@@ -90,9 +90,9 @@ in_container /work/models/corner_bracket/v0.1 \
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/verify-combined-chamfer-experiment.sh
 
-# Compare the printable model with the historical per-edge relief cutters.
+# Compare the direct production relief with the former hull implementation.
 in_container /work/models/corner_bracket/v0.1 \
-  bash /work/scripts/ci/verify-elephant-foot-hull.sh
+  bash /work/scripts/ci/verify-elephant-foot-relief.sh
 
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/render-bracket-steps.sh

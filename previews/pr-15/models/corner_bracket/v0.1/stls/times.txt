@@ -1,3 +1,3 @@
 {
-    "corner_bracket.stl": 0.078
+    "corner_bracket.stl": 0.086
 }

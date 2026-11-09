@@ -17,7 +17,7 @@ The illustrations come from the standalone, editable
 > **The printable corner bracket now uses Method A (2D shapes).**
 > The 3D method and the former point-based approach are included here
 > for comparison. The outside chamfers and nut pockets remain unchanged. The
-> elephant-foot relief now uses two local hulls per bracket.
+> elephant-foot relief is a separate 3D print-compensation step and now uses explicit cutting volumes.
 
 ## First: draw a simple L with polygon()
 
@@ -245,5 +245,5 @@ extrude, then subtract the 3D nut pockets and print-relief cutters.
 The production corner radius now uses the **2D square-minus-circle
 construction**. The alternative 3D solid method and legacy point-list
 polygon are provided for learning. The change preserves the outside chamfers and bolt/nut features. The
-print relief was subsequently refactored to hull-based geometry; final
-print fit and mechanical strength still require physical testing.
+print relief is handled later with explicit cutters; final print fit and
+mechanical strength still require physical testing.

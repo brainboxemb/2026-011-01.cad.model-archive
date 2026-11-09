@@ -105,9 +105,9 @@ would need CAD changes.
 ## Checks before printing or assembly
 
 - Confirm the actual plywood thickness and round its inside corner to match
-  `r_in` (default 2 mm) if needed.
+  `inside_corner_radius` (default 2 mm) if needed.
 - Check measured M4 nut width/thickness and bolt length, particularly the
-  remaining closed outside wall `skin` (default 2.4 mm).
+  remaining closed outside wall `outside_skin` (default 2.4 mm).
 - Verify printing orientation, elephant-foot relief, access-plug clearance,
   strength and mating surfaces on test prints.
 - Neither a finished joint strength rating nor bolt-length guarantee is

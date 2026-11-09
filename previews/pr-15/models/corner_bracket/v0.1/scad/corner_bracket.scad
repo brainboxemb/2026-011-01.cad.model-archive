@@ -54,7 +54,7 @@ side_edge_chamfer     = 2;   // bevel on the broad side-face outer edges; 0 disa
 
 /* [Print compensation] */
 elephant_foot_relief = 0.6; // 45-degree relief at print-facing contact edges; 0 disables
-inside_corner_radius = 2.0; // plywood inside corner must match; use 0 or >= 1 mm
+inside_corner_radius = 4.0; // plywood inside corner must match; use 0 or >= 1 mm
 
 /* [Bolts] */
 bolts_per_arm        = 2;    // [1, 2]

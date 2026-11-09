@@ -122,8 +122,8 @@ grep -Eq "^bolt_hole_edge_relief[[:space:]]*=[[:space:]]*0.2" "$bracket/scad/cor
 grep -Eq "^plywood_thickness[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^horizontal_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^vertical_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
-grep -Eq "^bolt_offset[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
-grep -Eq "^bolt_spacing[[:space:]]*=[[:space:]]*14" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_offset[[:space:]]*=[[:space:]]*10" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_spacing[[:space:]]*=[[:space:]]*16" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_y_offset[[:space:]]*=[[:space:]]*0" "$bracket/scad/corner_bracket.scad"
 
 # The active source must not drift back to the captive-nut/plug design or the

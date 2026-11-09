@@ -131,10 +131,20 @@ module inside_corner_fill_2d(r) {
     }
 }
 
-// The base profile stays independent from print compensation.
-// Any relief at the arm ends is applied later as explicit cut geometry.
-top_arm_inner_tip_points = [[horizontal_arm_length, 0]];
-vertical_arm_inner_tip_points = [[0, -vertical_arm_length]];
+// The two arm end faces need the same small elephant-foot bevel.
+// Keeping these two triangles in the 2D profile is simpler than adding
+// another pair of 3D cutters later.
+top_arm_inner_tip_points =
+    (elephant_foot_relief > 0)
+        ? [[horizontal_arm_length - elephant_foot_relief, 0],
+           [horizontal_arm_length, elephant_foot_relief]]
+        : [[horizontal_arm_length, 0]];
+
+vertical_arm_inner_tip_points =
+    (elephant_foot_relief > 0)
+        ? [[-elephant_foot_relief, -vertical_arm_length],
+           [0, -vertical_arm_length + elephant_foot_relief]]
+        : [[0, -vertical_arm_length]];
 
 // Draw the unchanged L outline with a sharp inside corner at (0,0).
 // The arm-end and outside-corner chamfers are part of this outline.
@@ -247,81 +257,45 @@ module inside_side_relief_cuts() {
             }
 }
 
-// The two arm end faces are independent from the broad-side relief. Keeping
-// these small triangular cuts separate avoids hiding end treatment inside the
-// base 2D profile.
-module arm_end_relief_cuts() {
-    e = construction_epsilon;
-
-    if (elephant_foot_relief > 0)
-        rotate([90, 0, 0])
-            linear_extrude(height = bracket_width + 2, center = true) {
-                // Horizontal arm end: remove the triangle at (arm length, 0).
-                polygon([
-                    [horizontal_arm_length - elephant_foot_relief - e, -e],
-                    [horizontal_arm_length + e, -e],
-                    [horizontal_arm_length + e, elephant_foot_relief + e]
-                ]);
-
-                // Vertical arm end: equivalent triangle at (0, -arm length).
-                polygon([
-                    [e, -vertical_arm_length - e],
-                    [-elephant_foot_relief - e, -vertical_arm_length - e],
-                    [e, -vertical_arm_length + elephant_foot_relief + e]
-                ]);
-            }
-}
-
-// Small local correction where the broad-side relief reaches the diagonal
-// outer side chamfer at an arm tip. The main side cut already handles the
-// straight contact edges and rounded inside corner.
-module arm_tip_relief_cut(A, U, V, direction, length) {
-    module triangle_at(distance) {
-        multmatrix([
-            [U[0], V[0], direction[0], A[0]],
-            [U[1], V[1], direction[1], A[1]],
-            [U[2], V[2], direction[2], A[2]],
-            [0, 0, 0, 1]
-        ])
-            translate([0, 0, distance])
-                linear_extrude(height = 0.001)
-                    polygon([
-                        [-elephant_foot_relief - 1, -1],
-                        [1, -1],
-                        [1, elephant_foot_relief + 1]
-                    ]);
-    }
-
-    hull() {
-        triangle_at(0);
-        triangle_at(length);
-    }
+// Small local correction where the continuous side relief reaches the
+// diagonal outer side chamfer at an arm tip.
+//
+// The old version built a local coordinate system with multmatrix(). That is
+// mathematically general, but hard to read for two fixed 45-degree corners.
+// A simple triangular prism plus ordinary rotations describes the same cut.
+module arm_tip_relief_wedge(length) {
+    linear_extrude(height = length)
+        polygon([
+            [-elephant_foot_relief - 1, -1],
+            [1, -1],
+            [1, elephant_foot_relief + 1]
+        ]);
 }
 
 module arm_tip_relief_cuts() {
     s2 = sqrt(2) / 2;
+    cut_length = side_edge_chamfer * sqrt(2) + 2;
 
     if (elephant_foot_relief > 0 && side_edge_chamfer > 0)
         for (mirror_side = [0, 1])
             mirror([0, mirror_side, 0]) {
-                arm_tip_relief_cut(
-                    [horizontal_arm_length - side_edge_chamfer - s2,
-                     bracket_width / 2 + s2, 0],
-                    [s2, s2, 0],
-                    [0, 0, 1],
-                    [s2, -s2, 0],
-                    side_edge_chamfer * sqrt(2) + 2
-                );
+                // Horizontal arm tip.
+                translate([
+                    horizontal_arm_length - side_edge_chamfer - s2,
+                    bracket_width / 2 + s2,
+                    0
+                ])
+                    rotate([90, 0, 45])
+                        arm_tip_relief_wedge(cut_length);
 
-                arm_tip_relief_cut(
-                    [0,
-                     bracket_width / 2 - side_edge_chamfer - s2,
-                     -vertical_arm_length - s2],
-                    [0, s2, -s2],
-                    [-1, 0, 0],
-                    [0, s2, s2],
-                    side_edge_chamfer * sqrt(2) + 2
-                );
+                // Vertical arm tip.
+                translate([
+                    0,
+                    bracket_width / 2 - side_edge_chamfer - s2,
+                    -vertical_arm_length - s2
+                ])
+                    rotate([0, 45, 90])
+                        arm_tip_relief_wedge(cut_length);
             }
 }
 
@@ -329,7 +303,6 @@ module print_compensated_body() {
     difference() {
         outer_side_chamfered_body();
         inside_side_relief_cuts();
-        arm_end_relief_cuts();
         arm_tip_relief_cuts();
     }
 }

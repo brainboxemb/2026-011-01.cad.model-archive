@@ -87,17 +87,44 @@ done
 test -s "$bracket/docs/documentation.scad"
 test -s "$bracket/tests/inside-corner-equivalence.scad"
 test -s "$bracket/tests/elephant-foot-equivalence.scad"
-grep -Fq 'module inside_corner_2d(r)' "$bracket/scad/corner_bracket.scad"
-grep -Fq 'module sharp_profile()' "$bracket/scad/corner_bracket.scad"
-grep -Fq 'module inside_relief_envelope()' "$bracket/scad/corner_bracket.scad"
-grep -Fq 'module relief_corner_miters()' "$bracket/scad/corner_bracket.scad"
-if grep -Fq 'module ef_cuts()' "$bracket/scad/corner_bracket.scad"; then
-  echo "Obsolete per-edge elephant-foot cutters still in production model" >&2
+# Production source must use descriptive names and direct print-relief cuts.
+for source_module in \
+  'module inside_corner_fill_2d(r)' \
+  'module base_profile_2d()' \
+  'module bracket_profile_2d()' \
+  'module profile_body()' \
+  'module outer_chamfer_envelope_2d()' \
+  'module outer_side_chamfer_keep_envelope()' \
+  'module outer_side_chamfered_body()' \
+  'module elephant_foot_relief_cuts()' \
+  'module print_compensated_body()' \
+  'module top_fastener_cut()' \
+  'module vertical_fastener_cut()'; do
+  grep -Fq "$source_module" "$bracket/scad/corner_bracket.scad"
+done
+
+for parameter in \
+  bracket_width wall_thickness horizontal_arm_length vertical_arm_length \
+  arm_end_chamfer outer_corner_chamfer side_edge_chamfer \
+  elephant_foot_relief inside_corner_radius; do
+  grep -Eq "^$parameter[[:space:]]*=" "$bracket/scad/corner_bracket.scad"
+done
+
+if grep -Eq '^(W|t|armH|armV|c|ce|cs|ef|r_in)[[:space:]]*=' "$bracket/scad/corner_bracket.scad"; then
+  echo "Old cryptic bracket parameter name returned to production source" >&2
   exit 1
 fi
-grep -Fq 'module inside_corner_2d(r)' "$bracket/readme.md"
-grep -Fq 'module sharp_profile()' "$bracket/readme.md"
-if grep -Fq 'corner_arc = (r_in > 0)' "$bracket/scad/corner_bracket.scad"; then
+
+if grep -Eq 'inside_relief_envelope|relief_corner_miters|module opening_layer' "$bracket/scad/corner_bracket.scad"; then
+  echo "Former hull-based print relief returned to production source" >&2
+  exit 1
+fi
+
+grep -Fq 'former_relief_opening_hulls' "$bracket/tests/elephant-foot-equivalence.scad"
+grep -Fq 'module elephant_foot_relief_cuts()' "$bracket/readme.md"
+grep -Fq 'module outer_side_chamfer_keep_envelope()' "$bracket/readme.md"
+
+if grep -Fq 'corner_arc = (inside_corner_radius > 0)' "$bracket/scad/corner_bracket.scad"; then
   echo "Old sampled-point fillet returned to active model" >&2
   exit 1
 fi
@@ -150,44 +177,33 @@ for figure in figures:
 print(f"Validated {len(figures)} editable SVG illustrations")
 PY
 
-# Elephant-foot compensation has its own illustrated explanation in the manual.
+# The generated bracket manual must explain the current keep/cut architecture.
 for svg in elephant-foot-section elephant-foot-edges; do
   test -s "$bracket/figures/$svg.svg"
   grep -Fq "figures/$svg.svg" "$bracket/readme.md"
   grep -Fq "figures/$svg.svg" "$bracket/readme.html"
 done
-grep -Fq 'Y = +W/2' "$bracket/readme.md"
-grep -Fq '### 2. Outer side-edge chamfers' "$bracket/readme.md"
-grep -Fq '## Printing and assembly' "$bracket/readme.md"
-grep -Fq '## Further reading' "$bracket/readme.md"
-# The hull primer is linked at Step 2 and in Further reading.
-grep -Fq 'New to `hull()`?' "$bracket/readme.md"
-test "$(grep -Fc 'hull-guide.html' "$bracket/readme.md")" -ge 2
-if grep -Fq 'Why is there no `hull()` for the inside corner?' "$bracket/readme.md"; then
-  echo "Redundant hull aside reintroduced into main design manual" >&2
-  exit 1
-fi
 
-# Main design documentation must retain real code, without the long hull tutorial.
-for source_module in \
-  'module profile()' 'module side_chamfer_env()' \
-  'module nut_top()' 'module chamfered_body()' \
-  'module plug_local()' 'module plugs_in_place()'; do
-  grep -Fq "$source_module" "$bracket/readme.md"
-  grep -Fq "$source_module" "$bracket/readme.html"
-done
+grep -Fq '### 2. Create the outside side-edge chamfer' "$bracket/readme.md"
+grep -Fq '### 3. Remove the fastener spaces' "$bracket/readme.md"
+grep -Fq '### 4. Remove elephant-foot print compensation' "$bracket/readme.md"
+grep -Fq 'elephant_foot_relief_cuts()' "$bracket/readme.md"
+grep -Fq 'outer_side_chamfer_keep_envelope()' "$bracket/readme.md"
+grep -Fq 'top_fastener_cut()' "$bracket/readme.md"
+grep -Fq 'vertical_fastener_cut()' "$bracket/readme.md"
 grep -Fq '<pre><code>' "$bracket/readme.html"
-if grep -Fq '#### A. Start with a plain bar' "$bracket/readme.md"; then
-  echo "Extended hull tutorial leaked back into the main design manual" >&2
+
+if grep -Fq 'inside_relief_envelope()' "$bracket/readme.md"; then
+  echo "Obsolete hull-relief explanation returned to generated manual" >&2
   exit 1
 fi
 
-# The hull guide now progresses from a simple bar to the real bracket.
-for source_module in 'module sloped_hull()' 'module side_chamfer_env()' 'module body()'; do
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.md"
-  grep -Fq "$source_module" "$bracket/docs/hull-guide.html"
-done
-grep -Fq '## 2. How the real corner bracket uses hull' "$bracket/docs/hull-guide.md"
+# Focused guides must use current production terminology.
+grep -Fq '## 6. Why elephant-foot relief does not use hull() anymore' "$bracket/docs/hull-guide.md"
+grep -Fq 'module outer_side_chamfer_keep_envelope()' "$bracket/docs/hull-guide.md"
+grep -Fq 'module outer_side_chamfered_body()' "$bracket/docs/hull-guide.md"
+grep -Fq 'elephant_foot_relief_cuts()' "$bracket/docs/chamfer-guide.md"
+grep -Fq 'explicit cutter volumes' "$bracket/docs/chamfer-guide.md"
 
 # Each image is used by exactly the intended guide, with working relative URLs.
 check_image() {
@@ -202,7 +218,7 @@ check_image() {
   fi
 }
 
-for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
+for stage in 01_profile 02_outer_side_chamfers 03_fastener_cuts 04_print_relief 05_access_plugs 06_installed; do
   check_image "$stage" readme
 done
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
@@ -211,7 +227,7 @@ done
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+for stage in 01_plain_l 02_profile_chamfers 03_profile_body 04_outer_envelope 05_side_chamfer_inputs 06_side_chamfer_envelope 07_side_chamfered_body 08_elephant_foot_cuts 09_print_compensated_body 10_final; do
   check_image "chamfer_$stage" chamfer-guide
 done
 

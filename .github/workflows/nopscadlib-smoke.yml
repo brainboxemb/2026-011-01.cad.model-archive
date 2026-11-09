@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate generated preview navigation
+        run: python3 scripts/ci/test-preview-index.py
+
       - name: Generate and validate model documentation
         run: bash scripts/ci/generate-docs.sh
 
@@ -25,7 +28,13 @@ jobs:
         with:
           name: nopscadlib-generated-documentation
           path: |
+            docs/design-concepts.md
+            docs/design-concepts.html
+            docs/design-concepts.scad
+            docs/figures/
             examples/spacer/v0.1/
+            examples/rounded-rectangular-tube/v0.1/
+            examples/rounded-l-bracket/v0.1/
             models/corner_bracket/v0.1/
           retention-days: 14
 
@@ -33,10 +42,18 @@ jobs:
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           PAGES_PREVIEW_ROOT: previews/pr-${{ github.event.pull_request.number }}
+          PAGES_PREVIEW_BRANCH: ${{ github.head_ref }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           bash scripts/ci/publish-pages.sh
           echo "### Browser preview for PR #$PR_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "OpenSCAD design concepts:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/docs/design-concepts.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "Rounded tube example:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/examples/rounded-rectangular-tube/v0.1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Rounded L bracket example:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/examples/rounded-l-bracket/v0.1/" >> "$GITHUB_STEP_SUMMARY"
+          echo "Corner bracket chamfer guide:" >> "$GITHUB_STEP_SUMMARY"
           echo "https://brainboxemb.github.io/2026-011-01.cad.model-archive/previews/pr-$PR_NUMBER/models/corner_bracket/v0.1/docs/chamfer-guide.html" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish GitHub Pages (main only)

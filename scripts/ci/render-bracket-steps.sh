@@ -10,7 +10,7 @@ render() {
 }
 
 # Six stages of the real parametric bracket.
-for stage in 01_profile 02_edge_chamfers 03_nut_pockets 04_print_relief 05_access_plugs 06_installed; do
+for stage in 01_profile 02_outer_side_chamfers 03_fastener_cuts 04_print_relief 05_access_plugs 06_installed; do
   render design.scad design_step "$stage" "$stage" "800,600"
 done
 
@@ -31,7 +31,7 @@ for stage in layers comparison; do
   render combined_chamfer_hull.scad view "$stage" "combined_chamfer_$stage" "720,450"
 done
 
-# Ten stages from 2D chamfers through side hulls, print relief and corner-miter close-up.
-for stage in 01_sharp_profile 02_profile_chamfers 03_extruded_profile 04_convex_outline 05_hull_inputs 06_hull_envelope 07_intersection 08_print_relief 09_final 10_corner_junction; do
+# Ten stages: profile, outside chamfer keep-envelope, explicit print-relief cuts and final part.
+for stage in 01_plain_l 02_profile_chamfers 03_profile_body 04_outer_envelope 05_side_chamfer_inputs 06_side_chamfer_envelope 07_side_chamfered_body 08_elephant_foot_cuts 09_print_compensated_body 10_final; do
   render chamfer_explained.scad chamfer_step "$stage" "chamfer_$stage" "720,450"
 done

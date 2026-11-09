@@ -39,6 +39,27 @@ else
     cp -a "$version/stls" "$version/assemblies" "$version/bom" "$version/scad" "$target/$version/"
   done
 
+  tube="examples/rounded-rectangular-tube/v0.1"
+  mkdir -p "$target/$tube"
+  cat site/model-header.html "$tube/readme.html" > "$target/$tube/index.html"
+  printf '\n</main></body></html>\n' >> "$target/$tube/index.html"
+  cp "$tube/README.md" "$target/$tube/README.md"
+  cp -a "$tube/scad" "$tube/figures" "$tube/design" "$target/$tube/"
+
+  lbracket="examples/rounded-l-bracket/v0.1"
+  mkdir -p "$target/$lbracket"
+  cat site/model-header.html "$lbracket/readme.html" > "$target/$lbracket/index.html"
+  printf '\n</main></body></html>\n' >> "$target/$lbracket/index.html"
+  cp "$lbracket/README.md" "$target/$lbracket/README.md"
+  cp -a "$lbracket/scad" "$lbracket/figures" "$lbracket/design" "$target/$lbracket/"
+
+  mkdir -p "$target/docs"
+  cat site/concept-header.html docs/design-concepts.html > "$target/docs/design-concepts.html"
+  printf '\n</main></body></html>\n' >> "$target/docs/design-concepts.html"
+  cp docs/design-concepts.md "$target/docs/design-concepts.md"
+  cp docs/design-concepts.scad "$target/docs/design-concepts.scad"
+  cp -a docs/figures "$target/docs/"
+
   bracket="models/corner_bracket/v0.1"
   cp -a "$bracket/design" "$target/$bracket/"
   cp -a "$bracket/figures" "$target/$bracket/"
@@ -50,8 +71,25 @@ else
     test -s "$target/$bracket/docs/$page.html"
   done
   cp site/index.html site/site.css "$target/"
+  if [[ -n "$preview" ]]; then
+    PREVIEW_META_PATH="$target/preview.json" PREVIEW_PATH="$preview" \
+      python3 - <<'PY'
+import json
+import os
+from pathlib import Path
+number = int(os.environ["PREVIEW_PATH"].split("pr-")[1])
+branch = os.environ.get("PAGES_PREVIEW_BRANCH", "")
+Path(os.environ["PREVIEW_META_PATH"]).write_text(
+    json.dumps({"pr": number, "branch": branch}, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+  fi
   touch "$worktree/.nojekyll"
 fi
+
+# Keep the root Pages homepage in sync with all active PR preview directories.
+python3 scripts/ci/update-preview-index.py "$worktree"
 
 git -C "$worktree" config user.name "github-actions[bot]"
 git -C "$worktree" config user.email "41898282+github-actions[bot]@users.noreply.github.com"

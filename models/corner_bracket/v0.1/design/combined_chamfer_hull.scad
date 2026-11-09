@@ -8,8 +8,8 @@ view = "comparison"; // [comparison, combined, reference, xor, layers]
 length = 40;
 width = 20;
 height = 10;
-upper_chamfer = 2; // corresponds to cs (on the outer face)
-elephant_foot = 0.6; // corresponds to ef (on the bottom contact face)
+upper_chamfer = 2; // comparable to the bracket's side_edge_chamfer
+elephant_foot = 0.6; // experimental print-relief amount
 separation = 12;
 
 /* [Hidden] */

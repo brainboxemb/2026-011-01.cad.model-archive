@@ -94,7 +94,7 @@ tip_gap = min([for (x = top_bolt_x) for (z = vertical_bolt_z)
 echo("Minimum bolt length (mm):", min_bolt_length, " bolt_length:", bolt_length);
 echo("Margin between last countersink and the arm end (mm):",
      horizontal_arm_length - (top_bolt_x[bolts_per_arm - 1] + (head_diameter + head_clearance) / 2
-                              + head_recess + counterbore_flare));
+                              + head_recess + bolt_hole_edge_relief));
 echo("Gap between neighbouring washers on the inside (mm):", bolt_spacing - washer_diameter);
 echo("Closest approach of top-arm and vertical-arm bolt tips (mm):", tip_gap);
 if (min_bolt_length > bolt_length) echo("WARNING: bolt too short for washer, nut and thread");

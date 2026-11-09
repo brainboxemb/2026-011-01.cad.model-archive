@@ -6,8 +6,8 @@ use <../scad/corner_bracket.scad>
 // Match the production defaults. -D can override these to test variants.
 inside_corner_radius = 2;
 elephant_foot_relief = 0.6;
-horizontal_arm_length = 50;
-vertical_arm_length = 50;
+horizontal_arm_length = 60;
+vertical_arm_length = 60;
 wall_thickness = 12;
 arm_end_chamfer = 3;
 outer_corner_chamfer = 6;

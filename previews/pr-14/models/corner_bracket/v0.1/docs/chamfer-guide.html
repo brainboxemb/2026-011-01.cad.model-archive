@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OpenSCAD Model Archive — Model guides</title>
+  <link rel="stylesheet" href="../../../../site.css">
+</head>
+<body>
+  <header><a href="../../../../">← Model archive</a></header>
+  <main>
+<h1>Chamfers and print relief on the Corner Bracket</h1>
+<p>This guide follows the simplified <code>corner_bracket.scad</code> model.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What changes</th>
+<th>How it is made</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arm_end_chamfer</code></td>
+<td>outer ends of both arms</td>
+<td>coordinates in the 2D profile</td>
+</tr>
+<tr>
+<td><code>outer_corner_chamfer</code></td>
+<td>large outside corner</td>
+<td>coordinates in the 2D profile</td>
+</tr>
+<tr>
+<td><code>side_edge_chamfer</code></td>
+<td>long outside edges on both broad faces</td>
+<td><code>hull()</code> keep envelope + <code>intersection()</code></td>
+</tr>
+<tr>
+<td><code>elephant_foot_relief</code></td>
+<td>plywood-facing print edges</td>
+<td>one continuous opening hull per broad side + tiny arm-tip correction</td>
+</tr>
+</tbody>
+</table>
+<p>For the general <strong>keep / cut / clip</strong> vocabulary, see <a href="../../../docs/design-concepts.html">OpenSCAD design concepts</a>.</p>
+<p>The editable walkthrough is <a href="../design/chamfer_explained.scad">chamfer_explained.scad</a>.</p>
+<h2>1. Start with a plain L</h2>
+<p><img alt="Plain L profile" src="../design/chamfer_01_plain_l.png" /></p>
+<h2>2. Put simple chamfers directly in the 2D profile</h2>
+<p><img alt="2D profile chamfers" src="../design/chamfer_02_profile_chamfers.png" /></p>
+<p>The arm-end chamfers and large outside corner chamfer are points in <code>base_profile_2d()</code>.</p>
+<p>The rounded inside corner is added with <code>inside_corner_fill_2d()</code>.</p>
+<p>The tiny elephant-foot bevel on the two arm <strong>end faces</strong> also stays in this 2D profile. That avoids another pair of 3D cutters.</p>
+<h2>3. Extrude the profile</h2>
+<p><img alt="Profile body" src="../design/chamfer_03_profile_body.png" /></p>
+<p><code>profile_body()</code> gives the finished 2D outline its full <code>bracket_width</code>.</p>
+<h2>4. Make a temporary convex outside outline</h2>
+<p><img alt="Convex outer envelope" src="../design/chamfer_04_outer_envelope.png" /></p>
+<p>The real L is concave. A global hull would bridge its open inside corner.</p>
+<p>So <code>outer_chamfer_envelope_2d()</code> intentionally describes only the outside envelope.</p>
+<h2>5. Make the two outside-chamfer inputs</h2>
+<p><img alt="Side chamfer inputs" src="../design/chamfer_05_side_chamfer_inputs.png" /></p>
+<p>One profile keeps the full perimeter but is narrower than the bracket. The other reaches full width but is inset by <code>side_edge_chamfer</code>.</p>
+<h2>6. Connect those inputs with hull()</h2>
+<p><img alt="Side chamfer keep envelope" src="../design/chamfer_06_side_chamfer_envelope.png" /></p>
+<p><code>outer_side_chamfer_keep_envelope()</code> creates the sloped outside volume that is allowed to remain.</p>
+<h2>7. Clip that envelope with the real L</h2>
+<p><img alt="Side-chamfered bracket body" src="../design/chamfer_07_side_chamfered_body.png" /></p>
+<p>~~~openscad
+module outer_side_chamfered_body() {
+    if (side_edge_chamfer &gt; 0)
+        intersection() {
+            profile_body();
+            outer_side_chamfer_keep_envelope();
+        }
+    else
+        profile_body();
+}
+~~~</p>
+<p>The hull creates the slope; the intersection only clips it back to the real L.</p>
+<h2>8. One continuous elephant-foot relief per broad side</h2>
+<p><img alt="Continuous elephant-foot side relief" src="../design/chamfer_08_continuous_side_relief.png" /></p>
+<p>This is the important simplification.</p>
+<p>The model does <strong>not</strong> build separate straight cutters for the horizontal edge, rounded corner and vertical edge.</p>
+<p><code>inside_opening_2d()</code> describes the complete open region once.</p>
+<p><code>inside_side_relief_cuts()</code> connects a normal opening layer to an enlarged opening layer at each printable side face:</p>
+<p>~~~openscad
+module inside_side_relief_cuts() {
+    if (elephant_foot_relief &gt; 0)
+        for (side = [-1, 1])
+            hull() {
+                inside_side_relief_layer(
+                    side * (bracket_width / 2 - elephant_foot_relief)
+                );
+                inside_side_relief_layer(
+                    side * bracket_width / 2,
+                    elephant_foot_relief
+                );
+            }
+}
+~~~</p>
+<p>Each hull therefore handles one complete path:</p>
+<p>~~~text
+horizontal plywood-facing edge
+             ↓
+rounded inside corner
+             ↓
+vertical plywood-facing edge
+~~~</p>
+<p>There are two hulls only because either broad face can be the print face.</p>
+<h3>The only separate 3D correction: the arm tips</h3>
+<p>Where the continuous side relief reaches the diagonal outside side chamfer, a tiny local wedge is needed.</p>
+<p>The old implementation used a general <code>multmatrix()</code> coordinate frame. For these two fixed 45-degree junctions that was harder to read than necessary.</p>
+<p>The current helper is only an extruded triangle:</p>
+<p>~~~openscad
+module arm_tip_relief_wedge(length) {
+    linear_extrude(height = length)
+        polygon([
+            [-elephant_foot_relief - 1, -1],
+            [1, -1],
+            [1, elephant_foot_relief + 1]
+        ]);
+}
+~~~</p>
+<p>It is placed with ordinary rotations:</p>
+<ul>
+<li>horizontal arm: <code>rotate([90, 0, 45])</code>;</li>
+<li>vertical arm: <code>rotate([0, 45, 90])</code>;</li>
+<li>the other broad side is obtained with <code>mirror()</code>.</li>
+</ul>
+<p>No general transformation matrix is needed.</p>
+<h2>9. Subtract the relief</h2>
+<p><img alt="Print-compensated body" src="../design/chamfer_09_print_compensated_body.png" /></p>
+<p>~~~openscad
+module print_compensated_body() {
+    difference() {
+        outer_side_chamfered_body();
+        inside_side_relief_cuts();
+        arm_tip_relief_cuts();
+    }
+}
+~~~</p>
+<p>So the 3D print compensation has only two conceptual pieces: the continuous main side relief and the small local arm-tip correction.</p>
+<h2>10. Final bracket</h2>
+<p><img alt="Final bracket" src="../design/chamfer_10_final.png" /></p>
+<p>The final operation removes four countersunk M5 bolt paths:</p>
+<p>~~~openscad
+module bracket() {
+    difference() {
+        print_compensated_body();
+        bolt_cuts();
+    }
+}
+~~~</p>
+<p>The bolt geometry is independent from the chamfer construction.</p>
+</main></body></html>

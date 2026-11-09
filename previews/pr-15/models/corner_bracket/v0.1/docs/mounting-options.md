@@ -39,7 +39,7 @@ With the current defaults the centres are 20 mm and 36 mm from the inner-corner 
 
 `countersunk_bolt_cut()` creates the M5 clearance hole, the 90-degree countersink for the DIN 7991 head, the shallow head recess, and a small **flat cylindrical edge relief** at both faces of the printed bracket.
 
-`bolt_hole_edge_relief` controls that small flat step. At the outside face it is slightly larger than the countersunk-head opening; at the inside face it is slightly larger than the M5 through-hole. It is deliberately **not** another conical chamfer.
+`bolt_hole_edge_relief` controls that small flat step; the current default is **0.2 mm**. At the outside face it is slightly larger than the countersunk-head opening; at the inside face it is slightly larger than the M5 through-hole. It is deliberately **not** another conical chamfer.
 
 The washer and nut remain serviceable from inside the joint.
 

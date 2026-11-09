@@ -6,6 +6,8 @@ The elephant-foot print relief no longer uses hulls in production. It is describ
 
 For the shared vocabulary of **keep**, **cut** and **clip** geometry, start with the archive-wide [OpenSCAD design concepts](../../../docs/design-concepts.html).
 
+The rounded **inside** corner is a separate 2D construction; see the [Polygon and inside-corner guide](polygon-guide.html).
+
 ## 1. First see hull() on a simple bar
 
 ### A. Plain bar

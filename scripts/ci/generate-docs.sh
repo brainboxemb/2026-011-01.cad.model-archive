@@ -90,7 +90,7 @@ in_container /work/models/corner_bracket/v0.1 \
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/verify-combined-chamfer-experiment.sh
 
-# Compare the direct production relief with the former hull implementation.
+# Verify the readable fixed-rotation arm-tip correction against the legacy multmatrix placement.
 in_container /work/models/corner_bracket/v0.1 \
   bash /work/scripts/ci/verify-elephant-foot-relief.sh
 

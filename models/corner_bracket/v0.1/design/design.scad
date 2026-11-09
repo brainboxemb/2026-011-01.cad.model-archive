@@ -23,13 +23,15 @@ else if (design_step == "03_side_relief") {
         outer_side_chamfered_body();
 
     color("IndianRed", 0.85)
-        intersection() {
+        render()
+            intersection() {
             outer_side_chamfered_body();
             inside_side_relief_cuts();
         }
 
     color("DarkOrange", 0.95)
-        intersection() {
+        render()
+            intersection() {
             outer_side_chamfered_body();
             arm_tip_relief_cuts();
         }

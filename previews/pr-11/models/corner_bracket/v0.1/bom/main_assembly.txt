@@ -1,4 +1,0 @@
-main_assembly:
-Printed:
-  1 access_plugs.stl
-  1 corner_bracket.stl

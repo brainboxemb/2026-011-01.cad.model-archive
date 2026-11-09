@@ -124,7 +124,7 @@ grep -Eq "^horizontal_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corn
 grep -Eq "^vertical_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_offset[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_spacing[[:space:]]*=[[:space:]]*14" "$bracket/scad/corner_bracket.scad"
-grep -Eq "^bolt_y_offset[[:space:]]*=[[:space:]]*3" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_y_offset[[:space:]]*=[[:space:]]*0" "$bracket/scad/corner_bracket.scad"
 
 # The active source must not drift back to the captive-nut/plug design or the
 # hard-to-read multmatrix arm-tip placement.

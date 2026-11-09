@@ -131,32 +131,30 @@ module inside_corner_fill_2d(r) {
     }
 }
 
-// The two arm end faces need the same small elephant-foot bevel.
-// Keeping these two triangles in the 2D profile is simpler than adding
-// another pair of 3D cutters later.
-top_arm_inner_tip_points =
-    (elephant_foot_relief > 0)
-        ? [[horizontal_arm_length - elephant_foot_relief, 0],
-           [horizontal_arm_length, elephant_foot_relief]]
-        : [[horizontal_arm_length, 0]];
-
-vertical_arm_inner_tip_points =
-    (elephant_foot_relief > 0)
-        ? [[-elephant_foot_relief, -vertical_arm_length],
-           [0, -vertical_arm_length + elephant_foot_relief]]
-        : [[0, -vertical_arm_length]];
-
 // Draw the unchanged L outline with a sharp inside corner at (0,0).
 // The arm-end and outside-corner chamfers are part of this outline.
 module base_profile_2d() {
-    polygon(concat(top_arm_inner_tip_points, [
+    // Arm end-face print relief belongs to the 2D outline, not another 3D cut.
+    top_tip =
+        (elephant_foot_relief > 0)
+            ? [[horizontal_arm_length - elephant_foot_relief, 0],
+               [horizontal_arm_length, elephant_foot_relief]]
+            : [[horizontal_arm_length, 0]];
+
+    vertical_tip =
+        (elephant_foot_relief > 0)
+            ? [[-elephant_foot_relief, -vertical_arm_length],
+               [0, -vertical_arm_length + elephant_foot_relief]]
+            : [[0, -vertical_arm_length]];
+
+    polygon(concat(top_tip, [
         [horizontal_arm_length, wall_thickness - arm_end_chamfer],
         [horizontal_arm_length - arm_end_chamfer, wall_thickness],
         [-wall_thickness + outer_corner_chamfer, wall_thickness],
         [-wall_thickness, wall_thickness - outer_corner_chamfer],
         [-wall_thickness, -vertical_arm_length + arm_end_chamfer],
         [-wall_thickness + arm_end_chamfer, -vertical_arm_length]
-    ], vertical_arm_inner_tip_points, [[0, 0]]));
+    ], vertical_tip, [[0, 0]]));
 }
 
 // Complete the side profile in 2D, then extrude it in profile_body().

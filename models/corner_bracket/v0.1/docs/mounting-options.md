@@ -16,12 +16,12 @@ There are no captive-nut pockets, access windows or printed plugs in the current
 | Item | Default |
 | --- | ---: |
 | Bracket wall | 12 mm |
-| Plywood | 10 mm |
+| Plywood | 12 mm |
 | Washer | 1.0 mm |
 | M5 nut | 4.7 mm |
 | Extra thread allowance | 1 mm |
-| Calculated minimum | 28.7 mm |
-| Selected bolt | M5 × 30 mm |
+| Calculated minimum | 30.7 mm |
+| Selected bolt | M5 × 35 mm |
 
 These are design defaults, not a hardware guarantee. Measure the actual washer, nut and countersunk bolt before printing the final bracket.
 
@@ -33,7 +33,7 @@ The first bolt is placed beyond the inside face of the other plywood panel by `b
 
 The second bolt is another `bolt_spacing` farther along the arm.
 
-With the current defaults the centres are 20 mm and 36 mm from the inner-corner reference along each arm.
+With the current defaults the centres are 24 mm and 38 mm from the inner-corner reference along each arm.
 
 ## Countersunk head
 
@@ -49,7 +49,7 @@ The horizontal and vertical bolts point toward the same inside corner.
 
 The model calculates `tip_gap` and prints a warning if the perpendicular bolt tips come too close.
 
-If the warning appears, use a shorter bolt, change the bolt positions, or increase `bolt_y_offset`.
+The current default uses `bolt_y_offset = 3`, which gives the closest perpendicular M5×35 bolt tips about 1 mm clearance. If the warning appears after changing dimensions, use a shorter bolt, change the bolt positions, or increase `bolt_y_offset`.
 
 ## Plywood drilling
 

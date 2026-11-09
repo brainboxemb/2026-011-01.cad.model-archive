@@ -69,9 +69,16 @@ fixed `translate()`, `rotate()` and `mirror()` calls. The previous
 Two bolt positions are generated on each arm. `bolt_cuts()` applies the
 same `countersunk_bolt_cut()` at all four positions.
 
-The default source uses M5 × 30 with a 12 mm printed wall, 10 mm plywood,
-washer and nut. The model echoes the minimum stack and the closest
-approach between perpendicular bolt tips.
+The DIN 7991 head still uses its real 90-degree conical countersink. A
+separate `bolt_hole_edge_relief` adds only a very shallow **flat cylindrical**
+enlargement at both bracket faces: around the head opening outside and
+around the M5 through-hole exit inside.
+
+The default source uses M5 × 30 with a 12 mm printed wall and 12 mm
+plywood. The bolt centres are 24 mm and 42 mm from the inner-corner
+reference. Both bolt rows remain centred across the bracket width. With
+the current M5 × 30 default, the closest perpendicular tips retain 2.5 mm
+clearance.
 
 ### 5. Final printable bracket
 

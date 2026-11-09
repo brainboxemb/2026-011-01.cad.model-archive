@@ -37,7 +37,7 @@ module sharp_L_2d() {
 
 Here, the demo uses `wall = 18`, `horizontal_arm_length = vertical_arm_length = 70` and `radius = 12`
 millimetres, so the curved area is visible. The actual bracket defaults
-to an **inside radius of 2 mm**.
+to an **inside radius of 4 mm**.
 
 ## Method A (recommended): ordinary 2D shapes, then extrude
 

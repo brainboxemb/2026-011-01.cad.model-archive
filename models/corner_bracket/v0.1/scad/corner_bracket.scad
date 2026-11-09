@@ -66,7 +66,7 @@ bolt_clearance       = 0.4;  // clearance in the bracket's through hole
 head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)
 head_clearance       = 0.4;  // clearance on the head diameter
 head_recess          = 1;    // head top sits this far below the outer surface (0 = flush)
-hole_edge_relief     = 0.4;  // shallow flat edge relief; radial enlargement and depth (0 = off)
+bolt_hole_edge_relief     = 0.4;  // shallow flat edge relief; radial enlargement and depth (0 = off)
 bolt_length          = 30;   // including the countersunk head
 
 /* [Inside washer and nut] */
@@ -321,19 +321,19 @@ module countersunk_bolt_cut() {
     translate([0, 0, -1]) cylinder(d = dk, h = head_recess + 1.01);
     // Small flat edge reliefs. These are intentionally cylindrical, not
     // conical chamfers: just a shallow, slightly larger circle at each face.
-    if (hole_edge_relief > 0) {
+    if (bolt_hole_edge_relief > 0) {
         // Outside face: around the countersunk-head opening.
         translate([0, 0, -1])
             cylinder(
-                d = dk + 2 * hole_edge_relief,
-                h = hole_edge_relief + 1
+                d = dk + 2 * bolt_hole_edge_relief,
+                h = bolt_hole_edge_relief + 1
             );
 
         // Inside face: where the M5 through-hole exits the bracket.
-        translate([0, 0, wall_thickness - hole_edge_relief])
+        translate([0, 0, wall_thickness - bolt_hole_edge_relief])
             cylinder(
-                d = d0 + 2 * hole_edge_relief,
-                h = hole_edge_relief + 1
+                d = d0 + 2 * bolt_hole_edge_relief,
+                h = bolt_hole_edge_relief + 1
             );
     }
 }

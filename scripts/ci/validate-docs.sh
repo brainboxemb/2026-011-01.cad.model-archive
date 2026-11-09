@@ -119,6 +119,7 @@ grep -Eq "^bolts_per_arm[[:space:]]*=[[:space:]]*2" "$bracket/scad/corner_bracke
 grep -Eq "^bolt_diameter[[:space:]]*=[[:space:]]*5" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*35" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_hole_edge_relief[[:space:]]*=[[:space:]]*0.2" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^inside_corner_radius[[:space:]]*=[[:space:]]*4" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^plywood_thickness[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^horizontal_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^vertical_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"

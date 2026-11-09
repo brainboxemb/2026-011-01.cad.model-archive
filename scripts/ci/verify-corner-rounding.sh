@@ -11,7 +11,7 @@ trap 'rm -rf "$temp"' EXIT
 
 # Check the zero-radius edge case, default R=2, larger fillets, and
 # print-relief combinations. These do not change the bracket design.
-for override in 'r_in=0' 'r_in=1' 'r_in=2' 'r_in=4' 'r_in=8' 'ef=0' 'r_in=4;ef=0' 'r_in=8;ef=0'; do
+for override in 'inside_corner_radius=0' 'inside_corner_radius=1' 'inside_corner_radius=2' 'inside_corner_radius=4' 'inside_corner_radius=8' 'elephant_foot_relief=0' 'inside_corner_radius=4;elephant_foot_relief=0' 'inside_corner_radius=8;elephant_foot_relief=0'; do
   name="${override//[^a-zA-Z0-9]/_}"
   options=()
   IFS=';' read -r -a settings <<< "$override"

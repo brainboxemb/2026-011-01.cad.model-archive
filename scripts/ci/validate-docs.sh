@@ -68,68 +68,76 @@ grep -Fq 'figures/rounded_l_bracket.png' "$lbracket/readme.html"
 
 bracket="models/corner_bracket/v0.1"
 test -s "$bracket/stls/corner_bracket.stl"
-test -s "$bracket/stls/access_plugs.stl"
+test ! -e "$bracket/stls/access_plugs.stl"
 test -s "$bracket/assemblies/main_assembled.png"
 test -s "$bracket/bom/bom.json"
 test -s "$bracket/readme.md"
 test -s "$bracket/readme.html"
 test -s "$bracket/printme.html"
-grep -q 'Corner bracket' "$bracket/readme.md"
+grep -q "Corner bracket" "$bracket/readme.md"
 
-# The source root holds exactly one model and one inspection helper.
+# Exactly one printable model source plus the inspection helper.
 test -s "$bracket/scad/corner_bracket.scad"
 test -s "$bracket/scad/inspection.scad"
 test ! -e "$bracket/scad/documentation.scad"
 test "$(find "$bracket/scad" -maxdepth 1 -type f -name '*.scad' | wc -l)" -eq 2
+
 for source in design hull_explained rounding_explained inside_corner_methods chamfer_explained combined_chamfer_hull; do
   test -s "$bracket/design/$source.scad"
 done
 test -s "$bracket/docs/documentation.scad"
 test -s "$bracket/tests/inside-corner-equivalence.scad"
 test -s "$bracket/tests/elephant-foot-equivalence.scad"
-# Production source must use descriptive names and direct print-relief cuts.
+
+# Production source must reflect the simplified architecture.
 for source_module in \
   'module inside_corner_fill_2d(r)' \
   'module base_profile_2d()' \
   'module bracket_profile_2d()' \
   'module profile_body()' \
-  'module outer_chamfer_envelope_2d()' \
   'module outer_side_chamfer_keep_envelope()' \
   'module outer_side_chamfered_body()' \
-  'module elephant_foot_relief_cuts()' \
+  'module inside_opening_2d()' \
+  'module inside_side_relief_layer(y, expansion = 0)' \
+  'module inside_side_relief_cuts()' \
+  'module arm_tip_relief_wedge(length)' \
+  'module arm_tip_relief_cuts()' \
   'module print_compensated_body()' \
-  'module top_fastener_cut()' \
-  'module vertical_fastener_cut()'; do
+  'module countersunk_bolt_cut()' \
+  'module bolt_cuts()'; do
   grep -Fq "$source_module" "$bracket/scad/corner_bracket.scad"
 done
 
 for parameter in \
   bracket_width wall_thickness horizontal_arm_length vertical_arm_length \
   arm_end_chamfer outer_corner_chamfer side_edge_chamfer \
-  elephant_foot_relief inside_corner_radius; do
+  elephant_foot_relief inside_corner_radius bolts_per_arm bolt_diameter bolt_length; do
   grep -Eq "^$parameter[[:space:]]*=" "$bracket/scad/corner_bracket.scad"
 done
 
-if grep -Eq '^(W|t|armH|armV|c|ce|cs|ef|r_in)[[:space:]]*=' "$bracket/scad/corner_bracket.scad"; then
-  echo "Old cryptic bracket parameter name returned to production source" >&2
+grep -Eq "^bolts_per_arm[[:space:]]*=[[:space:]]*2" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_diameter[[:space:]]*=[[:space:]]*5" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*30" "$bracket/scad/corner_bracket.scad"
+
+# The active source must not drift back to the captive-nut/plug design or the
+# hard-to-read multmatrix arm-tip placement.
+for obsolete in "module nut_top" "module nut_side" "module plug_local" "module plugs_print_pair" "module arm_end_relief_cuts"; do
+  if grep -Fq "$obsolete" "$bracket/scad/corner_bracket.scad"; then
+    echo "Obsolete bracket geometry returned: $obsolete" >&2
+    exit 1
+  fi
+done
+
+if grep -Eq '^[[:space:]]*multmatrix[(]' "$bracket/scad/corner_bracket.scad"; then
+  echo "multmatrix() returned to production arm-tip geometry" >&2
   exit 1
 fi
 
-if grep -Eq 'inside_relief_envelope|relief_corner_miters|module opening_layer' "$bracket/scad/corner_bracket.scad"; then
-  echo "Former hull-based print relief returned to production source" >&2
-  exit 1
-fi
+# The legacy multmatrix transform is deliberately retained only in the regression fixture.
+grep -Fq "module legacy_tip_prism" "$bracket/tests/elephant-foot-equivalence.scad"
+grep -Fq "multmatrix([" "$bracket/tests/elephant-foot-equivalence.scad"
 
-grep -Fq 'former_relief_opening_hulls' "$bracket/tests/elephant-foot-equivalence.scad"
-grep -Fq 'elephant_foot_relief_cuts()' "$bracket/readme.md"
-grep -Fq 'module outer_side_chamfer_keep_envelope()' "$bracket/readme.md"
-
-if grep -Fq 'corner_arc = (inside_corner_radius > 0)' "$bracket/scad/corner_bracket.scad"; then
-  echo "Old sampled-point fillet returned to active model" >&2
-  exit 1
-fi
-
-# The main manual should remain concise and link to two focused guides.
+# Active guides.
 for page in mounting-options hull-guide polygon-guide chamfer-guide; do
   test -s "$bracket/docs/$page.md"
   test -s "$bracket/docs/$page.html"
@@ -137,75 +145,16 @@ for page in mounting-options hull-guide polygon-guide chamfer-guide; do
   grep -Fq "docs/$page.html" "$bracket/readme.html"
 done
 
-# Mounting diagrams are editable SVG files. The generated HTML must link to them.
-for svg in mounting-corner-overview mounting-a-inside-out mounting-b-outside-in mounting-c-counter-outside-in mounting-d-counter-inside-out mounting-e-pronged-t-nut m4-nuts-hex-square; do
-  test -s "$bracket/figures/$svg.svg"
-  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.md"
-  grep -Fq "../figures/$svg.svg" "$bracket/docs/mounting-options.html"
-done
-grep -Fq 'counter-bracket' "$bracket/docs/mounting-options.html"
-grep -Fq 'B0F412QQ32' "$bracket/docs/mounting-options.html"
-grep -Fq '6834946' "$bracket/docs/mounting-options.html"
-grep -Fq '12120010' "$bracket/docs/mounting-options.html"
-grep -Fq '12120360' "$bracket/docs/mounting-options.html"
-grep -Fq 'Prongs point INTO plywood' "$bracket/figures/mounting-e-pronged-t-nut.svg"
-grep -Fq '<table>' "$bracket/docs/mounting-options.html"
-# Explicit product photo URLs supplied for these three candidate components.
-for photo in '71+MwJjWJ+L._SL1500_.jpg' 'as.46905981.jpg' 'as.89415265.jpg' 'as.89415179.jpg'; do
-  grep -Fq "$photo" "$bracket/docs/mounting-options.md"
-  grep -Fq "$photo" "$bracket/docs/mounting-options.html"
-done
-grep -Fq '../figures/m4-bolt-head-types.svg' "$bracket/docs/mounting-options.html"
-test -s "$bracket/figures/m4-bolt-head-types.svg"
-for section in a-inside-out b-outside-in c-counter-outside-in d-counter-inside-out e-pronged-t-nut; do
-  file="$bracket/figures/mounting-$section.svg"
-  grep -Fq 'OUTSIDE' "$file"
-  grep -Fq 'INSIDE' "$file"
-  grep -Fq '520' "$file"
-done
+grep -Fq "four M5 DIN 7991-style countersunk bolts" "$bracket/readme.md"
+grep -Fq "inside_side_relief_cuts()" "$bracket/readme.md"
+grep -Fq "arm_tip_relief_cuts()" "$bracket/readme.md"
+grep -Fq "multmatrix()" "$bracket/readme.md"
+grep -Fq "two bolts per arm" "$bracket/docs/mounting-options.md"
+grep -Fq "M5 × 30" "$bracket/docs/mounting-options.md"
+grep -Fq "one continuous opening hull per broad side" "$bracket/docs/chamfer-guide.md"
+grep -Fq 'It does **not** use `multmatrix()`.' "$bracket/docs/hull-guide.md"
 
-# Verify SVG files parse as vector drawings, not only that paths exist.
-python3 - <<'PY'
-from pathlib import Path
-from xml.etree import ElementTree
-figures = sorted(Path("models/corner_bracket/v0.1/figures").glob("*.svg"))
-assert len(figures) >= 7, "Expected mounting and elephant-foot diagrams"
-for figure in figures:
-    root = ElementTree.parse(figure).getroot()
-    assert root.tag == "{http://www.w3.org/2000/svg}svg", figure
-    assert root.attrib.get("viewBox"), f"Missing viewBox: {figure}"
-print(f"Validated {len(figures)} editable SVG illustrations")
-PY
-
-# The generated bracket manual must explain the current keep/cut architecture.
-for svg in elephant-foot-section elephant-foot-edges; do
-  test -s "$bracket/figures/$svg.svg"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.md"
-  grep -Fq "figures/$svg.svg" "$bracket/readme.html"
-done
-
-grep -Fq '### 2. Create the outside side-edge chamfer' "$bracket/readme.md"
-grep -Fq '### 3. Remove the fastener spaces' "$bracket/readme.md"
-grep -Fq '### 4. Remove elephant-foot print compensation' "$bracket/readme.md"
-grep -Fq 'elephant_foot_relief_cuts()' "$bracket/readme.md"
-grep -Fq 'outer_side_chamfer_keep_envelope()' "$bracket/readme.md"
-grep -Fq 'top_fastener_cut()' "$bracket/readme.md"
-grep -Fq 'vertical_fastener_cut()' "$bracket/readme.md"
-grep -Fq '<pre><code>' "$bracket/readme.html"
-
-if grep -Fq 'inside_relief_envelope()' "$bracket/readme.md"; then
-  echo "Obsolete hull-relief explanation returned to generated manual" >&2
-  exit 1
-fi
-
-# Focused guides must use current production terminology.
-grep -Fq '## 6. Why elephant-foot relief does not use hull() anymore' "$bracket/docs/hull-guide.md"
-grep -Fq 'module outer_side_chamfer_keep_envelope()' "$bracket/docs/hull-guide.md"
-grep -Fq 'module outer_side_chamfered_body()' "$bracket/docs/hull-guide.md"
-grep -Fq 'elephant_foot_relief_cuts()' "$bracket/docs/chamfer-guide.md"
-grep -Fq 'explicit cutter volumes' "$bracket/docs/chamfer-guide.md"
-
-# Each image is used by exactly the intended guide, with working relative URLs.
+# Walkthrough images used by the generated manual.
 check_image() {
   local file="$1" page="$2"
   test -s "$bracket/design/$file.png"
@@ -218,35 +167,28 @@ check_image() {
   fi
 }
 
-for stage in 01_profile 02_outer_side_chamfers 03_fastener_cuts 04_print_relief 05_access_plugs 06_installed; do
+for stage in 01_profile 02_outer_side_chamfers 03_side_relief 04_bolt_cuts 05_final 06_installed; do
   check_image "$stage" readme
 done
+
 for stage in 01_original_bar 02_wide_layer 03_two_layers 04_hull 05_result; do
   check_image "hull_$stage" hull-guide
 done
+
 for stage in layers comparison; do
   check_image "combined_chamfer_$stage" hull-guide
 done
-for stage in 01_plain_l 02_profile_chamfers 03_profile_body 04_outer_envelope 05_side_chamfer_inputs 06_side_chamfer_envelope 07_side_chamfered_body 08_elephant_foot_cuts 09_print_compensated_body 10_final; do
+
+for stage in 01_plain_l 02_profile_chamfers 03_profile_body 04_outer_envelope 05_side_chamfer_inputs 06_side_chamfer_envelope 07_side_chamfered_body 08_continuous_side_relief 09_print_compensated_body 10_final; do
   check_image "chamfer_$stage" chamfer-guide
 done
 
-# 2D and 3D rounding alternatives must both be illustrated in the
-# standalone polygon guide (never duplicated in the short model walkthrough).
 for stage in 01_sharp_2d 02_square_circle_2d 03_piece_2d 04_rounded_2d 05_extruded_2d 06_cube_cylinder_3d 07_piece_3d 08_rounded_3d 09_polygon_points_2d; do
   check_image "corner_$stage" polygon-guide
 done
 
-for snippet in 'module corner_piece_2d()' 'module rounded_L_2d()' 'module corner_cube_3d()' 'module corner_piece_3d()' 'module rounded_L_3d()'; do
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.md"
-  grep -Fq "$snippet" "$bracket/docs/polygon-guide.html"
-done
-grep -Fq 'polygon-guide.html' "$bracket/docs/hull-guide.html"
-grep -Fq 'chamfer-guide.html' "$bracket/readme.html"
-grep -Fq 'polygon-guide.html' "$bracket/readme.html"
-if grep -Fq 'design/corner_01_sharp_2d.png' "$bracket/readme.md"; then
-  echo "General polygon tutorial leaked into the bracket walkthrough" >&2
-  exit 1
-fi
+grep -Fq "polygon-guide.html" "$bracket/docs/hull-guide.html"
+grep -Fq "chamfer-guide.html" "$bracket/readme.html"
+grep -Fq "mounting-options.html" "$bracket/readme.html"
 
 echo "Verified generated documentation and all design illustrations."

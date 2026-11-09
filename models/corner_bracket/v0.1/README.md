@@ -1,139 +1,107 @@
 # Corner bracket — v0.1
 
-Outside-corner bracket for two plywood panels, with captive M4 nuts and removable access-window plugs.
+Simplified outside-corner bracket for two plywood panels.
 
-The production model now follows the same modelling vocabulary used in the archive-wide [OpenSCAD design concepts](../../../docs/design-concepts.md):
+The current fastening is deliberately simple:
 
-1. build the 2D bracket profile;
-2. create the outside side-edge chamfer as **keep geometry**;
-3. remove elephant-foot compensation as explicit **cut geometry**;
-4. remove the fastener pockets, windows and bolt holes as explicit **cut geometry**;
-5. keep display-only plywood and installed plugs separate from printable geometry.
+- **two M5 DIN 7991 countersunk bolts per arm**;
+- four bolts total;
+- bolts enter from the **outside**;
+- each bolt passes through the bracket and plywood;
+- washer and nut remain accessible on the inside.
 
-The bracket is still a prototype. Print fit, strength and tolerances have not been physically verified.
+The former captive-nut pockets, access windows and printed plugs are no longer part of the production model.
 
-## Source layout
+The bracket is still a prototype. Print fit, bolt stack-up, plywood fit and mechanical strength still need physical verification.
+
+## Geometry at a glance
 
 ~~~text
-scad/
-  corner_bracket.scad          Printable parametric model
-  inspection.scad              Optional cutaway/section helper
-
-design/
-  design.scad                  Six-step model walkthrough
-  chamfer_explained.scad       Ten edge-treatment stages
-  hull_explained.scad          General hull tutorial
-  inside_corner_methods.scad   2D/3D inside-corner tutorial
-  combined_chamfer_hull.scad   Historical/experimental straight-bar hull idea
-  *.png                        CI-generated tutorial images
-
-docs/
-  documentation.scad           NopSCADlib documentation source
-  chamfer-guide.md             Actual bracket edge treatments
-  hull-guide.md                hull() and the outer side chamfer
-  polygon-guide.md             Inside-radius constructions
-  mounting-options.md          Fastener alternatives
-
-tests/
-  inside-corner-equivalence.scad
-  elephant-foot-equivalence.scad
+2D L profile
+    ↓
+outside side-chamfer keep envelope
+    ↓
+continuous elephant-foot side relief
+    ↓
+4 × M5 countersunk bolt cuts
+    ↓
+final bracket
 ~~~
 
-Only `scad/corner_bracket.scad` and `scad/inspection.scad` belong to the printable bracket source. The files under `design/`, `docs/` and `tests/` explain or verify that source.
+For the shared modelling language behind **keep**, **cut** and **clip** geometry, see the archive-wide [OpenSCAD design concepts](../../../docs/design-concepts.md).
 
-## Main geometry names
+## 1. Main L profile
 
-The production source intentionally uses descriptive names:
+`base_profile_2d()` contains the L outline, the arm-end chamfers and the large outside corner chamfer.
 
-| Name | Meaning |
-| --- | --- |
-| `bracket_profile_2d()` | complete 2D side profile |
-| `profile_body()` | plain extrusion of that profile |
-| `outer_chamfer_envelope_2d()` | temporary convex outside outline |
-| `outer_side_chamfer_keep_envelope()` | hull-generated envelope for the outside side chamfer |
-| `outer_side_chamfered_body()` | real L profile clipped by that keep envelope |
-| `elephant_foot_relief_cuts()` | all small print-compensation volumes that are removed |
-| `print_compensated_body()` | side-chamfered body after those relief cuts |
-| `top_fastener_cut()` | nut pocket, window and bolt-hole cuts for the top arm |
-| `vertical_fastener_cut()` | equivalent cuts for the vertical arm |
-| `bracket()` | final printable bracket |
+`inside_corner_fill_2d()` adds the rounded inside corner.
 
-The main public geometry parameters are similarly explicit: `bracket_width`, `wall_thickness`, `horizontal_arm_length`, `vertical_arm_length`, `arm_end_chamfer`, `outer_corner_chamfer`, `side_edge_chamfer`, `elephant_foot_relief` and `inside_corner_radius`.
+The tiny elephant-foot bevel on the two **arm end faces** is kept in this 2D profile. Two extra 3D cutters would only make the model harder to read.
 
-## How the bracket is built
+`bracket_profile_2d()` combines the profile and `profile_body()` extrudes it across `bracket_width`.
 
-### 1. 2D profile
+## 2. Outside side-edge chamfer
 
-`base_profile_2d()` draws the L shape, including the arm-end chamfers and the large outside corner chamfer.
+The outside side chamfer is described as geometry that is allowed to **remain**.
 
-`inside_corner_fill_2d()` adds the rounded inside corner using a simple `square() - circle()` construction.
+`outer_side_chamfer_keep_envelope()` uses `hull()` to connect two differently sized convex outer profiles.
 
-`bracket_profile_2d()` joins those two pieces and `profile_body()` extrudes the result across `bracket_width`.
+`outer_side_chamfered_body()` then clips that temporary envelope with the real L-shaped body.
 
-### 2. Outside side-edge chamfer
+## 3. Elephant-foot relief
 
-The outside side-edge chamfer is easiest to describe as geometry that should **remain**.
+The plywood-facing print relief is intentionally kept as **one continuous shape per broad print side**:
 
-`outer_chamfer_envelope_2d()` deliberately fills the open quadrant of the L, giving a convex outside outline. Two differently sized extrusions of that outline are connected with `hull()` in `outer_side_chamfer_keep_envelope()`.
-
-That envelope is then intersected with the real L-shaped `profile_body()`:
-
-~~~openscad
-module outer_side_chamfered_body() {
-    intersection() {
-        profile_body();
-
-        if (side_edge_chamfer > 0)
-            outer_side_chamfer_keep_envelope();
-        else
-            rotate([90, 0, 0])
-                linear_extrude(height = bracket_width, center = true)
-                    outer_chamfer_envelope_2d();
-    }
-}
+~~~text
+horizontal contact edge
+        ↓
+rounded inside corner
+        ↓
+vertical contact edge
 ~~~
 
-`intersection()` does not create the chamfer. It only clips the temporary convex envelope back to the real bracket shape.
+`inside_opening_2d()` describes that complete opening once.
 
-### 3. Elephant-foot relief
+`inside_side_relief_cuts()` makes one local `hull()` on each printable broad side, between the normal opening one relief-depth inward and the enlarged opening at the print face.
 
-The print compensation is easier to describe the other way around: as the small pieces of material that must **disappear**.
+That produces the complete 45-degree relief around the straight contact edges **and** the rounded inside corner in one operation per side.
 
-`elephant_foot_relief_cuts()` contains:
+Only the small junction where this relief reaches the diagonal outside side chamfer needs a local correction.
 
-- a straight 45-degree cutter along the horizontal plywood-facing edge;
-- a straight cutter along the vertical plywood-facing edge;
-- a revolved cutter around the rounded inside corner;
-- short diagonal cutters where the relief meets the outside side chamfer.
-
-Those cuts are mirrored to both printable side faces and subtracted:
+That correction is one simple triangular prism, placed with ordinary `translate()`, `rotate()` and `mirror()` calls. The old general `multmatrix()` construction is no longer needed.
 
 ~~~openscad
 module print_compensated_body() {
     difference() {
         outer_side_chamfered_body();
-        elephant_foot_relief_cuts();
+        inside_side_relief_cuts();
+        arm_tip_relief_cuts();
     }
 }
 ~~~
 
-This is intentionally simpler than the former production experiment that tried to describe the relief with several opening hulls. That hull implementation remains only in the regression fixture so CI can compare both solids.
+So the split is:
 
-### 4. Fastener cuts
+- **main side relief:** one continuous cut per broad side;
+- **arm-tip correction:** only the small transition to `side_edge_chamfer`;
+- **arm end-face relief:** part of the 2D profile.
 
-`top_fastener_cut()` and `vertical_fastener_cut()` describe material to remove for the captive nuts, access windows and bolt paths.
+## 4. Four M5 countersunk bolts
 
-The final bracket is therefore straightforward:
+The production model currently uses two bolts per arm, `bolt_diameter = 5` and `bolt_length = 30`.
+
+`bolt_cuts()` applies the same `countersunk_bolt_cut()` twice on the horizontal arm and twice on the vertical arm.
 
 ~~~openscad
 module bracket() {
     difference() {
         print_compensated_body();
-        top_fastener_cut();
-        vertical_fastener_cut();
+        bolt_cuts();
     }
 }
 ~~~
+
+The default model uses a 12 mm bracket wall and 10 mm plywood. It echoes the minimum bolt stack and the closest approach between perpendicular bolt tips.
 
 ## Walkthroughs
 
@@ -143,39 +111,33 @@ Open the production model:
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/scad/corner_bracket.scad"
 ~~~
 
-Open the six-step model walkthrough:
+Open the six-step walkthrough:
 
 ~~~powershell
 .\scripts\open-model.ps1 -Model "models/corner_bracket/v0.1/design/design.scad"
 ~~~
 
-The detailed [Chamfer Guide](docs/chamfer-guide.md) explains the three different edge treatments:
+The [Chamfer Guide](docs/chamfer-guide.md) shows the profile, outside side chamfer, continuous elephant-foot side relief and arm-tip correction.
 
-- `arm_end_chamfer` / `outer_corner_chamfer`: coordinates in the 2D profile;
-- `side_edge_chamfer`: `hull()` keep envelope + `intersection()`;
-- `elephant_foot_relief`: explicit cutter volumes + `difference()`.
-
-The [Hull Guide](docs/hull-guide.md) explains why `hull()` is useful for the **outside side chamfer** and why it is not automatically the right tool for every other edge treatment.
+The [Hull Guide](docs/hull-guide.md) explains the two places where `hull()` is useful: outside chamfer as **keep geometry**, and continuous inside print relief as **cut geometry**.
 
 The [Polygon Guide](docs/polygon-guide.md) explains the rounded inside corner.
 
-## Regression checks
+The [Mounting Guide](docs/mounting-options.md) documents the current 4× M5 outside-to-inside arrangement.
 
-CI verifies two important refactors:
+## Experiments and regression fixtures
 
-- the current `square() - circle()` inside radius against the former point-based polygon;
-- the current direct elephant-foot cutters against the former hull implementation across several `side_edge_chamfer`, `elephant_foot_relief` and `inside_corner_radius` values.
+The general hull examples remain under `design/`.
 
-The elephant-foot comparison is a near-equivalence check, not a claim that the two implementations are bit-for-bit identical.
+Older elephant-foot implementations remain useful as test/reference material under `tests/`; they are not production geometry.
 
-## Mounting alternatives
+The arm-tip simplification is intended to preserve the old geometry while replacing the hard-to-read local `multmatrix()` transform with fixed rotations.
 
-The [mounting options](docs/mounting-options.md) compare the current captive-nut arrangement with other bolt and nut directions. Those alternatives are design studies; only the current bolt-from-inside/captive-nut arrangement is implemented in v0.1.
+## Before printing
 
-## Checks before printing or assembly
-
-- Confirm the real plywood thickness and match its inside corner to `inside_corner_radius`.
-- Measure the real M4 nuts and check `nut_across_flats`, `nut_thickness` and `nut_clearance`.
-- Confirm the remaining `outside_skin` and actual bolt length.
-- Test `elephant_foot_relief`, plug clearance and mating surfaces on a short print before relying on the full bracket.
-- No finished joint strength rating is implied by the generated documentation.
+- Confirm the real plywood thickness.
+- Confirm the inside plywood corner clears `inside_corner_radius`.
+- Measure the actual M5 head, washer and nut.
+- Recalculate `bolt_length` if any stack dimension changes.
+- Check the countersunk head still leaves enough printed material.
+- Print a short fit sample for `elephant_foot_relief` before relying on the full bracket.

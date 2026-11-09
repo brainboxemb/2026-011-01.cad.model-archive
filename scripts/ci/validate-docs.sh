@@ -121,12 +121,17 @@ grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*30" "$bracket/scad/corner_bracket
 
 # The active source must not drift back to the captive-nut/plug design or the
 # hard-to-read multmatrix arm-tip placement.
-for obsolete in "module nut_top" "module nut_side" "module plug_local" "module plugs_print_pair" "module arm_end_relief_cuts" "multmatrix("; do
+for obsolete in "module nut_top" "module nut_side" "module plug_local" "module plugs_print_pair" "module arm_end_relief_cuts"; do
   if grep -Fq "$obsolete" "$bracket/scad/corner_bracket.scad"; then
     echo "Obsolete bracket geometry returned: $obsolete" >&2
     exit 1
   fi
 done
+
+if grep -Eq '^[[:space:]]*multmatrix\\(' "$bracket/scad/corner_bracket.scad"; then
+  echo "multmatrix() returned to production arm-tip geometry" >&2
+  exit 1
+fi
 
 # The legacy multmatrix transform is deliberately retained only in the regression fixture.
 grep -Fq "module legacy_tip_prism" "$bracket/tests/elephant-foot-equivalence.scad"

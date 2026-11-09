@@ -1,100 +1,202 @@
-// Independent regression reference: the former per-edge elephant-foot cuts.
-// Keep these historical cutters ONLY in tests, not in the printable model.
-// Production chamfers now use hull-based envelopes.
+// Regression fixture for elephant-foot print compensation.
+//
+// Production now uses explicit cut geometry because the unwanted material is
+// simpler to describe directly. The former hull-based implementation remains
+// here only as an independent comparison reference.
+//
+// CI checks that switching back to the simpler direct cutters stays within the
+// previously accepted whole-part tolerance and keeps the same bounding box.
+
 use <../scad/corner_bracket.scad>
 
-// Keep aligned with production defaults. The CI script overrides variations.
-W=20;
-armH=40;
-armV=40;
-cs=2;
-ef=0.6;
-r_in=2;
-$fn=48;
+// Match production defaults. CI overrides these values.
+bracket_width = 20;
+horizontal_arm_length = 40;
+vertical_arm_length = 40;
+side_edge_chamfer = 2;
+elephant_foot_relief = 0.6;
+inside_corner_radius = 2;
+$fn = 48;
 
-test_view="xor"; // [old, new, xor, tip_xor, tip_xor_before]
+test_view = "xor"; // [direct,former_hull,xor,tip_xor,tip_xor_without_miters]
 
-module former_wedge_profile() {
-    polygon([[W/2-ef-1,-1], [W/2+1,-1], [W/2+1,ef+1]]);
-}
-module former_edge_wedge(A,U,V,D,len) {
-    multmatrix([[U[0], V[0], D[0], A[0]],
-                [U[1], V[1], D[1], A[1]],
-                [U[2], V[2], D[2], A[2]],
-                [0, 0, 0, 1]])
-        linear_extrude(height=len)
-            polygon([[-ef-1,-1],[1,-1],[1,ef+1]]);
-}
-module former_ef_cuts() {
-    s2=sqrt(2)/2;
-    if(ef>0) for(m=[0,1]) mirror([0,m,0]) {
-        if(cs>0) {
-            former_edge_wedge([armH-cs-s2,W/2+s2,0],
-                [s2,s2,0], [0,0,1], [s2,-s2,0], cs*sqrt(2)+2);
-            former_edge_wedge([0,W/2-cs-s2,-armV-s2],
-                [0,s2,-s2],[-1,0,0],[0,s2,s2],cs*sqrt(2)+2);
-        }
-        translate([r_in,0,0]) rotate([90,0,90])
-            linear_extrude(height=armH+1-r_in) former_wedge_profile();
-        translate([0,0,-armV-1]) rotate([0,0,90])
-            linear_extrude(height=armV+1-r_in) former_wedge_profile();
-        if(r_in>=1)
-            translate([r_in,0,-r_in]) rotate([90,0,0]) rotate([0,0,89])
-                rotate_extrude(angle=92)
-                    polygon([[r_in-1,W/2-ef-1],
-                             [r_in-1,W/2+1],
-                             [r_in+ef+1,W/2+1]]);
-    }
-}
-module former_bracket() {
+// ---------- Former hull implementation, retained only for regression ----------
+
+module former_inside_opening_2d() {
+    reach = max(5, side_edge_chamfer + elephant_foot_relief + 1);
+
     difference() {
-        body();
-        nut_top();
-        nut_side();
-        former_ef_cuts();
+        translate([0, -vertical_arm_length - reach])
+            square([
+                horizontal_arm_length + reach,
+                vertical_arm_length + reach
+            ]);
+
+        if (inside_corner_radius > 0)
+            inside_corner_fill_2d(inside_corner_radius);
     }
 }
-// Isolate the four intersections between an arm end and a printed side
-// bevel. These local volumes catch visually conspicuous *flat miter ends*
-// that the whole-part XOR percentage can otherwise hide.
+
+module former_opening_layer(y, expansion = 0) {
+    translate([0, y, 0])
+        rotate([90, 0, 0])
+            linear_extrude(height = 0.002, center = true)
+                offset(delta = expansion)
+                    former_inside_opening_2d();
+}
+
+module former_relief_opening_hulls() {
+    if (elephant_foot_relief > 0)
+        for (side = [-1, 1])
+            hull() {
+                former_opening_layer(
+                    side * (bracket_width / 2 - elephant_foot_relief)
+                );
+                former_opening_layer(
+                    side * bracket_width / 2,
+                    elephant_foot_relief
+                );
+            }
+}
+
+module former_miter_hull(A, U, V, direction, length) {
+    module triangle_at(distance) {
+        multmatrix([
+            [U[0], V[0], direction[0], A[0]],
+            [U[1], V[1], direction[1], A[1]],
+            [U[2], V[2], direction[2], A[2]],
+            [0, 0, 0, 1]
+        ])
+            translate([0, 0, distance])
+                linear_extrude(height = 0.001)
+                    polygon([
+                        [-elephant_foot_relief - 1, -1],
+                        [1, -1],
+                        [1, elephant_foot_relief + 1]
+                    ]);
+    }
+
+    hull() {
+        triangle_at(0);
+        triangle_at(length);
+    }
+}
+
+module former_relief_corner_miters() {
+    s2 = sqrt(2) / 2;
+
+    if (elephant_foot_relief > 0 && side_edge_chamfer > 0)
+        for (mirror_side = [0, 1])
+            mirror([0, mirror_side, 0]) {
+                former_miter_hull(
+                    [
+                        horizontal_arm_length - side_edge_chamfer - s2,
+                        bracket_width / 2 + s2,
+                        0
+                    ],
+                    [s2, s2, 0],
+                    [0, 0, 1],
+                    [s2, -s2, 0],
+                    side_edge_chamfer * sqrt(2) + 2
+                );
+
+                former_miter_hull(
+                    [
+                        0,
+                        bracket_width / 2 - side_edge_chamfer - s2,
+                        -vertical_arm_length - s2
+                    ],
+                    [0, s2, -s2],
+                    [-1, 0, 0],
+                    [0, s2, s2],
+                    side_edge_chamfer * sqrt(2) + 2
+                );
+            }
+}
+
+module former_hull_print_compensated_body(include_miters = true) {
+    difference() {
+        outer_side_chamfered_body();
+        former_relief_opening_hulls();
+
+        if (include_miters)
+            former_relief_corner_miters();
+    }
+}
+
+module former_hull_bracket(include_miters = true) {
+    difference() {
+        former_hull_print_compensated_body(include_miters);
+        top_fastener_cut();
+        vertical_fastener_cut();
+    }
+}
+
+// Isolate the four small arm-tip regions where the print relief meets the
+// outer side chamfer. This catches visually noticeable local differences.
 module tip_regions() {
-    for (m=[0,1]) mirror([0,m,0]) {
-        translate([armH-cs-ef-3, W/2-cs-ef-3, -1])
-            cube([cs+ef+5, cs+ef+5, ef+2]);
-        translate([-1, W/2-cs-ef-3, -armV-1])
-            cube([ef+2, cs+ef+5, cs+ef+5]);
-    }
+    for (mirror_side = [0, 1])
+        mirror([0, mirror_side, 0]) {
+            translate([
+                horizontal_arm_length - side_edge_chamfer
+                    - elephant_foot_relief - 3,
+                bracket_width / 2 - side_edge_chamfer
+                    - elephant_foot_relief - 3,
+                -1
+            ])
+                cube([
+                    side_edge_chamfer + elephant_foot_relief + 5,
+                    side_edge_chamfer + elephant_foot_relief + 5,
+                    elephant_foot_relief + 2
+                ]);
+
+            translate([
+                -1,
+                bracket_width / 2 - side_edge_chamfer
+                    - elephant_foot_relief - 3,
+                -vertical_arm_length - 1
+            ])
+                cube([
+                    elephant_foot_relief + 2,
+                    side_edge_chamfer + elephant_foot_relief + 5,
+                    side_edge_chamfer + elephant_foot_relief + 5
+                ]);
+        }
 }
-// Reproduce the intermediate construction that caused a visible flat point
-// where the EF relief meets the side bevel at the arm ends.
-module without_corner_miters() {
-    difference() {
-        body();
-        nut_top();
-        nut_side();
-        inside_relief_envelope();
-    }
-}
+
 module symmetric_difference() {
     union() {
-        difference() { former_bracket(); children(); }
-        difference() { children(); former_bracket(); }
+        difference() {
+            bracket();
+            children();
+        }
+        difference() {
+            children();
+            bracket();
+        }
     }
-}
-module bracket_xor() {
-    symmetric_difference() bracket();
 }
 
-if(test_view=="old") former_bracket();
-else if(test_view=="new") bracket();
-else if(test_view=="xor") bracket_xor();
-else if(test_view=="tip_xor")
+if (test_view == "direct")
+    bracket();
+
+else if (test_view == "former_hull")
+    former_hull_bracket();
+
+else if (test_view == "xor")
+    symmetric_difference()
+        former_hull_bracket();
+
+else if (test_view == "tip_xor")
     intersection() {
-        bracket_xor();
+        symmetric_difference()
+            former_hull_bracket();
         tip_regions();
     }
-else if(test_view=="tip_xor_before")
+
+else if (test_view == "tip_xor_without_miters")
     intersection() {
-        symmetric_difference() without_corner_miters();
+        symmetric_difference()
+            former_hull_bracket(false);
         tip_regions();
     }

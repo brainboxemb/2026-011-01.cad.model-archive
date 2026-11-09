@@ -66,7 +66,7 @@ bolt_clearance       = 0.4;  // clearance in the bracket's through hole
 head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)
 head_clearance       = 0.4;  // clearance on the head diameter
 head_recess          = 1;    // head top sits this far below the outer surface (0 = flush)
-bolt_hole_edge_relief     = 0.4;  // shallow flat edge relief; radial enlargement and depth (0 = off)
+bolt_hole_edge_relief     = 0.2;  // shallow flat edge relief; radial enlargement and depth (0 = off)
 bolt_length          = 30;   // including the countersunk head
 
 /* [Inside washer and nut] */

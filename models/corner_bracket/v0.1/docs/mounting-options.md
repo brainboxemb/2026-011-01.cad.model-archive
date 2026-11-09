@@ -33,7 +33,7 @@ The first bolt is placed beyond the inside face of the other plywood panel by `b
 
 The second bolt is another `bolt_spacing` farther along the arm.
 
-With the current defaults the centres are 22 mm and 38 mm from the inner-corner reference along each arm.
+With the current defaults the centres are 24 mm and 42 mm from the inner-corner reference along each arm.
 
 ## Countersunk head
 

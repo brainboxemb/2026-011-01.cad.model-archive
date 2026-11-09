@@ -21,8 +21,8 @@ There are no captive-nut pockets, access windows or printed plugs in the current
 | Washer | 1.0 mm |
 | M5 nut | 4.7 mm |
 | Extra thread allowance | 1 mm |
-| Calculated minimum | 30.7 mm |
-| Selected bolt | M5 × 35 mm |
+| Calculated minimum | 29.7 mm |
+| Selected bolt | M5 × 30 mm |
 
 These are design defaults, not a hardware guarantee. Measure the actual washer, nut and countersunk bolt before printing the final bracket.
 
@@ -50,7 +50,7 @@ The horizontal and vertical bolts point toward the same inside corner.
 
 The model calculates `tip_gap` and prints a warning if the perpendicular bolt tips come too close.
 
-The current default keeps both bolt rows centred across the bracket width (`bolt_y_offset = 0`). If the warning appears, solve the bolt-length or arm-position geometry directly rather than shifting the rows sideways.
+The current default keeps both bolt rows centred across the bracket width (`bolt_y_offset = 0`). With M5 × 30, the closest perpendicular bolt tips retain 2.5 mm clearance. If the warning appears after changing dimensions, solve the bolt length or arm positions directly rather than shifting the rows sideways.
 
 ## Plywood drilling
 

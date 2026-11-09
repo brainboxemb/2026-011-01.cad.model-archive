@@ -72,9 +72,10 @@
 //! enlargement at both bracket faces: around the head opening outside and
 //! around the M5 through-hole exit inside.
 //!
-//! The default source uses M5 × 30 with a 12 mm printed wall, 10 mm plywood,
-//! washer and nut. The model echoes the minimum stack and the closest
-//! approach between perpendicular bolt tips.
+//! The default source uses M5 × 35 with a 12 mm printed wall and 12 mm
+//! plywood. The bolt centres are 24 mm and 38 mm from the inner-corner
+//! reference. A 3 mm Y-offset separates the perpendicular bolt rows so their
+//! tips retain about 1 mm clearance.
 //!
 //! ### 5. Final printable bracket
 //!

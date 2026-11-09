@@ -88,7 +88,7 @@ So the split is:
 
 ## 4. Four M5 countersunk bolts
 
-The production model currently uses two bolts per arm, `bolt_diameter = 5` and `bolt_length = 30`.
+The production model currently uses two bolts per arm, `bolt_diameter = 5` and `bolt_length = 35`.
 
 `bolt_cuts()` applies the same `countersunk_bolt_cut()` twice on the horizontal arm and twice on the vertical arm.
 
@@ -103,7 +103,7 @@ module bracket() {
 }
 ~~~
 
-The default model uses a 12 mm bracket wall and 10 mm plywood. It echoes the minimum bolt stack and the closest approach between perpendicular bolt tips.
+The default model uses a 12 mm bracket wall and 12 mm plywood. The bolt centres are 24 mm and 38 mm from the inner-corner reference. `bolt_y_offset = 3` separates the perpendicular bolt rows across the bracket width so the M5×35 tips retain about 1 mm clearance.
 
 ## Walkthroughs
 

@@ -29,13 +29,13 @@ and closes the outline. The inside corner is sharp at `(0, 0)`.
 ```openscad
 module sharp_L_2d() {
     polygon([
-        [0, 0], [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
+        [0, 0], [horizontal_arm_length, 0], [horizontal_arm_length, wall],
+        [-wall, wall], [-wall, -vertical_arm_length], [0, -vertical_arm_length]
     ]);
 }
 ```
 
-Here, the demo uses `wall = 18`, `armH = armV = 70` and `radius = 12`
+Here, the demo uses `wall = 18`, `horizontal_arm_length = vertical_arm_length = 70` and `radius = 12`
 millimetres, so the curved area is visible. The actual bracket defaults
 to an **inside radius of 2 mm**.
 
@@ -114,7 +114,7 @@ module extruded_from_2d() {
 
 This is **now the approach in `scad/corner_bracket.scad`**: finish the
 side profile in 2D, then extrude. In the real source, the module names
-are `sharp_profile()`, `inside_corner_2d(r)` and `profile()`; the
+are `base_profile_2d()`, `inside_corner_fill_2d(r)` and `bracket_profile_2d()`; the
 teaching example uses slightly longer descriptive names.
 
 ## Method B: build the same corner from 3D solids
@@ -194,14 +194,14 @@ PR #10 by the simpler 2D square-minus-circle approach.
 ![L profile built directly from sampled arc points](../design/corner_09_polygon_points_2d.png)
 
 ```openscad
-corner_arc = (r_in > 0)
+corner_arc = (inside_corner_radius > 0)
     ? [for (a = [180 : -5 : 90])
-        [r_in + r_in * cos(a),
-         -r_in + r_in * sin(a)]]
+        [inside_corner_radius + inside_corner_radius * cos(a),
+         -inside_corner_radius + inside_corner_radius * sin(a)]]
     : [[0, 0]];
 
 // This is historical/reference code; the current model uses
-// sharp_profile() plus inside_corner_2d(r_in) in profile().
+// base_profile_2d() plus inside_corner_fill_2d(inside_corner_radius) in bracket_profile_2d().
 ```
 
 This approach is **not wrong**. It is especially useful when a profile

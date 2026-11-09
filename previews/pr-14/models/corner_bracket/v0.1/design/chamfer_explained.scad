@@ -85,17 +85,11 @@ else if (chamfer_step == "08_continuous_side_relief") {
 
     // Main red shape: one continuous cut per broad side.
     color("IndianRed", 0.85)
-        intersection() {
-            outer_side_chamfered_body();
-            inside_side_relief_cuts();
-        }
+        inside_side_relief_cuts();
 
     // Orange: only the small arm-tip transition corrections.
     color("DarkOrange", 0.95)
-        intersection() {
-            outer_side_chamfered_body();
-            arm_tip_relief_cuts();
-        }
+        arm_tip_relief_cuts();
 }
 
 else if (chamfer_step == "09_print_compensated_body")

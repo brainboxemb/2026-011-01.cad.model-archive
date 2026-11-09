@@ -23,10 +23,16 @@ else if (design_step == "03_side_relief") {
         outer_side_chamfered_body();
 
     color("IndianRed", 0.85)
-        inside_side_relief_cuts();
+        intersection() {
+            outer_side_chamfered_body();
+            inside_side_relief_cuts();
+        }
 
     color("DarkOrange", 0.95)
-        arm_tip_relief_cuts();
+        intersection() {
+            outer_side_chamfered_body();
+            arm_tip_relief_cuts();
+        }
 }
 
 // Step 4: show the four countersunk M5 cutting volumes.

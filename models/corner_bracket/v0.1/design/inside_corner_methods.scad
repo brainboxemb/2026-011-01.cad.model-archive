@@ -10,8 +10,8 @@ demo_stage = "01_sharp_2d"; // [01_sharp_2d, 02_square_circle_2d, 03_piece_2d, 0
 /* [Dimensions in mm] */
 radius = 12;
 wall = 18;
-armH = 70;
-armV = 70;
+horizontal_arm_length = 70;
+vertical_arm_length = 70;
 depth = 20;
 
 /* [Hidden] */
@@ -22,8 +22,8 @@ epsilon = 0.2;
 // 2D L in the XY plane. (0,0) is its originally sharp inside corner.
 module sharp_L_2d() {
     polygon([
-        [0, 0], [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
+        [0, 0], [horizontal_arm_length, 0], [horizontal_arm_length, wall],
+        [-wall, wall], [-wall, -vertical_arm_length], [0, -vertical_arm_length]
     ]);
 }
 
@@ -86,8 +86,8 @@ corner_arc_points = [
 ];
 module rounded_L_from_points() {
     polygon(concat([
-        [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
+        [horizontal_arm_length, 0], [horizontal_arm_length, wall],
+        [-wall, wall], [-wall, -vertical_arm_length], [0, -vertical_arm_length]
     ], corner_arc_points));
 }
 

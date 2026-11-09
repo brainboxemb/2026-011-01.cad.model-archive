@@ -92,6 +92,8 @@ The production model currently uses two bolts per arm, `bolt_diameter = 5` and `
 
 `bolt_cuts()` applies the same `countersunk_bolt_cut()` twice on the horizontal arm and twice on the vertical arm.
 
+The DIN 7991 head keeps its real conical countersink. The extra print-edge relief is separate: `bolt_hole_edge_relief` makes a very shallow **flat cylindrical** enlargement at both the outside opening and the inside exit of each bolt hole.
+
 ~~~openscad
 module bracket() {
     difference() {

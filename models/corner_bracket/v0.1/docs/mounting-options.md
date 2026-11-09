@@ -49,7 +49,7 @@ The horizontal and vertical bolts point toward the same inside corner.
 
 The model calculates `tip_gap` and prints a warning if the perpendicular bolt tips come too close.
 
-The current default uses `bolt_y_offset = 3`, which gives the closest perpendicular M5×35 bolt tips about 1 mm clearance. If the warning appears after changing dimensions, use a shorter bolt, change the bolt positions, or increase `bolt_y_offset`.
+The current default keeps both bolt rows centred across the bracket width (`bolt_y_offset = 0`). If the warning appears, solve the bolt-length or arm-position geometry directly rather than shifting the rows sideways.
 
 ## Plywood drilling
 

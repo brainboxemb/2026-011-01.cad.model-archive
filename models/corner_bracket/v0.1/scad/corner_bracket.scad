@@ -60,7 +60,7 @@ inside_corner_radius = 2.0; // plywood inside corner must match; use 0 or >= 1 m
 bolts_per_arm        = 2;    // [1, 2]
 bolt_offset          = 12;   // first bolt: distance beyond the inner face of the other panel
 bolt_spacing         = 14;   // second bolt this much further along the arm
-bolt_y_offset        = 0;    // top-arm bolts at +offset, vertical-arm bolts at -offset across Y; 5 gives the bolt tips more room
+bolt_y_offset        = 3;    // top-arm bolts at +offset, vertical-arm bolts at -offset across Y; 5 gives the bolt tips more room
 bolt_diameter        = 5;    // M5 (M4: 4)
 bolt_clearance       = 0.4;  // clearance in the bracket's through hole
 head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)

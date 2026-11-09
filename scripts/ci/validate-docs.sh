@@ -128,7 +128,7 @@ for obsolete in "module nut_top" "module nut_side" "module plug_local" "module p
   fi
 done
 
-if grep -Eq '^[[:space:]]*multmatrix\\(' "$bracket/scad/corner_bracket.scad"; then
+if grep -Eq '^[[:space:]]*multmatrix[(]' "$bracket/scad/corner_bracket.scad"; then
   echo "multmatrix() returned to production arm-tip geometry" >&2
   exit 1
 fi
@@ -152,7 +152,7 @@ grep -Fq "multmatrix()" "$bracket/readme.md"
 grep -Fq "two bolts per arm" "$bracket/docs/mounting-options.md"
 grep -Fq "M5 × 30" "$bracket/docs/mounting-options.md"
 grep -Fq "one continuous opening hull per broad side" "$bracket/docs/chamfer-guide.md"
-grep -Fq "It does **not** use `multmatrix()`." "$bracket/docs/hull-guide.md"
+grep -Fq 'It does **not** use `multmatrix()`.' "$bracket/docs/hull-guide.md"
 
 # Walkthrough images used by the generated manual.
 check_image() {

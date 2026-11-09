@@ -67,7 +67,7 @@ head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)
 head_clearance       = 0.4;  // clearance on the head diameter
 head_recess          = 1;    // head top sits this far below the outer surface (0 = flush)
 bolt_hole_edge_relief     = 0.2;  // shallow flat edge relief; radial enlargement and depth (0 = off)
-bolt_length          = 35;   // including the countersunk head
+bolt_length          = 30;   // nominal DIN 7991 length, measured from head top to bolt tip
 
 /* [Inside washer and nut] */
 washer_diameter  = 10;    // M5 DIN 125: 10 (M4: 9)
@@ -82,10 +82,10 @@ $fn = 48;
 bolt_radius = bolt_diameter / 2;
 top_bolt_x  = [for (i = [0 : bolts_per_arm - 1]) plywood_thickness + bolt_offset + i * bolt_spacing];
 vertical_bolt_z = [for (i = [0 : bolts_per_arm - 1]) -(plywood_thickness + bolt_offset + i * bolt_spacing)];
-min_bolt_length = wall_thickness + plywood_thickness + washer_thickness + nut_thickness + 1;
+min_bolt_length = (wall_thickness - head_recess) + plywood_thickness + washer_thickness + nut_thickness + 1;
 
 // Closest approach of the bolt tips inside the corner (top-arm tip z, vertical-arm tip x).
-top_tip_z      = wall_thickness + head_recess - bolt_length;
+top_tip_z      = wall_thickness - (head_recess + bolt_length);
 vertical_tip_x = -wall_thickness + head_recess + bolt_length;
 tip_gap = min([for (x = top_bolt_x) for (z = vertical_bolt_z)
     max(max(x - bolt_radius - vertical_tip_x, top_tip_z - (z + bolt_radius)),
@@ -94,7 +94,7 @@ tip_gap = min([for (x = top_bolt_x) for (z = vertical_bolt_z)
 echo("Minimum bolt length (mm):", min_bolt_length, " bolt_length:", bolt_length);
 echo("Margin between last countersink and the arm end (mm):",
      horizontal_arm_length - (top_bolt_x[bolts_per_arm - 1] + (head_diameter + head_clearance) / 2
-                              + head_recess + bolt_hole_edge_relief));
+                              + bolt_hole_edge_relief));
 echo("Gap between neighbouring washers on the inside (mm):", bolt_spacing - washer_diameter);
 echo("Closest approach of top-arm and vertical-arm bolt tips (mm):", tip_gap);
 if (min_bolt_length > bolt_length) echo("WARNING: bolt too short for washer, nut and thread");
@@ -354,7 +354,7 @@ module bracket() {
 module hardware_local() {
     translate([0, 0, head_recess]) {
         cylinder(d1 = head_diameter, d2 = bolt_diameter, h = (head_diameter - bolt_diameter) / 2);
-        cylinder(d = bolt_diameter, h = bolt_length - head_recess);
+        cylinder(d = bolt_diameter, h = bolt_length);
     }
     translate([0, 0, wall_thickness + plywood_thickness]) {
         difference() {                                                   // washer

@@ -8,8 +8,8 @@ chamfer_step = "01_plain_l"; // [01_plain_l,02_profile_chamfers,03_profile_body,
 
 /* [Hidden] */
 // Defaults mirror the simplified v0.1 bracket.
-horizontal_arm_length = 50;
-vertical_arm_length = 50;
+horizontal_arm_length = 60;
+vertical_arm_length = 60;
 wall_thickness = 12;
 arm_end_chamfer = 3;
 outer_corner_chamfer = 6;

@@ -103,7 +103,7 @@ module bracket() {
 }
 ~~~
 
-The default model uses a 12 mm bracket wall and 12 mm plywood. The bolt centres are 24 mm and 38 mm from the inner-corner reference. The bolt rows remain centred across the bracket width (`bolt_y_offset = 0`).
+The default model uses a 12 mm bracket wall and 12 mm plywood. The bolt centres are 22 mm and 38 mm from the inner-corner reference. The bolt rows remain centred across the bracket width (`bolt_y_offset = 0`).
 
 ## Walkthroughs
 

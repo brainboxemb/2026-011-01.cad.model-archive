@@ -67,6 +67,11 @@
 //! Two bolt positions are generated on each arm. `bolt_cuts()` applies the
 //! same `countersunk_bolt_cut()` at all four positions.
 //!
+//! The DIN 7991 head still uses its real 90-degree conical countersink. A
+//! separate `bolt_hole_edge_relief` adds only a very shallow **flat cylindrical**
+//! enlargement at both bracket faces: around the head opening outside and
+//! around the M5 through-hole exit inside.
+//!
 //! The default source uses M5 × 30 with a 12 mm printed wall, 10 mm plywood,
 //! washer and nut. The model echoes the minimum stack and the closest
 //! approach between perpendicular bolt tips.

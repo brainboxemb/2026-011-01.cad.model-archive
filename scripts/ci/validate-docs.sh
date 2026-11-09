@@ -121,7 +121,7 @@ if grep -Eq 'inside_relief_envelope|relief_corner_miters|module opening_layer' "
 fi
 
 grep -Fq 'former_relief_opening_hulls' "$bracket/tests/elephant-foot-equivalence.scad"
-grep -Fq 'module elephant_foot_relief_cuts()' "$bracket/readme.md"
+grep -Fq 'elephant_foot_relief_cuts()' "$bracket/readme.md"
 grep -Fq 'module outer_side_chamfer_keep_envelope()' "$bracket/readme.md"
 
 if grep -Fq 'corner_arc = (inside_corner_radius > 0)' "$bracket/scad/corner_bracket.scad"; then

@@ -74,10 +74,11 @@ separate `bolt_hole_edge_relief` adds only a very shallow **flat cylindrical**
 enlargement at both bracket faces: around the head opening outside and
 around the M5 through-hole exit inside.
 
-The default source uses M5 × 35 with a 12 mm printed wall and 12 mm
+The default source uses M5 × 30 with a 12 mm printed wall and 12 mm
 plywood. The bolt centres are 24 mm and 42 mm from the inner-corner
-reference. Both bolt rows remain centred across the bracket width.
-Bolt-tip clearance is checked separately by the model.
+reference. Both bolt rows remain centred across the bracket width. With
+the current M5 × 30 default, the closest perpendicular tips retain 2.5 mm
+clearance.
 
 ### 5. Final printable bracket
 

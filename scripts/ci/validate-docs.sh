@@ -117,8 +117,14 @@ done
 
 grep -Eq "^bolts_per_arm[[:space:]]*=[[:space:]]*2" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_diameter[[:space:]]*=[[:space:]]*5" "$bracket/scad/corner_bracket.scad"
-grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*30" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*35" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_hole_edge_relief[[:space:]]*=[[:space:]]*0.2" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^plywood_thickness[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^horizontal_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^vertical_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_offset[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_spacing[[:space:]]*=[[:space:]]*14" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_y_offset[[:space:]]*=[[:space:]]*3" "$bracket/scad/corner_bracket.scad"
 
 # The active source must not drift back to the captive-nut/plug design or the
 # hard-to-read multmatrix arm-tip placement.
@@ -151,7 +157,7 @@ grep -Fq "inside_side_relief_cuts()" "$bracket/readme.md"
 grep -Fq "arm_tip_relief_cuts()" "$bracket/readme.md"
 grep -Fq "multmatrix()" "$bracket/readme.md"
 grep -Fq "two bolts per arm" "$bracket/docs/mounting-options.md"
-grep -Fq "M5 × 30" "$bracket/docs/mounting-options.md"
+grep -Fq "M5 × 35" "$bracket/docs/mounting-options.md"
 grep -Fq "bolt_hole_edge_relief" "$bracket/docs/mounting-options.md"
 grep -Fq "flat cylindrical edge relief" "$bracket/docs/mounting-options.md"
 grep -Fq "one continuous opening hull per broad side" "$bracket/docs/chamfer-guide.md"

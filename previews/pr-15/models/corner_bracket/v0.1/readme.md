@@ -75,7 +75,7 @@ enlargement at both bracket faces: around the head opening outside and
 around the M5 through-hole exit inside.
 
 The default source uses M5 × 35 with a 12 mm printed wall and 12 mm
-plywood. The bolt centres are 22 mm and 38 mm from the inner-corner
+plywood. The bolt centres are 24 mm and 42 mm from the inner-corner
 reference. Both bolt rows remain centred across the bracket width.
 Bolt-tip clearance is checked separately by the model.
 

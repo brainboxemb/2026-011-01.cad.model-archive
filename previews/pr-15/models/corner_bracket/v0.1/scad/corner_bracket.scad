@@ -38,7 +38,7 @@ c_section_depth_mm = 10;         // [0.1:0.1:80]
 c_section_direction = "Positive"; // [Positive, Negative]
 
 /* [Plywood] */
-plywood_thickness = 10;     // plywood thickness
+plywood_thickness = 12;     // plywood thickness
 plywood_hole_diameter = 5.5; // drilled plywood hole (display only)
 preview_panel_width = 60;     // panel width, display only
 preview_panel_length = 80;     // panel length, display only
@@ -46,8 +46,8 @@ preview_panel_length = 80;     // panel length, display only
 /* [Bracket geometry] */
 bracket_width        = 24;   // bracket width across Y
 wall_thickness       = 12;   // nominal arm thickness
-horizontal_arm_length = 50;  // top-arm length
-vertical_arm_length   = 50;  // vertical-arm length
+horizontal_arm_length = 60;  // top-arm length
+vertical_arm_length   = 60;  // vertical-arm length
 outer_corner_chamfer  = 6;   // large 45-degree outer corner chamfer
 arm_end_chamfer       = 3;   // 45-degree chamfer at both arm ends
 side_edge_chamfer     = 2;   // bevel on the broad side-face outer edges; 0 disables
@@ -58,16 +58,16 @@ inside_corner_radius = 2.0; // plywood inside corner must match; use 0 or >= 1 m
 
 /* [Bolts] */
 bolts_per_arm        = 2;    // [1, 2]
-bolt_offset          = 10;   // first bolt: distance beyond the inner face of the other panel
-bolt_spacing         = 16;   // second bolt this much further along the arm (26 mm from the inner face)
-bolt_y_offset        = 0;    // top-arm bolts at +offset, vertical-arm bolts at -offset across Y; 5 gives the bolt tips more room
+bolt_offset          = 12;   // first bolt: distance beyond the inner face of the other panel
+bolt_spacing         = 14;   // second bolt this much further along the arm
+bolt_y_offset        = 3;    // top-arm bolts at +offset, vertical-arm bolts at -offset across Y; 5 gives the bolt tips more room
 bolt_diameter        = 5;    // M5 (M4: 4)
 bolt_clearance       = 0.4;  // clearance in the bracket's through hole
 head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)
 head_clearance       = 0.4;  // clearance on the head diameter
 head_recess          = 1;    // head top sits this far below the outer surface (0 = flush)
 bolt_hole_edge_relief     = 0.2;  // shallow flat edge relief; radial enlargement and depth (0 = off)
-bolt_length          = 30;   // including the countersunk head
+bolt_length          = 35;   // including the countersunk head
 
 /* [Inside washer and nut] */
 washer_diameter  = 10;    // M5 DIN 125: 10 (M4: 9)

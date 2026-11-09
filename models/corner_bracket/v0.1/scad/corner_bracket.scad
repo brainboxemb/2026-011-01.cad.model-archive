@@ -175,11 +175,13 @@ module profile_body() {
 }
 
 module outer_side_chamfered_body() {
-    intersection() {
-        rotate([90, 0, 0]) linear_extrude(height = bracket_width, center = true) bracket_profile_2d();
-        if (side_edge_chamfer > 0) outer_side_chamfer_keep_envelope();
-        else rotate([90, 0, 0]) linear_extrude(height = bracket_width, center = true) outer_chamfer_envelope_2d();
-    }
+    if (side_edge_chamfer > 0)
+        intersection() {
+            profile_body();
+            outer_side_chamfer_keep_envelope();
+        }
+    else
+        profile_body();
 }
 
 // ---------- Elephant-foot print compensation: cut geometry ----------

@@ -3,23 +3,23 @@
 // Source geometry is shared with corner_bracket.scad; no second CAD model.
 use <../scad/corner_bracket.scad>
 
-design_step = "01_profile"; // [01_profile, 02_edge_chamfers, 03_nut_pockets, 04_print_relief, 05_access_plugs, 06_installed]
+design_step = "01_profile"; // [01_profile, 02_outer_side_chamfers, 03_fastener_cuts, 04_print_relief, 05_access_plugs, 06_installed]
 
 // Step 1: Extrude the rounded two-dimensional L profile to the bracket width.
 if (design_step == "01_profile")
     color("SteelBlue")
-        profile_extrusion();
+        profile_body();
 
-// Step 2: Intersect the extrusion with the side-chamfer envelope.
-else if (design_step == "02_edge_chamfers")
-    color("SteelBlue") body();
+// Step 2: Clip the profile body with the outer side-chamfer keep envelope.
+else if (design_step == "02_outer_side_chamfers")
+    color("SteelBlue") outer_side_chamfered_body();
 
-// Step 3: Remove the captive-nut cavities, access windows and bolt holes.
-else if (design_step == "03_nut_pockets")
+// Step 3: Subtract the captive-nut, access-window and bolt cutting volumes.
+else if (design_step == "03_fastener_cuts")
     color("SteelBlue") difference() {
-        body();
-        nut_top();
-        nut_side();
+        outer_side_chamfered_body();
+        top_fastener_cut();
+        vertical_fastener_cut();
     }
 
 // Step 4: Apply elephant-foot relief around wood-facing edges.

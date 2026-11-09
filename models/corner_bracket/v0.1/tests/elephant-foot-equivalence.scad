@@ -6,11 +6,11 @@
 use <../scad/corner_bracket.scad>
 
 bracket_width = 24;
-horizontal_arm_length = 50;
-vertical_arm_length = 50;
+horizontal_arm_length = 60;
+vertical_arm_length = 60;
 side_edge_chamfer = 2;
 elephant_foot_relief = 0.6;
-inside_corner_radius = 2;
+inside_corner_radius = 4;
 $fn = 48;
 
 test_view = "xor"; // [current,legacy,xor,tip_effect]

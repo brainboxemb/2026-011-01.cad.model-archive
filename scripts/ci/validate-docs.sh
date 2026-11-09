@@ -111,17 +111,25 @@ done
 for parameter in \
   bracket_width wall_thickness horizontal_arm_length vertical_arm_length \
   arm_end_chamfer outer_corner_chamfer side_edge_chamfer \
-  elephant_foot_relief inside_corner_radius bolts_per_arm bolt_diameter bolt_length; do
+  elephant_foot_relief inside_corner_radius bolts_per_arm bolt_diameter bolt_length bolt_hole_edge_relief; do
   grep -Eq "^$parameter[[:space:]]*=" "$bracket/scad/corner_bracket.scad"
 done
 
 grep -Eq "^bolts_per_arm[[:space:]]*=[[:space:]]*2" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_diameter[[:space:]]*=[[:space:]]*5" "$bracket/scad/corner_bracket.scad"
 grep -Eq "^bolt_length[[:space:]]*=[[:space:]]*30" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_hole_edge_relief[[:space:]]*=[[:space:]]*0.2" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^inside_corner_radius[[:space:]]*=[[:space:]]*4" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^plywood_thickness[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^horizontal_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^vertical_arm_length[[:space:]]*=[[:space:]]*60" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_offset[[:space:]]*=[[:space:]]*12" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_spacing[[:space:]]*=[[:space:]]*18" "$bracket/scad/corner_bracket.scad"
+grep -Eq "^bolt_y_offset[[:space:]]*=[[:space:]]*0" "$bracket/scad/corner_bracket.scad"
 
 # The active source must not drift back to the captive-nut/plug design or the
 # hard-to-read multmatrix arm-tip placement.
-for obsolete in "module nut_top" "module nut_side" "module plug_local" "module plugs_print_pair" "module arm_end_relief_cuts"; do
+for obsolete in "module nut_top" "module nut_side" "module plug_local" "module plugs_print_pair" "module arm_end_relief_cuts" "counterbore_flare"; do
   if grep -Fq "$obsolete" "$bracket/scad/corner_bracket.scad"; then
     echo "Obsolete bracket geometry returned: $obsolete" >&2
     exit 1
@@ -151,6 +159,11 @@ grep -Fq "arm_tip_relief_cuts()" "$bracket/readme.md"
 grep -Fq "multmatrix()" "$bracket/readme.md"
 grep -Fq "two bolts per arm" "$bracket/docs/mounting-options.md"
 grep -Fq "M5 × 30" "$bracket/docs/mounting-options.md"
+grep -Fq "Arm length | 60 mm" "$bracket/docs/mounting-options.md"
+grep -Fq "Calculated minimum | 29.7 mm" "$bracket/docs/mounting-options.md"
+grep -Fq "2.5 mm clearance" "$bracket/docs/mounting-options.md"
+grep -Fq "bolt_hole_edge_relief" "$bracket/docs/mounting-options.md"
+grep -Fq "flat cylindrical edge relief" "$bracket/docs/mounting-options.md"
 grep -Fq "one continuous opening hull per broad side" "$bracket/docs/chamfer-guide.md"
 grep -Fq 'It does **not** use `multmatrix()`.' "$bracket/docs/hull-guide.md"
 

@@ -92,6 +92,8 @@ The production model currently uses two bolts per arm, `bolt_diameter = 5` and `
 
 `bolt_cuts()` applies the same `countersunk_bolt_cut()` twice on the horizontal arm and twice on the vertical arm.
 
+The DIN 7991 head keeps its real conical countersink. The extra print-edge relief is separate: `bolt_hole_edge_relief` makes a very shallow **flat cylindrical** enlargement at both the outside opening and the inside exit of each bolt hole.
+
 ~~~openscad
 module bracket() {
     difference() {
@@ -101,7 +103,7 @@ module bracket() {
 }
 ~~~
 
-The default model uses a 12 mm bracket wall and 10 mm plywood. It echoes the minimum bolt stack and the closest approach between perpendicular bolt tips.
+The default model uses a 12 mm bracket wall and 12 mm plywood. The bolt centres are 24 mm and 42 mm from the inner-corner reference. The bolt rows remain centred across the bracket width (`bolt_y_offset = 0`). With the current M5×30 default, the closest perpendicular bolt tips retain 2.5 mm clearance.
 
 ## Walkthroughs
 

@@ -8,15 +8,15 @@ chamfer_step = "01_plain_l"; // [01_plain_l,02_profile_chamfers,03_profile_body,
 
 /* [Hidden] */
 // Defaults mirror the simplified v0.1 bracket.
-horizontal_arm_length = 50;
-vertical_arm_length = 50;
+horizontal_arm_length = 60;
+vertical_arm_length = 60;
 wall_thickness = 12;
 arm_end_chamfer = 3;
 outer_corner_chamfer = 6;
 bracket_width = 24;
 side_edge_chamfer = 2;
 elephant_foot_relief = 0.6;
-inside_corner_radius = 2;
+inside_corner_radius = 4;
 $fn = 48;
 
 module plain_l_profile_2d() {

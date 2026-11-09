@@ -38,7 +38,7 @@ c_section_depth_mm = 10;         // [0.1:0.1:80]
 c_section_direction = "Positive"; // [Positive, Negative]
 
 /* [Plywood] */
-plywood_thickness = 10;     // plywood thickness
+plywood_thickness = 12;     // plywood thickness
 plywood_hole_diameter = 5.5; // drilled plywood hole (display only)
 preview_panel_width = 60;     // panel width, display only
 preview_panel_length = 80;     // panel length, display only
@@ -46,28 +46,28 @@ preview_panel_length = 80;     // panel length, display only
 /* [Bracket geometry] */
 bracket_width        = 24;   // bracket width across Y
 wall_thickness       = 12;   // nominal arm thickness
-horizontal_arm_length = 50;  // top-arm length
-vertical_arm_length   = 50;  // vertical-arm length
+horizontal_arm_length = 60;  // top-arm length
+vertical_arm_length   = 60;  // vertical-arm length
 outer_corner_chamfer  = 6;   // large 45-degree outer corner chamfer
 arm_end_chamfer       = 3;   // 45-degree chamfer at both arm ends
 side_edge_chamfer     = 2;   // bevel on the broad side-face outer edges; 0 disables
 
 /* [Print compensation] */
 elephant_foot_relief = 0.6; // 45-degree relief at print-facing contact edges; 0 disables
-inside_corner_radius = 2.0; // plywood inside corner must match; use 0 or >= 1 mm
+inside_corner_radius = 4.0; // plywood inside corner must match; use 0 or >= 1 mm
 
 /* [Bolts] */
 bolts_per_arm        = 2;    // [1, 2]
-bolt_offset          = 10;   // first bolt: distance beyond the inner face of the other panel
-bolt_spacing         = 16;   // second bolt this much further along the arm (26 mm from the inner face)
+bolt_offset          = 12;   // first bolt: distance beyond the inner face of the other panel
+bolt_spacing         = 18;   // second bolt this much further along the arm
 bolt_y_offset        = 0;    // top-arm bolts at +offset, vertical-arm bolts at -offset across Y; 5 gives the bolt tips more room
 bolt_diameter        = 5;    // M5 (M4: 4)
 bolt_clearance       = 0.4;  // clearance in the bracket's through hole
 head_diameter        = 10;   // DIN 7991 head (M5: 10, M4: 8)
 head_clearance       = 0.4;  // clearance on the head diameter
 head_recess          = 1;    // head top sits this far below the outer surface (0 = flush)
-counterbore_flare    = 0.4;  // small 45-degree flare at the counterbore mouth (0 = off)
-bolt_length          = 30;   // including the countersunk head
+bolt_hole_edge_relief     = 0.2;  // shallow flat edge relief; radial enlargement and depth (0 = off)
+bolt_length          = 30;   // nominal DIN 7991 length, measured from head top to bolt tip
 
 /* [Inside washer and nut] */
 washer_diameter  = 10;    // M5 DIN 125: 10 (M4: 9)
@@ -82,10 +82,10 @@ $fn = 48;
 bolt_radius = bolt_diameter / 2;
 top_bolt_x  = [for (i = [0 : bolts_per_arm - 1]) plywood_thickness + bolt_offset + i * bolt_spacing];
 vertical_bolt_z = [for (i = [0 : bolts_per_arm - 1]) -(plywood_thickness + bolt_offset + i * bolt_spacing)];
-min_bolt_length = wall_thickness + plywood_thickness + washer_thickness + nut_thickness + 1;
+min_bolt_length = (wall_thickness - head_recess) + plywood_thickness + washer_thickness + nut_thickness + 1;
 
 // Closest approach of the bolt tips inside the corner (top-arm tip z, vertical-arm tip x).
-top_tip_z      = wall_thickness + head_recess - bolt_length;
+top_tip_z      = wall_thickness - (head_recess + bolt_length);
 vertical_tip_x = -wall_thickness + head_recess + bolt_length;
 tip_gap = min([for (x = top_bolt_x) for (z = vertical_bolt_z)
     max(max(x - bolt_radius - vertical_tip_x, top_tip_z - (z + bolt_radius)),
@@ -94,7 +94,7 @@ tip_gap = min([for (x = top_bolt_x) for (z = vertical_bolt_z)
 echo("Minimum bolt length (mm):", min_bolt_length, " bolt_length:", bolt_length);
 echo("Margin between last countersink and the arm end (mm):",
      horizontal_arm_length - (top_bolt_x[bolts_per_arm - 1] + (head_diameter + head_clearance) / 2
-                              + head_recess + counterbore_flare));
+                              + bolt_hole_edge_relief));
 echo("Gap between neighbouring washers on the inside (mm):", bolt_spacing - washer_diameter);
 echo("Closest approach of top-arm and vertical-arm bolt tips (mm):", tip_gap);
 if (min_bolt_length > bolt_length) echo("WARNING: bolt too short for washer, nut and thread");
@@ -319,10 +319,23 @@ module countersunk_bolt_cut() {
     translate([0, 0, head_recess]) cylinder(d1 = dk, d2 = d0, h = (dk - d0) / 2);
     // straight counterbore from the head top up to the outer surface
     translate([0, 0, -1]) cylinder(d = dk, h = head_recess + 1.01);
-    // small 45-degree flare at the mouth (elephant-foot style correction)
-    if (counterbore_flare > 0)
-        translate([0, 0, -1]) cylinder(d1 = dk + 2 * (counterbore_flare + 1), d2 = dk,
-                                        h = counterbore_flare + 1);
+    // Small flat edge reliefs. These are intentionally cylindrical, not
+    // conical chamfers: just a shallow, slightly larger circle at each face.
+    if (bolt_hole_edge_relief > 0) {
+        // Outside face: around the countersunk-head opening.
+        translate([0, 0, -1])
+            cylinder(
+                d = dk + 2 * bolt_hole_edge_relief,
+                h = bolt_hole_edge_relief + 1
+            );
+
+        // Inside face: where the M5 through-hole exits the bracket.
+        translate([0, 0, wall_thickness - bolt_hole_edge_relief])
+            cylinder(
+                d = d0 + 2 * bolt_hole_edge_relief,
+                h = bolt_hole_edge_relief + 1
+            );
+    }
 }
 
 module bolt_cuts() {
@@ -341,7 +354,7 @@ module bracket() {
 module hardware_local() {
     translate([0, 0, head_recess]) {
         cylinder(d1 = head_diameter, d2 = bolt_diameter, h = (head_diameter - bolt_diameter) / 2);
-        cylinder(d = bolt_diameter, h = bolt_length - head_recess);
+        cylinder(d = bolt_diameter, h = bolt_length);
     }
     translate([0, 0, wall_thickness + plywood_thickness]) {
         difference() {                                                   // washer

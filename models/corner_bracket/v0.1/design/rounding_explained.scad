@@ -10,8 +10,8 @@ demo_stage = "01_four_circles"; // [01_four_circles, 02_hull_of_circles, 03_shar
 // This is a teaching example, NOT the dimensions of the production bracket.
 radius = 10;
 wall = 14;
-armH = 55;
-armV = 55;
+horizontal_arm_length = 55;
+vertical_arm_length = 55;
 step_degrees = 5;
 $fn = 80;
 
@@ -29,8 +29,8 @@ module hull_of_circles() {
 // Example B: an L profile with a SHARP concave (inside) corner at (0, 0).
 module sharp_L() {
     polygon([
-        [0, 0], [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
+        [0, 0], [horizontal_arm_length, 0], [horizontal_arm_length, wall],
+        [-wall, wall], [-wall, -vertical_arm_length], [0, -vertical_arm_length]
     ]);
 }
 
@@ -47,8 +47,8 @@ arc_points = [for (a = [180 : -step_degrees : 90]) arc_point(a)];
 // Historical method: one concave polygon with sampled inside-corner points.
 module rounded_L() {
     polygon(concat([
-        [armH, 0], [armH, wall],
-        [-wall, wall], [-wall, -armV], [0, -armV]
+        [horizontal_arm_length, 0], [horizontal_arm_length, wall],
+        [-wall, wall], [-wall, -vertical_arm_length], [0, -vertical_arm_length]
     ], arc_points));
 }
 

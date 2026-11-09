@@ -16,6 +16,7 @@ There are no captive-nut pockets, access windows or printed plugs in the current
 | Item | Default |
 | --- | ---: |
 | Bracket wall | 12 mm |
+| Arm length | 60 mm |
 | Plywood | 12 mm |
 | Washer | 1.0 mm |
 | M5 nut | 4.7 mm |

@@ -16,7 +16,7 @@ outer_corner_chamfer = 6;
 bracket_width = 24;
 side_edge_chamfer = 2;
 elephant_foot_relief = 0.6;
-inside_corner_radius = 2;
+inside_corner_radius = 4;
 $fn = 48;
 
 module plain_l_profile_2d() {

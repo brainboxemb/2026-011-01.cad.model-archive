@@ -1,9 +1,0 @@
- M
- a
- i
- n
-Printed:
- 1|  1 corner_bracket.stl
-
-Assemblies:
-  1 main_assembly
